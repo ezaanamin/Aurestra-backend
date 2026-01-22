@@ -14,15 +14,27 @@ SCOPES = ['https://www.googleapis.com/auth/drive.file']
 KEY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'encryption_key.key')
 
 def load_or_generate_key():
-    """Loads the encryption key or generates a new one if it doesn't exist."""
+    """Loads the encryption key from Env, file, or generates a new one."""
+    # 1. Environment Variable (Best for Render/Production)
+    env_key = os.getenv("ENCRYPTION_KEY")
+    if env_key:
+        return env_key.encode()
+
+    # 2. File System (Local Dev)
     if os.path.exists(KEY_FILE):
         with open(KEY_FILE, 'rb') as key_file:
             key = key_file.read()
-    else:
-        key = Fernet.generate_key()
+            return key
+            
+    # 3. Generate New (Fallback - Warning: Ephemeral on Render)
+    key = Fernet.generate_key()
+    try:
         with open(KEY_FILE, 'wb') as key_file:
             key_file.write(key)
         # print(f"🔑 New encryption key generated: {key.decode()}")
+    except Exception:
+        pass # Might be read-only filesystem
+        
     return key
 
 # Initialize Cipher Suite

@@ -2509,10 +2509,14 @@ def mark_statement_as_read(current_user):
         "reviewed_at": stmt.reviewed_at.isoformat()
     })
 
+# --- Gunicorn/Production Entry Point ---
+# This block runs when Gunicorn imports 'app'
+with app.app_context():
+    db.create_all()
+    # verify_columns(app) # Optional: if you have the helper
+    # seed_categories() # Good to have seeded
+    # print("✅ [Prod/Dev] Database tables ensured.")
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        print("✅ Tables ensured in database")
-        seed_categories()
     # Use 0.0.0.0 to allow access from other devices/emulator
     app.run(host='0.0.0.0', port=5000, debug=True)
