@@ -36,7 +36,10 @@ class FinancialAgent:
     def fetch_transactions(self, year, month):
         return Transaction.query.filter(
             extract('year', Transaction.date) == year,
-            extract('month', Transaction.date) == month
+            extract('month', Transaction.date) == month,
+            Transaction.is_deleted != True,
+            Transaction.is_spam != True,
+            Transaction.categorization_status != 'pending'
         ).all()
 
     def fetch_budget(self, year, month):

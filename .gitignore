@@ -27,3 +27,19 @@ build/
 # Backup files
 *.bak
 *.swp
+ezaanamin-7cbcf-firebase-adminsdk-xz65x-c6fc4897e9.json
+manual_encrypt.py
+migrations/01_create_users_table.sql
+migrations/02_create_categories_table.sql
+migrations/03_create_account_balances_table.sql
+migrations/04_create_transactions_table.sql
+migrations/05_create_budgets_table.sql
+migrations/06_create_monthly_balances_table.sql
+migrations/07_create_savings_goals_table.sql
+migrations/08_create_categorization_rules_table.sql
+migrations/09_create_device_tokens_table.sql
+migrations/10_create_financial_insights_table.sql
+migrations/11_create_statement_analysis_table.sql
+seeders/001_seed_users.sql
+seeders/002_seed_categories.sql
+*.apk

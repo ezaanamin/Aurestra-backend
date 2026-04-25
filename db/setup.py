@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+"""
+db/setup.py — One-shot database setup for Aurestra.
+Runs migrations + seeds for both SQLite and PostgreSQL.
+
+Usage (from backend/):
+    python3 db/setup.py
+
+Options:
+    --sqlite-only    Skip PostgreSQL
+    --pg-only        Skip SQLite
+    --reset          Drop and recreate all tables (DANGER: destroys data)
+"""
+
+import os
+import sys
+import argparse
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from sqlalchemy import text, inspect as sa_inspect, Boolean
+from database import db, app, get_sqlite_engine, get_postgres_engine
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+SQLITE_MIGRATION = os.path.join(HERE, "migrations", "sqlite.sql")
+PG_MIGRATION     = os.path.join(HERE, "migrations", "postgres.sql")
+SQLITE_SEED      = os.path.join(HERE, "seeders", "categories.sqlite.sql")
+PG_SEED          = os.path.join(HERE, "seeders", "categories.postgres.sql")
+
+# Tables must be created in this order (FK dependencies)
+TABLE_ORDER = [
+    "users", "categories", "categorization_rules", "account_balances",
+    "transactions", "budgets", "savings_goals", "monthly_balances",
+    "sms_history", "device_tokens", "financial_insights", "statement_analysis",
+]
+
+
+def run_sql_file(engine, filepath: str, label: str):
+    """Execute a .sql file statement by statement."""
+    with open(filepath, encoding="utf-8") as f:
+        content = f.read()
+
+    # Split on semicolons but ignore empty chunks
+    statements = [s.strip() for s in content.split(";") if s.strip() and not s.strip().startswith("--")]
+
+    with engine.connect() as conn:
+        for stmt in statements:
+            try:
+                conn.execute(text(stmt))
+            except Exception as e:
+                print(f"  ⚠️  [{label}] statement error: {e}\n      SQL: {stmt[:80]}...")
+        conn.commit()
+
+
+def drop_all_tables(engine, dialect: str):
+    """Drop all Aurestra tables (for --reset)."""
+    with engine.connect() as conn:
+        if dialect == "sqlite":
+            conn.execute(text("PRAGMA foreign_keys=OFF"))
+            for table in reversed(TABLE_ORDER):
+                conn.execute(text(f"DROP TABLE IF EXISTS {table}"))
+            conn.execute(text("PRAGMA foreign_keys=ON"))
+        else:
+            for table in reversed(TABLE_ORDER):
+                conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+        conn.commit()
+    print(f"  🗑️  [{dialect}] All tables dropped.")
+
+
+def ensure_missing_columns(engine, label: str):
+    """Add any ORM-defined columns missing from existing tables (safe ALTER TABLE)."""
+    import model  # noqa: F401 — registers all ORM models
+    insp = sa_inspect(engine)
+    is_pg = engine.dialect.name == "postgresql"
+
+    with engine.connect() as conn:
+        for table_name, table_obj in db.metadata.tables.items():
+            if not insp.has_table(table_name):
+                continue
+            existing = {c["name"] for c in insp.get_columns(table_name)}
+            for col in table_obj.columns:
+                if col.name in existing:
+                    continue
+                col_type = col.type.compile(dialect=engine.dialect)
+                # PostgreSQL uses BOOLEAN, SQLite uses INTEGER for booleans
+                if isinstance(col.type, Boolean) and not is_pg:
+                    col_type = "INTEGER"
+                nullable = "" if col.nullable else " NOT NULL"
+                default = ""
+                if col.default and col.default.is_scalar:
+                    val = col.default.arg
+                    if isinstance(val, bool):
+                        default = f" DEFAULT {'TRUE' if val else 'FALSE'}" if is_pg else f" DEFAULT {1 if val else 0}"
+                    elif isinstance(val, str):
+                        default = f" DEFAULT '{val}'"
+                    else:
+                        default = f" DEFAULT {val}"
+                ddl = f"ALTER TABLE {table_name} ADD COLUMN {col.name} {col_type}{nullable}{default}"
+                try:
+                    conn.execute(text(ddl))
+                    conn.commit()
+                    print(f"  ➕ [{label}] Added missing column: {table_name}.{col.name}")
+                except Exception as e:
+                    print(f"  ⚠️  [{label}] Could not add {table_name}.{col.name}: {e}")
+
+
+def setup_sqlite(reset: bool = False):
+    engine = get_sqlite_engine()
+    print("\n📦 Setting up SQLite...")
+
+    if reset:
+        drop_all_tables(engine, "sqlite")
+
+    run_sql_file(engine, SQLITE_MIGRATION, "SQLite")
+    print("  ✅ Schema applied.")
+
+    ensure_missing_columns(engine, "SQLite")
+
+    run_sql_file(engine, SQLITE_SEED, "SQLite")
+    print("  ✅ Categories seeded.")
+
+    with engine.connect() as conn:
+        count = conn.execute(text("SELECT COUNT(*) FROM categories")).scalar()
+    print(f"  📊 categories table: {count} rows")
+
+
+def setup_postgres(reset: bool = False):
+    engine = get_postgres_engine()
+    if not engine:
+        print("\n⚠️  PostgreSQL not configured — skipping.")
+        return
+
+    print("\n📦 Setting up PostgreSQL...")
+
+    if reset:
+        drop_all_tables(engine, "postgresql")
+
+    run_sql_file(engine, PG_MIGRATION, "PostgreSQL")
+    print("  ✅ Schema applied.")
+
+    ensure_missing_columns(engine, "PostgreSQL")
+
+    run_sql_file(engine, PG_SEED, "PostgreSQL")
+    print("  ✅ Categories seeded.")
+
+    with engine.connect() as conn:
+        count = conn.execute(text("SELECT COUNT(*) FROM categories")).scalar()
+    print(f"  📊 categories table: {count} rows")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Aurestra DB setup")
+    parser.add_argument("--sqlite-only", action="store_true")
+    parser.add_argument("--pg-only",     action="store_true")
+    parser.add_argument("--reset",       action="store_true", help="DROP all tables first (destroys data!)")
+    args = parser.parse_args()
+
+    if args.reset:
+        print("⚠️  WARNING: --reset will destroy all existing data!")
+        confirm = input("Type 'yes' to confirm: ").strip().lower()
+        if confirm != "yes":
+            print("Aborted.")
+            sys.exit(0)
+
+    with app.app_context():
+        import model  # noqa: F401
+
+        if not args.pg_only:
+            setup_sqlite(reset=args.reset)
+
+        if not args.sqlite_only:
+            setup_postgres(reset=args.reset)
+
+    print("\n✅ Setup complete!")
+
+
+if __name__ == "__main__":
+    main()

@@ -63,6 +63,9 @@ class Transaction(db.Model):
     
     # NEW — robust hash for deduplication
     transaction_hash = db.Column(db.String(64), unique=True, nullable=True)
+    
+    # NEW — SMS hash for deduplication (added via migration)
+    sms_hash = db.Column(db.String(64), nullable=True, index=True)
 
     # Optional extra details (store name, bank name etc.)
     notes = db.Column(db.String(255), nullable=True)
@@ -74,31 +77,80 @@ class Transaction(db.Model):
     categorization_status = db.Column(db.String(20), default='pending')  # 'pending', 'categorized', 'auto', 'manual'
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)  # Proper FK relationship
 
+    is_deleted = db.Column(db.Boolean, default=False)
+    is_spam = db.Column(db.Boolean, default=False)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationship to Category (will be defined after Category model)
-    # category = db.relationship('Category', backref='transactions')
+    @staticmethod
+    def generate_deterministic_hash(data):
+        """
+        Generates a robust hash for deduplication based on transaction details.
+        """
+        import hashlib, re
+        # Fields to include in hash: date, amount, type, and identity (notes or ID)
+        date_val = data.get('date')
+        if isinstance(date_val, datetime):
+            date_part = date_val.strftime('%Y-%m-%d')
+        else:
+            date_part = str(date_val)
+            
+        amount_part = f"{float(data.get('amount', 0)):.2f}"
+        type_part = str(data.get('type', '')).lower()
+        
+        # Identity part: Prefer transaction_id, then notes
+        identity = data.get('transaction_id') or data.get('notes') or data.get('description') or ""
+        identity_part = re.sub(r'[^a-zA-Z0-9]', '', str(identity)).lower()[:50]
+        
+        raw_string = f"{date_part}|{amount_part}|{type_part}|{identity_part}"
+        return hashlib.sha256(raw_string.encode('utf-8')).hexdigest()
 
     def to_dict(self):
         return {
             "id": self.id,
             "source": self.source,
-            "date": self.date.isoformat(),
+            "date": self.date.isoformat() if self.date else None,
             "purpose": self.purpose,
             "amount": self.amount,
             "sender": self.sender,
             "receiver": self.receiver,
             "transaction_id": self.transaction_id,
+            "transaction_hash": self.transaction_hash,
+            "sms_hash": self.sms_hash,
             "notes": self.notes,
             "type": self.type,
             "categorization_status": self.categorization_status,
             "category_id": self.category_id,
-            "created_at": self.created_at.isoformat()
+            "is_deleted": self.is_deleted,
+            "is_spam": self.is_spam,
+            "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
 
     def __repr__(self):
         return f"<Transaction {self.source} | {self.amount} | {self.date} | {self.sender} → {self.receiver}>"
+
+class SMSHistory(db.Model):
+    __tablename__ = 'sms_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    device_sms_id = db.Column(db.String(100))  # Unique SMS ID from device
+    sender = db.Column(db.String(50))
+    body = db.Column(db.Text)
+    device_timestamp = db.Column(db.DateTime)
+    sms_hash = db.Column(db.String(64), unique=True, nullable=False)  # Deterministic hash
+    status = db.Column(db.String(20), default='pending')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'device_sms_id': self.device_sms_id,
+            'sender': self.sender,
+            'body': self.body,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 
 class Budget(db.Model):
@@ -109,15 +161,18 @@ class Budget(db.Model):
     month = db.Column(db.String(7), nullable=False, unique=True)  # Format: "YYYY-MM"
     total_budget = db.Column(db.Float, nullable=False)
 
-    # Updated columns for detailed savings tracking: Needs, Wants, and Total
+    # Spending breakdown
     needs = db.Column(db.Float, nullable=False, default=0.0)
-    wants = db.Column(db.Float, nullable=False, default=0.0) # Re-introduced for non-essential goals
-    saving = db.Column(db.Float, nullable=False, default=0.0) # Total planned or achieved savings
+    wants = db.Column(db.Float, nullable=False, default=0.0)
+    saving = db.Column(db.Float, nullable=False, default=0.0)
+
+    # Calculated actual expenses for this month (updated on every /api/expenses/total call)
+    total_expenses = db.Column(db.Float, nullable=False, default=0.0)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"<Budget {self.month} | Total: {self.total_budget} | Savings (Total): {self.saving}>"
+        return f"<Budget {self.month} | Total: {self.total_budget} | Expenses: {self.total_expenses}>"
 
 
 class AccountBalance(db.Model):
@@ -254,7 +309,6 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False) # Storing 'PIN' as hash for now (or plain if simple)
     full_name = db.Column(db.String(100), nullable=True)
     
     # Google Auth Fields

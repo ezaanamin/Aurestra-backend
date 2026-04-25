@@ -5,8 +5,9 @@ Parses Bank Alhabib SMS messages and extracts transaction details
 """
 
 import re
+import hashlib
 from datetime import datetime
-from model import Transaction
+from model import Transaction, AccountBalance
 from database import db
 import logging
 
@@ -442,88 +443,242 @@ class BankAlhabibSMSParser:
             return None
 
 
-def process_bank_sms(message, sender='BAHL'):
+def generate_sms_hash(message_data):
+    """SHA256 of: sender|message|date"""
+    sender = str(message_data.get('sender', 'UNKNOWN')).upper()
+    message = str(message_data.get('message', '')).strip()
+    date = str(message_data.get('date', ''))
+    
+    hash_string = f"{sender}|{message}|{date}"
+    return hashlib.sha256(hash_string.encode()).hexdigest()
+
+
+def generate_transaction_hash(transaction_data):
+    """SHA256 of: date|amount|type|source"""
+    if hasattr(transaction_data['date'], 'isoformat'):
+        date_iso = transaction_data['date'].isoformat()
+    else:
+        date_iso = str(transaction_data['date'])
+        
+    amount_str = f"{float(transaction_data['amount']):.2f}"
+    tx_type = str(transaction_data['type'])
+    source = str(transaction_data.get('source', 'sms'))
+    
+    hash_string = f"{date_iso}|{amount_str}|{tx_type}|{source}"
+    return hashlib.sha256(hash_string.encode()).hexdigest()
+
+
+def process_bank_sms(message, sender='BAHL', external_sms_hash=None):
     """
-    Process a bank SMS and save as transaction
+    Process a bank SMS and save as transaction with robust deduplication
     
     Args:
         message (str): SMS message text
         sender (str): SMS sender (default: 'BAHL')
     
     Returns:
-        Transaction: Created transaction or None
+        tuple: (Transaction, is_new) where is_new is True if created, False if duplicate
     """
     try:
+        # Check if it's a transaction SMS
+        if not BankAlhabibSMSParser.is_transaction_sms(message):
+            logger.info("SMS is not a transaction message, skipping")
+            return None, False
+        
         # Parse SMS
         transaction_data = BankAlhabibSMSParser.parse_sms(message, sender)
         
         if not transaction_data:
+            logger.warning(f"Could not parse transaction from SMS: {message[:100]}")
             return None, False
         
-        # Create robust hash for deduplication (Sender + Date + Amount + Type)
-        import hashlib
+        # Generate hashes
+        sms_hash = external_sms_hash or generate_sms_hash({
+            'sender': sender,
+            'message': message,
+            'date': transaction_data['date'].isoformat()
+        })
         
-        # Format date consistently to ISO 8601 for hashing
-        date_iso = transaction_data['date'].isoformat()
-        amount_str = f"{transaction_data['amount']:.2f}"
+        transaction_hash = generate_transaction_hash(transaction_data)
+    # 1. Check SMS Hash (Exact Match)
+        print(f"🔍 [SMS DEBUG]\n   Msg: {message[:30]}...\n   Date: {transaction_data['date']}\n   Generated Hash: {sms_hash}")
         
-        # Hash Source string: "BAHL|2026-01-20T10:00:00|500.00|debit"
-        hash_payload = f"{sender}|{date_iso}|{amount_str}|{transaction_data['type']}"
-        transaction_hash = hashlib.sha256(hash_payload.encode()).hexdigest()
-        
-        transaction_data['transaction_hash'] = transaction_hash
-        # Use a more descriptive source for Bank Alhabib SMS
-        transaction_data['source'] = 'bank_sms' if sender in ['BAHL', 'BankALHabib', 'AL-Habib', '8810', '8812'] else 'sms'
-        
-        # Legacy ID for backward compatibility: MD5 of message body
-        message_hash = hashlib.md5(message.encode()).hexdigest()[:16]
-        transaction_data['transaction_id'] = f"sms_{message_hash}"
-        
-        # 1. Check by Hash (Strongest Check)
-        existing_hash = Transaction.query.filter_by(transaction_hash=transaction_hash).first()
-        if existing_hash:
-            logger.info(f"Duplicate Transaction Hash found: {transaction_hash}")
-            return existing_hash, False
+        existing_by_sms = Transaction.query.filter_by(sms_hash=sms_hash).first()
+        if existing_by_sms:
+            print(f"   ❌ DUPLICATE by SMS SMS Hash! (ID: {existing_by_sms.id})")
+            return existing_by_sms, False
 
-        # 2. Check by Legacy ID (Secondary Check)
-        existing_id = Transaction.query.filter_by(
-            transaction_id=transaction_data['transaction_id']
+        # 2. Check Transaction Hash (Content Match)
+        tx_hash = transaction_hash # Already generated above
+        print(f"   Transaction Hash: {tx_hash}")
+
+        existing_by_tx = Transaction.query.filter_by(transaction_hash=tx_hash).first()
+        if existing_by_tx:
+            print(f"   ❌ DUPLICATE by Transaction Hash! (ID: {existing_by_tx.id})")
+            # Update metadata if missing
+            if not existing_by_tx.sms_hash:
+                print("   ✏️ Updating missing SMS hash on existing record.")
+                existing_by_tx.sms_hash = sms_hash
+                db.session.commit()
+            return existing_by_tx, False
+            
+        # Check 3: By date + amount + type (fallback for transactions without hash)
+        tx_date = transaction_data['date']
+        similar_tx = Transaction.query.filter(
+            db.func.date(Transaction.date) == tx_date.date(),
+            Transaction.amount == transaction_data['amount'],
+            Transaction.type == transaction_data['type']
         ).first()
         
-        if existing_id:
-            logger.info(f"SMS transaction already exists (Legacy ID): {message_hash}")
-            # Update hash if missing?
-            if not existing_id.transaction_hash:
-                existing_id.transaction_hash = transaction_hash
-                db.session.commit()
-            return existing_id, False
+        if similar_tx:
+            logger.info(f"Similar transaction found: Date={tx_date.date()}, Amount={transaction_data['amount']}")
+            
+            # Update hashes on existing transaction
+            if not similar_tx.sms_hash:
+                similar_tx.sms_hash = sms_hash
+            if not similar_tx.transaction_hash:
+                similar_tx.transaction_hash = transaction_hash
+            
+            db.session.commit()
+            return similar_tx, False
         
-        # Create new transaction
+        # Check 4: Legacy transaction_id check (for backward compatibility)
+        message_hash = hashlib.md5(message.encode()).hexdigest()[:16]
+        legacy_id = f"sms_{message_hash}"
+        
+        existing_by_legacy = Transaction.query.filter_by(transaction_id=legacy_id).first()
+        if existing_by_legacy:
+            logger.info(f"Duplicate found by legacy ID: {legacy_id}")
+            
+            # Update with new hashes
+            if not existing_by_legacy.sms_hash:
+                existing_by_legacy.sms_hash = sms_hash
+            if not existing_by_legacy.transaction_hash:
+                existing_by_legacy.transaction_hash = transaction_hash
+            
+            db.session.commit()
+            return existing_by_legacy, False
+        
+        # ============================================
+        # CREATE NEW TRANSACTION
+        # ============================================
+        
+        # Add hashes to transaction data
+        transaction_data['sms_hash'] = sms_hash
+        transaction_data['transaction_hash'] = transaction_hash
+        transaction_data['transaction_id'] = legacy_id  # Keep for backward compatibility
+        transaction_data['source'] = 'bank_sms'
+        transaction_data['categorization_status'] = 'pending'
+        
+        # Create transaction
         transaction = Transaction(**transaction_data)
         db.session.add(transaction)
+        db.session.flush()  # Get the ID
         
-        # Update Account Balance
-        from model import AccountBalance
-        # NOTE: SMS transactions for Bank Alhabib should update the 'bank' balance
+        # ============================================
+        # UPDATE ACCOUNT BALANCE
+        # ============================================
+        
+        # Determine which account to update
         target_source = 'bank' if sender in ['BAHL', 'BankALHabib', 'AL-Habib', '8810', '8812'] else 'sms'
+        
         balance = AccountBalance.query.filter_by(source=target_source).first()
         if not balance:
             balance = AccountBalance(source=target_source, current_balance=0.0)
             db.session.add(balance)
-            
+        
+        # Update balance (Only if is_new=True, which is implied since we are here)
         if transaction.type == 'credit':
             balance.current_balance += transaction.amount
+            logger.info(f"Credit: +{transaction.amount} → {balance.current_balance}")
         else:
             balance.current_balance -= transaction.amount
-            
+            logger.info(f"Debit: -{transaction.amount} → {balance.current_balance}")
+        
+        balance.last_updated = datetime.now()
+        
+        # Commit everything
         db.session.commit()
         
-        logger.info(f"SMS transaction created: {transaction.id} - {transaction.type} Rs. {transaction.amount}")
+        logger.info(f"✅ Created transaction {transaction.id}: {transaction.type} Rs.{transaction.amount}")
         return transaction, True
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error processing SMS transaction: {e}")
+        import traceback
+        traceback.print_exc()
         return None, False
 
 
+# ============================================
+# UTILITY FUNCTIONS
+# ============================================
+
+def check_duplicate_transaction(amount, date, tx_type):
+    """
+    Check if a similar transaction already exists
+    """
+    return Transaction.query.filter(
+        db.func.date(Transaction.date) == date.date(),
+        Transaction.amount == amount,
+        Transaction.type == tx_type
+    ).first()
+
+
+def get_transactions_by_hash(sms_hash=None, transaction_hash=None):
+    """
+    Retrieve transactions by hash
+    """
+    query = Transaction.query
+    
+    if sms_hash:
+        query = query.filter_by(sms_hash=sms_hash)
+    
+    if transaction_hash:
+        query = query.filter_by(transaction_hash=transaction_hash)
+    
+    return query.all()
+
+
+def find_duplicate_transactions():
+    """
+    Find all duplicate transactions in the database
+    """
+    from sqlalchemy import func
+    
+    # Find duplicates by transaction_hash
+    duplicates = db.session.query(
+        Transaction.transaction_hash,
+        func.count(Transaction.id).label('count')
+    ).filter(
+        Transaction.transaction_hash != None
+    ).group_by(
+        Transaction.transaction_hash
+    ).having(
+        func.count(Transaction.id) > 1
+    ).all()
+    
+    duplicate_details = []
+    for dup_hash, count in duplicates:
+        transactions = Transaction.query.filter_by(transaction_hash=dup_hash).all()
+        duplicate_details.append({
+            'hash': dup_hash[:16],
+            'count': count,
+            'transactions': [
+                {
+                    'id': tx.id,
+                    'amount': tx.amount,
+                    'date': tx.date.isoformat(),
+                    'type': tx.type,
+                    'source': tx.source
+                }
+                for tx in transactions
+            ]
+        })
+    
+    return {
+        'total_duplicate_groups': len(duplicates),
+        'total_duplicate_transactions': sum(dup[1] - 1 for dup in duplicates),
+        'details': duplicate_details
+    }

@@ -1,0 +1,10 @@
+--- IMAP Diagnostic ---
+Account: [ezaan.amin@gmail.com]
+Raw Pass: [wvbh iaxj iujj cqpe]
+Clean Pass: [wvbhiaxjiujjcqpe]
+Host: [imap.gmail.com]
+-------------------------
+Connecting to imap.gmail.com...
+Logging in...
+✅ Login SUCCESSFUL!
+✅ Inbox selected.

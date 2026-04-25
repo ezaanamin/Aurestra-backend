@@ -1,6 +1,5 @@
 SQLAlchemy==2.0.36
 Flask-SQLAlchemy==3.0.3
-mysql-connector-python==8.0.33
 Flask==3.0.3
 PyPDF2==3.0.1
 python-dotenv==1.0.1
@@ -18,3 +17,8 @@ google-auth-httplib2
 google-auth-oauthlib
 google-auth
 psycopg2-binary
+Flask-APScheduler
+pandas
+beautifulsoup4
+lxml
+tabulate
