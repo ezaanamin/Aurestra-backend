@@ -36,13 +36,25 @@ TABLE_ORDER = [
 ]
 
 
+def _strip_sql_comments(sql: str) -> str:
+    """Remove -- line comments from a SQL chunk."""
+    return "\n".join(
+        line for line in sql.splitlines()
+        if not line.strip().startswith("--")
+    ).strip()
+
+
 def run_sql_file(engine, filepath: str, label: str):
     """Execute a .sql file statement by statement."""
     with open(filepath, encoding="utf-8") as f:
         content = f.read()
 
-    # Split on semicolons but ignore empty chunks
-    statements = [s.strip() for s in content.split(";") if s.strip() and not s.strip().startswith("--")]
+    # Strip comments first so chunks that START with a comment line
+    # are not mistakenly discarded along with their SQL body.
+    statements = [
+        clean for raw in content.split(";")
+        if (clean := _strip_sql_comments(raw))
+    ]
 
     with engine.connect() as conn:
         for stmt in statements:
