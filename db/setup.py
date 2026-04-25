@@ -25,8 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 SQLITE_MIGRATION = os.path.join(HERE, "migrations", "sqlite.sql")
 PG_MIGRATION     = os.path.join(HERE, "migrations", "postgres.sql")
-SQLITE_SEED      = os.path.join(HERE, "seeders", "categories.sqlite.sql")
-PG_SEED          = os.path.join(HERE, "seeders", "categories.postgres.sql")
+SEEDERS_DIR      = os.path.join(HERE, "seeders")
 
 # Tables must be created in this order (FK dependencies)
 TABLE_ORDER = [
@@ -117,6 +116,33 @@ def ensure_missing_columns(engine, label: str):
                     print(f"  ⚠️  [{label}] Could not add {table_name}.{col.name}: {e}")
 
 
+def run_all_seeders(engine, ext: str, label: str):
+    """Run all <table>.<ext>.sql seeders in FK-safe order."""
+    seeded = 0
+    for table in TABLE_ORDER:
+        seed_file = os.path.join(SEEDERS_DIR, f"{table}.{ext}.sql")
+        if not os.path.exists(seed_file):
+            continue
+        # Skip if table already has rows
+        try:
+            with engine.connect() as conn:
+                count = conn.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar()
+                if count and count > 0:
+                    print(f"  ⏭️  [{label}] {table}: already has {count} rows — skipping")
+                    continue
+        except Exception:
+            pass
+        run_sql_file(engine, seed_file, label)
+        with engine.connect() as conn:
+            try:
+                n = conn.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar()
+                print(f"  ✅ [{label}] {table}: {n} rows")
+                seeded += 1
+            except Exception:
+                pass
+    return seeded
+
+
 def setup_sqlite(reset: bool = False):
     engine = get_sqlite_engine()
     print("\n📦 Setting up SQLite...")
@@ -126,15 +152,10 @@ def setup_sqlite(reset: bool = False):
 
     run_sql_file(engine, SQLITE_MIGRATION, "SQLite")
     print("  ✅ Schema applied.")
-
     ensure_missing_columns(engine, "SQLite")
 
-    run_sql_file(engine, SQLITE_SEED, "SQLite")
-    print("  ✅ Categories seeded.")
-
-    with engine.connect() as conn:
-        count = conn.execute(text("SELECT COUNT(*) FROM categories")).scalar()
-    print(f"  📊 categories table: {count} rows")
+    print("  🌱 Seeding tables...")
+    run_all_seeders(engine, "sqlite", "SQLite")
 
 
 def setup_postgres(reset: bool = False):
@@ -150,15 +171,10 @@ def setup_postgres(reset: bool = False):
 
     run_sql_file(engine, PG_MIGRATION, "PostgreSQL")
     print("  ✅ Schema applied.")
-
     ensure_missing_columns(engine, "PostgreSQL")
 
-    run_sql_file(engine, PG_SEED, "PostgreSQL")
-    print("  ✅ Categories seeded.")
-
-    with engine.connect() as conn:
-        count = conn.execute(text("SELECT COUNT(*) FROM categories")).scalar()
-    print(f"  📊 categories table: {count} rows")
+    print("  🌱 Seeding tables...")
+    run_all_seeders(engine, "postgres", "PostgreSQL")
 
 
 def main():
