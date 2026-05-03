@@ -23,9 +23,14 @@ from drive_utils import (
     send_gmail_message,
     GOOGLE_SIGNIN_OAUTH_SCOPES,
 )
-from fcm_utils import send_push_to_all
+from fcm_utils import send_push_to_all, get_push_service_diagnostics
 from sqlalchemy import func, desc, extract, case
+from sqlalchemy.exc import IntegrityError
 from sms_parser import process_bank_sms, BankAlhabibSMSParser, generate_sms_hash, generate_transaction_hash
+from account_matching import match_account_for_notification
+from notification_parser import ingest_notification_for_user, list_notifications_for_user
+from transfer_matching import exclude_own_account_transfer_sql, is_own_account_transfer_row
+from ledger_sync import apply_pending_transaction_ledger, ensure_account_balance_row, log_wallet_attribution
 import jwt
 import base64
 import requests as http_requests
@@ -772,15 +777,33 @@ def set_manual_balance(current_user):
     """
     Manually set the account balance.
     This sets is_manual=True, preventing older statements from overwriting it.
+    Pass account_id (preferred) or source slug.
     """
     try:
         data = request.get_json()
         amount = float(data.get('amount', 0))
-        source = data.get('source', 'bank')
-        
-        balance = AccountBalance.query.filter_by(source=source).first()
+        account_id = data.get("account_id")
+        if account_id is not None:
+            balance = AccountBalance.query.get(int(account_id))
+            if not balance:
+                return jsonify({"error": "Account not found"}), 404
+            source = balance.source
+        else:
+            source = data.get('source', 'bank')
+            balance = AccountBalance.query.filter_by(source=source).first()
+
         if not balance:
-            balance = AccountBalance(source=source, current_balance=amount)
+            dn = (source or "bank").replace("_", " ").title()
+            balance = AccountBalance(
+                source=source or "bank",
+                display_name=dn,
+                holder_name="",
+                account_kind="bank",
+                match_keywords=json.dumps([source or "bank"]),
+                accent_color="#6366F1",
+                sort_order=(db.session.query(func.max(AccountBalance.sort_order)).scalar() or 0) + 1,
+                current_balance=amount,
+            )
             db.session.add(balance)
         
         # Update Balance and set Manual Flag
@@ -791,7 +814,7 @@ def set_manual_balance(current_user):
         db.session.commit()
         
         # FIX: Fetch ALL accounts to return complete updated state
-        all_accounts = AccountBalance.query.all()
+        all_accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
         
         return jsonify({
             "message": "Balance updated manually",
@@ -803,147 +826,310 @@ def set_manual_balance(current_user):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/accounts", methods=["GET"])
+
+def ensure_default_cash_wallet():
+    """Ensure the reserved physical-cash wallet exists (source=cash). Idempotent."""
+    if AccountBalance.query.filter_by(source="cash").first():
+        return
+    acc = AccountBalance(
+        source="cash",
+        display_name="Cash",
+        holder_name="",
+        account_kind="cash",
+        match_keywords=json.dumps(["cash"]),
+        accent_color="#22C55E",
+        sort_order=-1000,
+        current_balance=0.0,
+        last_updated=datetime.now(),
+        is_manual=False,
+    )
+    db.session.add(acc)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
+
+@app.route("/api/accounts", methods=["GET", "POST"])
 @token_required
 def get_accounts(current_user):
-    with app.app_context():
-        # 1. Start with fresh statement balance if possible
+    if request.method == "POST":
         try:
-            bank_data = fetch_latest_bank_email()
-            if "balances" in bank_data:
-                closing_bal = bank_data["balances"].get("closing_balance", 0.0)
-                email_date = bank_data.get("date") # Assuming fetch_latest_bank_email returns a datetime object
-                
-                bank_acc = AccountBalance.query.filter_by(source="bank").first()
-                if bank_acc:
-                    # CHECK MANUAL OVERRIDE & TIMESTAMP Logic
-                    should_update = True
-                    
-                    if bank_acc.is_manual:
-                        # LOCKED: Do not update if manual
-                        should_update = False
-                    
-                    # Also check TIMESTAMP: Only update if email is NEWER than last_updated
-                    # This prevents stale transaction emails from overwriting fresh statement data
-                    if email_date and bank_acc.last_updated:
-                        if email_date <= bank_acc.last_updated:
-                            print(f"⏭️  Stale email balance ({email_date}) ignored. Current balance is newer ({bank_acc.last_updated})")
-                            should_update = False
-                    
-                    if should_update:
-                        print(f"🔄 Updating Account Balance from Email: {closing_bal}")
-                        bank_acc.current_balance = closing_bal
-                        bank_acc.last_updated = datetime.now()
-                        bank_acc.is_manual = False  # Email update removes manual lock
-                    
-                    # SAVE TRANSACTIONS (Always process transactions, just don't overwrite balance if manual)
-                    extracted_txs = bank_data.get("transactions", [])
-                    new_tx_count = 0
-                    for tx in extracted_txs:
-                        try:
-                            tx_date = datetime.strptime(tx["date"], "%d/%m/%Y")
-                        except:
-                            tx_date = datetime.now()
+            data = request.get_json() or {}
+            display_name = (data.get("display_name") or "").strip()
+            if not display_name:
+                return jsonify({"error": "display_name is required"}), 400
+            holder_name = (data.get("holder_name") or data.get("account_holder_name") or "").strip()
+            account_kind = (data.get("account_kind") or "bank").strip()
+            if account_kind not in ("bank", "mobile_wallet", "cash", "digital_bank"):
+                account_kind = "bank"
+            if account_kind == "cash":
+                return jsonify({"error": "Cash is included automatically. Edit it from home."}), 400
+            raw_slug = (data.get("slug") or "").strip().lower()
+            base = raw_slug or re.sub(r"[^a-z0-9]+", "_", display_name.lower()).strip("_")[:48]
+            if not base:
+                base = "wallet"
+            slug = base
+            n = 2
+            while AccountBalance.query.filter_by(source=slug).first():
+                slug = f"{base}_{n}"
+                n += 1
+            if slug == "cash":
+                return jsonify({"error": "That name is reserved for built-in Cash."}), 400
+            kws = data.get("match_keywords")
+            if isinstance(kws, str):
+                kws = [x.strip() for x in kws.split(",") if x.strip()]
+            elif isinstance(kws, list):
+                kws = [str(x).strip() for x in kws if str(x).strip()]
+            else:
+                kws = [display_name]
+            nums = data.get("statement_account_numbers")
+            stmt_nums = None
+            if isinstance(nums, list) and nums:
+                stmt_nums = json.dumps([str(x).strip() for x in nums if str(x).strip()])
+            elif isinstance(nums, str) and nums.strip():
+                stmt_nums = nums.strip()
+            accent = (data.get("accent_color") or "#6366F1").strip()
+            initial = float(data.get("initial_balance", 0) or 0)
+            max_ord = db.session.query(func.max(AccountBalance.sort_order)).scalar()
+            max_ord = int(max_ord) if max_ord is not None else 0
+            acc = AccountBalance(
+                source=slug,
+                display_name=display_name,
+                holder_name=holder_name,
+                account_kind=account_kind,
+                match_keywords=json.dumps(kws),
+                statement_account_numbers=stmt_nums,
+                accent_color=accent,
+                sort_order=max_ord + 1,
+                current_balance=initial,
+                last_updated=datetime.now(),
+                is_manual=bool(initial),
+            )
+            db.session.add(acc)
+            db.session.commit()
+            return jsonify({"message": "Account created", "account": acc.to_dict()}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": str(e)}), 500
 
-                        # New Deduplication Logic:
-                        # 1. Search for ANY transaction with same Amount & Type within +/- 2 days.
-                        candidates = Transaction.query.filter(
-                            Transaction.amount == tx["amount"],
-                            Transaction.type == tx["type"],
-                            Transaction.date >= tx_date - timedelta(days=2),
-                            Transaction.date <= tx_date + timedelta(days=2)
-                        ).all()
+    with app.app_context():
+        ensure_default_cash_wallet()
+        # Statement email sync must NOT run on every GET: the app calls GET /api/accounts after
+        # categorize (fetchUserAccounts), and this block was overwriting bank.current_balance from
+        # stale email "closing_balance", undoing per-wallet ledger updates while transaction-based
+        # income/expense still changed — opt in with ?sync_statement=1 or ?sync_bank_email=1.
+        sync_statement = (
+            request.args.get("sync_statement", type=int) == 1
+            or request.args.get("sync_bank_email", type=int) == 1
+        )
+        if sync_statement:
+            # 1. Start with fresh statement balance if possible
+            try:
+                bank_data = fetch_latest_bank_email()
+                if "balances" in bank_data:
+                    closing_bal = bank_data["balances"].get("closing_balance", 0.0)
+                    email_date = bank_data.get("date") # Assuming fetch_latest_bank_email returns a datetime object
+                    
+                    bank_acc = AccountBalance.query.filter_by(source="bank").first()
+                    if not bank_acc:
+                        bank_acc = (
+                            AccountBalance.query.filter_by(account_kind="bank")
+                            .order_by(AccountBalance.sort_order, AccountBalance.id)
+                            .first()
+                        )
+                    if bank_acc:
+                        # CHECK MANUAL OVERRIDE & TIMESTAMP Logic
+                        should_update = True
                         
-                        # 🎯 ROBUST DEDUPLICATION using Hashing
-                        tx_hash = Transaction.generate_deterministic_hash({
-                            "date": tx_date,
-                            "amount": tx["amount"],
-                            "type": tx["type"],
-                            "description": tx["description"]
-                        })
+                        if bank_acc.is_manual:
+                            # LOCKED: Do not update if manual
+                            should_update = False
                         
-                        # Check existance by HASH (idempotent)
-                        exists = Transaction.query.filter_by(transaction_hash=tx_hash).first()
+                        # Also check TIMESTAMP: Only update if email is NEWER than last_updated
+                        # This prevents stale transaction emails from overwriting fresh statement data
+                        if email_date and bank_acc.last_updated:
+                            if email_date <= bank_acc.last_updated:
+                                print(f"⏭️  Stale email balance ({email_date}) ignored. Current balance is newer ({bank_acc.last_updated})")
+                                should_update = False
                         
-                        if not exists:
-                            # 🛡️ FALLBACK: Check for 'Similar' transaction (e.g. from SMS)
-                            # Checking +/- 2 days to account for statement vs SMS date differences
-                            exists = Transaction.query.filter(
+                        if should_update:
+                            print(f"🔄 Updating Account Balance from Email: {closing_bal}")
+                            bank_acc.current_balance = closing_bal
+                            bank_acc.last_updated = datetime.now()
+                            bank_acc.is_manual = False  # Email update removes manual lock
+                        
+                        # SAVE TRANSACTIONS (Always process transactions, just don't overwrite balance if manual)
+                        extracted_txs = bank_data.get("transactions", [])
+                        new_tx_count = 0
+                        for tx in extracted_txs:
+                            try:
+                                tx_date = datetime.strptime(tx["date"], "%d/%m/%Y")
+                            except:
+                                tx_date = datetime.now()
+
+                            # New Deduplication Logic:
+                            # 1. Search for ANY transaction with same Amount & Type within +/- 2 days.
+                            candidates = Transaction.query.filter(
                                 Transaction.amount == tx["amount"],
                                 Transaction.type == tx["type"],
                                 Transaction.date >= tx_date - timedelta(days=2),
                                 Transaction.date <= tx_date + timedelta(days=2)
-                            ).first()
-                            if exists:
-                                print(f"🔗 Similar transaction found (SMS overlap?): {tx_date.date()} | {tx['amount']}")
-                                # Update existing transaction with the statement hash if missing
-                                if not exists.transaction_hash:
-                                    exists.transaction_hash = tx_hash
+                            ).all()
+                            
+                            # 🎯 ROBUST DEDUPLICATION using Hashing
+                            tx_hash = Transaction.generate_deterministic_hash({
+                                "date": tx_date,
+                                "amount": tx["amount"],
+                                "type": tx["type"],
+                                "description": tx["description"]
+                            })
+                            
+                            # Check existance by HASH (idempotent)
+                            exists = Transaction.query.filter_by(transaction_hash=tx_hash).first()
+                            
+                            if not exists:
+                                # 🛡️ FALLBACK: Check for 'Similar' transaction (e.g. from SMS)
+                                # Checking +/- 2 days to account for statement vs SMS date differences
+                                exists = Transaction.query.filter(
+                                    Transaction.amount == tx["amount"],
+                                    Transaction.type == tx["type"],
+                                    Transaction.date >= tx_date - timedelta(days=2),
+                                    Transaction.date <= tx_date + timedelta(days=2)
+                                ).first()
+                                if exists:
+                                    print(f"🔗 Similar transaction found (SMS overlap?): {tx_date.date()} | {tx['amount']}")
+                                    # Update existing transaction with the statement hash if missing
+                                    if not exists.transaction_hash:
+                                        exists.transaction_hash = tx_hash
 
-                        if not exists:
+                            if not exists:
+                                desc_txt = (tx.get("description") or "")[:250]
+                                try:
+                                    new_tx = Transaction(
+                                        source="bank",
+                                        date=tx_date,
+                                        amount=tx["amount"],
+                                        type=tx["type"],
+                                        purpose="Uncategorized",
+                                        sender="Bank Statement",
+                                        receiver="Me",
+                                        notes=desc_txt,
+                                        transaction_hash=tx_hash,
+                                    )
+                                    # Nested transaction so a duplicate hash does not abort the whole GET /accounts session.
+                                    with db.session.begin_nested():
+                                        db.session.add(new_tx)
+                                        db.session.flush()
+                                    new_tx_count += 1
+                                    print(f"✅ Added new transaction: {tx_hash[:10]}...")
+                                except IntegrityError:
+                                    print(f"⏭️  Skipped duplicate transaction hash: {tx_hash[:10]}...")
+                                    continue
+                        
+                        if new_tx_count > 0:
                             try:
-                                new_tx = Transaction(
-                                    source="bank",
-                                    date=tx_date,
-                                    amount=tx["amount"],
-                                    type=tx["type"],
-                                    purpose="Uncategorized",
-                                    sender="Bank Statement",
-                                    receiver="Me",
-                                    notes=tx["description"][:250],
-                                    transaction_hash=tx_hash  # MUST set this!
-                                )
-                                db.session.add(new_tx)
-                                db.session.flush() # Force UNIQUE check
-                                new_tx_count += 1
-                                print(f"✅ Added new transaction: {tx_hash[:10]}...")
+                                 send_push_to_all(
+                                     title="New Bank Transactions",
+                                     body=f"Found {new_tx_count} new transaction(s) from your bank statement."
+                                 )
                             except Exception as e:
-                                db.session.rollback()
-                                print(f"⏭️  Duplicate tx_hash group detected (race condition parented): {e}")
-                                continue
-                    
-                    if new_tx_count > 0:
-                        try:
-                             send_push_to_all(
-                                 title="New Bank Transactions",
-                                 body=f"Found {new_tx_count} new transaction(s) from your bank statement."
-                             )
-                        except Exception as e:
-                             print(f"⚠️ Push failed in get_accounts: {e}")
+                                 print(f"⚠️ Push failed in get_accounts: {e}")
 
-                    db.session.commit()
-        except:
-            pass
+                        db.session.commit()
+            except Exception as sync_err:
+                print(f"⚠️ get_accounts bank email sync skipped: {sync_err}")
+                db.session.rollback()
 
-        # 2. Fetch all accounts
-        accounts = AccountBalance.query.all()
-        
-        # 3. Calculate LIVE Balance (Statement + Recent SMS Adjustments)
-        # Note: Savings are now Transaction-based, so we simply return the current_balance
-        # which already has savings deducted.
-        
+        # 2. Fetch all accounts (ordered for dashboard)
+        accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+
         response_data = []
-        cutoff_date = datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
         for acc in accounts:
             acc_dict = acc.to_dict()
-            
-            if acc.source == 'bank':
-                # SIMPLIFICATON: The AccountBalance table *is* the running balance.
-                # SMS transactions update it directly (via sms_parser.py).
-                # Manual updates update it directly.
-                # Email statements overwrite it (logic above).
-                # validation: We do NOT need to calculate an adjustment here, as that causes double-counting.
-                
-                # Update response
-                acc_dict['balance'] = acc.current_balance
-                acc_dict['statement_base'] = acc.current_balance
-                acc_dict['live_adjustment'] = 0.0
-                acc_dict['savings_reduction'] = 0.0 
-                
+            acc_dict["statement_base"] = acc.current_balance
+            acc_dict["live_adjustment"] = 0.0
+            acc_dict["savings_reduction"] = 0.0
             response_data.append(acc_dict)
 
         return jsonify(response_data)
+
+
+@app.route("/api/accounts/<int:account_id>", methods=["PUT", "DELETE"])
+@token_required
+def manage_single_account(current_user, account_id):
+    acc = AccountBalance.query.get(account_id)
+    if not acc:
+        return jsonify({"error": "Account not found"}), 404
+    if request.method == "DELETE":
+        if acc.source == "cash":
+            return jsonify({"error": "The Cash wallet cannot be deleted."}), 400
+        try:
+            db.session.delete(acc)
+            db.session.commit()
+            return jsonify({"message": "Deleted"}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": str(e)}), 500
+    if acc.source == "cash":
+        return jsonify({"error": "Cash only supports balance updates from the app."}), 400
+    try:
+        data = request.get_json() or {}
+        if "display_name" in data:
+            acc.display_name = (data.get("display_name") or acc.display_name).strip()
+        if "holder_name" in data or "account_holder_name" in data:
+            hn = data.get("holder_name") if "holder_name" in data else data.get("account_holder_name")
+            acc.holder_name = (hn or "").strip()
+        if "account_kind" in data:
+            ak = (data.get("account_kind") or "").strip()
+            if ak == "cash" and acc.source != "cash":
+                return jsonify({"error": "Use the built-in Cash wallet for physical cash."}), 400
+            if ak in ("bank", "mobile_wallet", "cash", "digital_bank"):
+                acc.account_kind = ak
+        if "match_keywords" in data:
+            kws = data.get("match_keywords")
+            if isinstance(kws, str):
+                kws = [x.strip() for x in kws.split(",") if x.strip()]
+            if isinstance(kws, list):
+                acc.match_keywords = json.dumps([str(x).strip() for x in kws if str(x).strip()])
+        if "statement_account_numbers" in data:
+            nums = data.get("statement_account_numbers")
+            if nums is None or nums == []:
+                acc.statement_account_numbers = None
+            elif isinstance(nums, list):
+                acc.statement_account_numbers = json.dumps(
+                    [str(x).strip() for x in nums if str(x).strip()]
+                )
+            elif isinstance(nums, str) and nums.strip():
+                acc.statement_account_numbers = nums.strip()
+        if "accent_color" in data:
+            acc.accent_color = (data.get("accent_color") or acc.accent_color).strip()
+        if "sort_order" in data:
+            acc.sort_order = int(data.get("sort_order") or 0)
+        acc.last_updated = datetime.now()
+        db.session.commit()
+        return jsonify({"account": acc.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/accounts/match", methods=["POST"])
+@token_required
+def match_notification_account(current_user):
+    """Pick which wallet/account a push notification likely belongs to (keyword + title matching)."""
+    data = request.get_json() or {}
+    accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+    m = match_account_for_notification(
+        accounts,
+        data.get("title") or "",
+        data.get("text") or "",
+        data.get("packageName") or data.get("package_name") or "",
+    )
+    if not m:
+        return jsonify({"match": None}), 200
+    return jsonify({"match": m.to_dict()}), 200
+
 
 @app.route("/api/savings-goals", methods=["GET", "POST"])
 @token_required
@@ -1144,6 +1330,8 @@ def calculate_month_expenses(year, month):
 
     running = 0.0
     for txn in transactions:
+        if is_own_account_transfer_row(txn):
+            continue
         if txn.type == 'debit':
             running += txn.amount
         elif txn.type == 'credit':
@@ -1172,6 +1360,7 @@ def get_total_expenses(current_user):
             Transaction.type        == 'debit',
             Transaction.is_deleted  != True,
             Transaction.is_spam     != True,
+            exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
 
         total_credits = db.session.query(func.sum(Transaction.amount)).filter(
@@ -1180,6 +1369,7 @@ def get_total_expenses(current_user):
             Transaction.type        == 'credit',
             Transaction.is_deleted  != True,
             Transaction.is_spam     != True,
+            exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
 
         # --- Persist to Budget.total_expenses ---
@@ -1231,7 +1421,8 @@ def get_monthly_summary_from_db(current_user):
             extract('month', Transaction.date) == dt.month,
             Transaction.is_deleted != True,
             Transaction.is_spam != True,
-            Transaction.categorization_status != 'pending'
+            Transaction.categorization_status != 'pending',
+            exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
 
         # Dynamic Income Calculation 
@@ -1241,7 +1432,8 @@ def get_monthly_summary_from_db(current_user):
             Transaction.type == 'credit',
             Transaction.is_deleted != True,
             Transaction.is_spam != True,
-            Transaction.categorization_status != 'pending'
+            Transaction.categorization_status != 'pending',
+            exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
         
         # Check budget for income override
@@ -1431,7 +1623,8 @@ def get_budget_history():
                 extract('month', Transaction.date) == dt.month,
                 Transaction.is_deleted != True,
                 Transaction.is_spam != True,
-                Transaction.categorization_status != 'pending'
+                Transaction.categorization_status != 'pending',
+                exclude_own_account_transfer_sql(),
             ).scalar() or 0.0
             
             fresh_income = db.session.query(func.sum(Transaction.amount)).filter(
@@ -1440,7 +1633,8 @@ def get_budget_history():
                 Transaction.type == 'credit',
                 Transaction.is_deleted != True,
                 Transaction.is_spam != True,
-                Transaction.categorization_status != 'pending'
+                Transaction.categorization_status != 'pending',
+                exclude_own_account_transfer_sql(),
             ).scalar() or 0.0
             
             # Use stored balance if available, otherwise 0
@@ -1526,6 +1720,13 @@ def easypaisa_latest():
     
     return jsonify(result)
 
+@app.route("/api/debug/push-status", methods=["GET"])
+@token_required
+def debug_push_status(current_user):
+    """Diagnose FCM on the server (credentials, project id, token count). Auth required."""
+    return jsonify(get_push_service_diagnostics()), 200
+
+
 @app.route("/api/send-test", methods=["POST"])
 def send_test_push():
     send_push_to_all(
@@ -1557,7 +1758,8 @@ def get_analytics_trend():
                     func.date(Transaction.date) == target_date,
                     Transaction.is_deleted != True,
                     Transaction.is_spam != True,
-                    Transaction.categorization_status != 'pending'
+                    Transaction.categorization_status != 'pending',
+                    exclude_own_account_transfer_sql(),
                 )
                 .scalar() or 0.0
             )
@@ -1583,7 +1785,8 @@ def get_analytics_trend():
                     extract('month', Transaction.date) == target_date.month,
                     Transaction.is_deleted != True,
                     Transaction.is_spam != True,
-                    Transaction.categorization_status != 'pending'
+                    Transaction.categorization_status != 'pending',
+                    exclude_own_account_transfer_sql(),
                 )
                 .scalar() or 0.0
             )
@@ -1607,7 +1810,8 @@ def get_analytics_trend():
                     extract('month', Transaction.date) == i,
                     Transaction.is_deleted != True,
                     Transaction.is_spam != True,
-                    Transaction.categorization_status != 'pending'
+                    Transaction.categorization_status != 'pending',
+                    exclude_own_account_transfer_sql(),
                 )
                 .scalar() or 0.0
             )
@@ -1630,7 +1834,8 @@ def get_analytics_trend():
                     extract('year', Transaction.date) == year,
                     Transaction.is_deleted != True,
                     Transaction.is_spam != True,
-                    Transaction.categorization_status != 'pending'
+                    Transaction.categorization_status != 'pending',
+                    exclude_own_account_transfer_sql(),
                 )
                 .scalar() or 0.0
             )
@@ -1676,7 +1881,8 @@ def top_spending_categories():
         Transaction.purpose != 'Uncategorized',
         Transaction.is_deleted != True,
         Transaction.is_spam != True,
-        Transaction.categorization_status != 'pending'
+        Transaction.categorization_status != 'pending',
+        exclude_own_account_transfer_sql(),
     )
 
     if period == 'week':
@@ -1859,11 +2065,25 @@ def process_sms():
         
         status_msg = "recorded" if is_new else "already exists"
         print(f"✅ SMS transaction {status_msg}: {transaction.id}")
+        try:
+            log_wallet_attribution(
+                "SMS_API_AFTER_PROCESS",
+                transaction_id=transaction.id,
+                is_new=is_new,
+                resolved_wallet_slug=getattr(transaction, "account_balance_source", None),
+                txn_type=transaction.type,
+                amount=transaction.amount,
+                purpose=getattr(transaction, "purpose", None),
+                txn_sender=getattr(transaction, "sender", None),
+                txn_receiver=getattr(transaction, "receiver", None),
+            )
+        except Exception as _e:
+            print(f"⚠️ wallet attribution log: {_e}")
         
         from model import AccountBalance
         accounts = [acc.to_dict() for acc in AccountBalance.query.all()]
         
-        if True: # Always try to send if we have tokens (send_push_to_all handles the check)
+        if is_new and not is_own_account_transfer_row(transaction):
             try:
                 if transaction.type == 'debit':
                     merchant = transaction.receiver or "Merchant"
@@ -2178,12 +2398,26 @@ def update_category(id):
 @app.route('/api/transactions/<int:id>', methods=['PUT'])
 def update_transaction(id):
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         txn = Transaction.query.get(id)
         if not txn:
             return jsonify({"error": "Transaction not found"}), 404
-        
-        # Update category
+
+        prev_status = txn.categorization_status
+        slug_hint = (
+            (data.get("account_balance_source") or data.get("balance_account_slug") or "")
+            .strip()
+            .lower()
+        )
+
+        # Ledger must run *before* overwriting purpose — self-transfer detection uses purpose.
+        will_finalize = ("category_id" in data) or ("purpose" in data)
+        if prev_status == "pending" and will_finalize:
+            if not getattr(txn, "balance_applied", False):
+                apply_pending_transaction_ledger(
+                    txn, balance_slug_override=slug_hint or None
+                )
+
         if "category_id" in data:
             txn.category_id = data["category_id"]
             category = Category.query.get(data["category_id"])
@@ -2201,7 +2435,7 @@ def update_transaction(id):
             
         if "notes" in data:
             txn.notes = data["notes"]
-            
+
         db.session.commit()
         return jsonify({
             "message": "Transaction updated", 
@@ -2233,11 +2467,26 @@ def bulk_categorize_transactions(current_user):
         category = Category.query.get(category_id)
         if not category:
             return jsonify({"error": "Category not found"}), 404
-        
+
+        slug_hint = ""
+        if isinstance(data, dict):
+            slug_hint = (
+                (data.get("account_balance_source") or data.get("balance_account_slug") or "")
+                .strip()
+                .lower()
+            )
+
         updated_count = 0
         for tx_id in transaction_ids:
             tx = Transaction.query.get(tx_id)
             if tx:
+                prev_status = tx.categorization_status
+                # Ledger while purpose still marks self-transfer (e.g. Easypaisa → bank).
+                if prev_status == 'pending':
+                    if not getattr(tx, "balance_applied", False):
+                        apply_pending_transaction_ledger(
+                            tx, balance_slug_override=slug_hint or None
+                        )
                 tx.category_id = category_id
                 tx.purpose = category.name
                 tx.categorization_status = 'manual'
@@ -2374,7 +2623,8 @@ def get_monthly_category_totals(current_user):
             Transaction.date < end_date,
             Transaction.is_deleted == False,
             Transaction.purpose.isnot(None),
-            Transaction.purpose.ilike('Uncategorized') == False
+            Transaction.purpose.ilike('Uncategorized') == False,
+            exclude_own_account_transfer_sql(),
         ).group_by(Transaction.purpose).all()
         
         sorted_totals = sorted(
@@ -2876,43 +3126,64 @@ def calculate_statement(current_user):
         
         # ----------------------------------------------------------------------
         # OPTIMIZED BALANCE APPLICATION (ON CALCULATION IF UNREAD)
-        # Only apply closing balance to AccountBalance if UNREAD
+        # Map statement PDF → one AccountBalance row; only update that wallet.
         # ----------------------------------------------------------------------
         balance_update_message = ""
-        
+        wallet_match_info = {
+            "reason": None,
+            "detail": None,
+            "account_balance_source": stmt_analysis.account_balance_source,
+        }
+
         if not stmt_analysis.reviewed_at:
-            from model import AccountBalance
-            account_balance = AccountBalance.query.filter_by(source='bank').first()
-            
-            if account_balance:
-                old_balance = account_balance.current_balance
-                
-                # FIX: SET to closing balance (don't add)
-                # This replaces the balance with the statement's closing value
-                account_balance.current_balance = close_bal
-                account_balance.last_updated = datetime.now()
-                # FIX: Remove manual lock as Statement is the new Truth
-                account_balance.is_manual = False
-                
-                balance_update_message = f"Balance SET from {old_balance:,.2f} to {close_bal:,.2f}"
-                print(f"✅ {balance_update_message}")
-            else:
-                account_balance = AccountBalance(
-                    source='bank',
-                    current_balance=close_bal,
-                    last_updated=datetime.utcnow(),
-                    is_manual=False
+            from config import TARGET_ACCOUNT_NUMBER
+            from statement_wallet_match import resolve_account_balance_for_statement
+
+            ab_row, match_reason, match_detail = resolve_account_balance_for_statement(
+                result.get("statement_detected_account_numbers"),
+                result.get("statement_matching_text"),
+                TARGET_ACCOUNT_NUMBER,
+            )
+            wallet_match_info["reason"] = match_reason
+            wallet_match_info["detail"] = match_detail
+            print(f"[statement] wallet resolve: {match_reason} — {match_detail}")
+
+            if ab_row is None:
+                balance_update_message = (
+                    "Transactions saved; closing balance not written to any wallet until mapping is resolved. "
+                    + match_detail
                 )
-                db.session.add(account_balance)
-                balance_update_message = f"Balance set to {close_bal:.2f} (Marked Read)"
-            
-            stmt_analysis.balance_applied = True
-            stmt_analysis.reviewed_at = datetime.utcnow()  # MARK AS READ IMMEDIATELY
-            print(f"✅ UNREAD Statement {month_str} processed & balance added.")
+                stmt_analysis.processing_status = "partial"
+                prev = (stmt_analysis.processing_notes or "").strip()
+                note = f"Balance mapping: {match_reason} — {match_detail}"
+                stmt_analysis.processing_notes = (prev + "\n" + note).strip() if prev else note
+            else:
+                stmt_analysis.account_balance_source = ab_row.source
+                wallet_match_info["account_balance_source"] = ab_row.source
+                stmt_analysis.processing_status = "success"
+
+                old_balance = ab_row.current_balance
+                ab_row.current_balance = close_bal
+                ab_row.last_updated = datetime.now()
+                ab_row.is_manual = False
+
+                balance_update_message = (
+                    f"Balance SET on `{ab_row.source}` ({ab_row.display_name or ab_row.source}) "
+                    f"from {old_balance:,.2f} to {close_bal:,.2f}"
+                )
+                print(f"✅ {balance_update_message}")
+
+                stmt_analysis.balance_applied = True
+                stmt_analysis.reviewed_at = datetime.utcnow()
+                print(f"✅ UNREAD Statement {month_str} processed & balance applied.")
         else:
             balance_update_message = "Statement already read - no balance update."
-        
+            wallet_match_info["reason"] = "already_reviewed"
+            wallet_match_info["detail"] = month_str
+
         db.session.commit()
+        db.session.refresh(stmt_analysis)
+        stmt_dict = stmt_analysis.to_dict()
         print(f"✅ Updated StatementAnalysis for {month_str}")
 
         # --- TRIGGER AI ANALYSIS ---
@@ -2925,8 +3196,10 @@ def calculate_statement(current_user):
             "balances": {"opening": open_bal, "closing": close_bal},
             "balance_update": balance_update_message,
             "processing_status": stmt_analysis.processing_status,
-            "read_status": "read", # It was just marked read above
-            "balance_matches": True
+            "read_status": "read" if stmt_analysis.reviewed_at else "unread",
+            "balance_matches": stmt_dict.get("balance_matches", True),
+            "account_balance_source": stmt_analysis.account_balance_source,
+            "statement_wallet_match": wallet_match_info,
         }
         # ---------------------------------------------------------
         # DRIVE BACKUP TRIGGER
@@ -2981,6 +3254,30 @@ def get_last_sms_sync(current_user):
                 "source": "empty_db"
             })
             
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/notifications/ingest", methods=["POST"])
+@token_required
+def api_notifications_ingest(current_user):
+    try:
+        data = request.get_json(force=True, silent=True) or {}
+        result = ingest_notification_for_user(current_user.id, data)
+        code = 201 if result.get("created") else 200
+        return jsonify(result), code
+    except Exception as e:
+        print(f"❌ notifications ingest: {e}")
+        return jsonify({"error": str(e), "status": "error"}), 500
+
+
+@app.route("/api/notifications", methods=["GET"])
+@token_required
+def api_notifications_list(current_user):
+    try:
+        limit = request.args.get("limit", 100, type=int)
+        items = list_notifications_for_user(current_user.id, limit=limit)
+        return jsonify({"notifications": items}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -3051,7 +3348,8 @@ def calculate_summary_endpoint():
         total_income = db.session.query(func.sum(Transaction.amount)).filter(
             extract('year', Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
-            Transaction.type == 'credit'
+            Transaction.type == 'credit',
+            exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
         
         total_expense = db.session.query(
@@ -3062,7 +3360,8 @@ def calculate_summary_endpoint():
             ))
         ).filter(
             extract('year', Transaction.date) == dt.year,
-            extract('month', Transaction.date) == dt.month
+            extract('month', Transaction.date) == dt.month,
+            exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
         
         total_savings = total_income - total_expense
@@ -3242,27 +3541,38 @@ def mark_statement_as_read(current_user):
     # Only if NOT already applied
     if not stmt.balance_applied:
         close_bal = stmt.closing_balance
-        account_balance = AccountBalance.query.filter_by(source='bank').first()
-        
-        if account_balance:
-            old_balance = account_balance.current_balance
-            
-            # FIX: SET Balance (Overwrite)
-            account_balance.current_balance = close_bal
-            account_balance.last_updated = datetime.utcnow()
-            account_balance.is_manual = False # FIX: Unlock manual
-            
-            print(f"💰 [mark-read] SET Balance: {old_balance} -> {close_bal}")
+        slug = getattr(stmt, "account_balance_source", None) or None
+        if slug:
+            account_balance = AccountBalance.query.filter_by(source=slug).first()
         else:
+            account_balance = AccountBalance.query.filter_by(source="bank").first()
+
+        if not account_balance and not slug:
             account_balance = AccountBalance(
-                source='bank',
+                source="bank",
+                display_name="Bank Account",
+                holder_name="",
+                account_kind="bank",
+                match_keywords=json.dumps(["bank", "hbl", "statement"]),
+                accent_color="#A855F7",
+                sort_order=0,
                 current_balance=close_bal,
                 last_updated=datetime.utcnow(),
-                is_manual=False
+                is_manual=False,
             )
             db.session.add(account_balance)
-            print(f"💰 [mark-read] SET Balance: {close_bal}")
-            
+            print(f"💰 [mark-read] created default bank row with balance {close_bal}")
+        elif not account_balance:
+            return jsonify({
+                "error": f"No AccountBalance row for source `{slug}`. Check account_balance_source on this statement."
+            }), 400
+
+        old_balance = account_balance.current_balance
+        account_balance.current_balance = close_bal
+        account_balance.last_updated = datetime.utcnow()
+        account_balance.is_manual = False
+        print(f"💰 [mark-read] SET Balance on `{account_balance.source}`: {old_balance} -> {close_bal}")
+
         stmt.balance_applied = True
 
     if not stmt.reviewed_at:
@@ -3282,67 +3592,84 @@ def mark_statement_as_read(current_user):
 def create_transaction(current_user):
     try:
         data = request.get_json()
-        
-        amount = float(data.get('amount', 0))
+
+        amount = float(data.get("amount", 0))
         if amount <= 0:
             return jsonify({"error": "Amount must be positive"}), 400
-            
-        t_type = data.get('type', 'debit') # 'debit' or 'credit'
-        purpose = data.get('category', 'Uncategorized')
-        notes = data.get('notes', '')
-        date_str = data.get('date')
-        
+
+        t_type = (data.get("type") or "debit").strip().lower()
+        if t_type not in ("debit", "credit"):
+            return jsonify({"error": "type must be debit or credit"}), 400
+
+        purpose = data.get("category", "Uncategorized")
+        notes = data.get("notes", "")
+        date_str = data.get("date")
+
+        slug = (
+            (data.get("account_balance_source") or data.get("wallet_slug") or data.get("balance_account_slug") or "")
+            .strip()
+            .lower()
+        )
+        if not slug:
+            return jsonify(
+                {"error": "account_balance_source is required (wallet slug, e.g. bank, easypaisa, cash)"}
+            ), 400
+
         tx_date = datetime.utcnow()
         if date_str:
             try:
                 tx_date = datetime.strptime(date_str, "%Y-%m-%d")
-            except:
+            except Exception:
                 pass
 
         new_tx = Transaction(
-            source='manual',
+            source="manual",
             date=tx_date,
             amount=amount,
             type=t_type,
             purpose=purpose,
-            sender='Manual Entry',
-            receiver='Me' if t_type == 'credit' else 'Merchant',
+            sender="Manual Entry",
+            receiver="Me" if t_type == "credit" else "Merchant",
             notes=notes,
-            categorization_status='confirmed'
+            categorization_status="confirmed",
+            account_balance_source=slug,
+            balance_applied=False,
         )
-        
+
         db.session.add(new_tx)
-        db.session.flush()  # Get transaction ID
-        
-        # FIX: UPDATE ACCOUNT BALANCE ALWAYS
-        balance = AccountBalance.query.filter_by(source='bank').first()
-        if not balance:
-            balance = AccountBalance.query.first()
-            
-        if balance:
-            if t_type == 'credit':
-                balance.current_balance += amount
-                print(f"💰 Balance increased by {amount}: {balance.current_balance}")
-            elif t_type == 'debit':
-                balance.current_balance -= amount
-                print(f"💸 Balance decreased by {amount}: {balance.current_balance}")
-            
-            balance.last_updated = datetime.now()
-        
+        db.session.flush()
+
+        ensure_account_balance_row(slug)
+        try:
+            log_wallet_attribution(
+                "MANUAL_TXN_CREATED",
+                transaction_id=new_tx.id,
+                resolved_wallet_slug=slug,
+                txn_type=t_type,
+                amount=amount,
+                purpose=purpose,
+                note="Manual entry: ledger apply next (credit +, debit − on selected wallet)",
+            )
+        except Exception:
+            pass
+
+        apply_pending_transaction_ledger(new_tx, respect_manual_lock=False)
+
         db.session.commit()
-        
-        return jsonify({
-            "message": "Transaction added successfully",
-            "transaction": {
-                "id": new_tx.id,
-                "amount": new_tx.amount,
-                "purpose": new_tx.purpose,
-                "date": new_tx.date.strftime("%Y-%m-%d"),
-                "type": new_tx.type
-            },
-            "new_balance": balance.current_balance if balance else None
-        }), 201
-        
+
+        accounts = [
+            acc.to_dict()
+            for acc in AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+        ]
+
+        return jsonify(
+            {
+                "message": "Transaction added successfully",
+                "transaction": new_tx.to_dict(),
+                "accounts": accounts,
+            }
+        ), 201
+
     except Exception as e:
         db.session.rollback()
         print(f"❌ Transaction creation error: {e}")

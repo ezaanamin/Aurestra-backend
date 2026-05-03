@@ -1,4 +1,6 @@
 
+import json
+
 from app import app, db, fetch_latest_bank_email, Transaction, AccountBalance, SavingsGoal
 from datetime import datetime
 
@@ -16,7 +18,16 @@ with app.app_context():
             closing_bal = bank_data["balances"].get("closing_balance", 0.0)
             bank_acc = AccountBalance.query.filter_by(source="bank").first()
             if not bank_acc:
-                bank_acc = AccountBalance(source="bank", current_balance=0.0)
+                bank_acc = AccountBalance(
+                    source="bank",
+                    display_name="Bank Account",
+                    holder_name="",
+                    account_kind="bank",
+                    match_keywords=json.dumps(["bank", "hbl", "statement"]),
+                    accent_color="#A855F7",
+                    sort_order=0,
+                    current_balance=0.0,
+                )
                 db.session.add(bank_acc)
             
             bank_acc.current_balance = closing_bal

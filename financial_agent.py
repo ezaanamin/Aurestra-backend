@@ -5,6 +5,7 @@ from calendar import monthrange
 from database import app, db
 from model import Transaction, Budget, FinancialInsight
 from sqlalchemy import extract, func
+from transfer_matching import exclude_own_account_transfer_sql
 
 class FinancialAgent:
     def __init__(self):
@@ -39,7 +40,8 @@ class FinancialAgent:
             extract('month', Transaction.date) == month,
             Transaction.is_deleted != True,
             Transaction.is_spam != True,
-            Transaction.categorization_status != 'pending'
+            Transaction.categorization_status != 'pending',
+            exclude_own_account_transfer_sql(),
         ).all()
 
     def fetch_budget(self, year, month):

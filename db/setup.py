@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
 db/setup.py — One-shot database setup for Aurestra.
-Runs migrations + seeds for both SQLite and PostgreSQL.
+Runs migrations + seeds for both SQLite and PostgreSQL (schemas match backend/model.py).
 
 Usage (from backend/):
-    python3 db/setup.py
+    python3 db/setup.py                    # SQLite + PostgreSQL (if DATABASE_URL or DB_* set)
+    python3 db/setup.py --sqlite-only
+    python3 db/setup.py --pg-only
+    python3 db/setup.py --reset            # DROP all tables first (asks for confirmation)
 
-Options:
-    --sqlite-only    Skip PostgreSQL
-    --pg-only        Skip SQLite
-    --reset          Drop and recreate all tables (DANGER: destroys data)
+PostgreSQL: set DATABASE_URL or DB_USER + DB_NAME (+ DB_HOST / DB_PASSWORD as needed),
+same as backend/database.py. After seeding, SERIAL sequences are synced for explicit ids.
 """
 
 import os
@@ -29,10 +30,45 @@ SEEDERS_DIR      = os.path.join(HERE, "seeders")
 
 # Tables must be created in this order (FK dependencies)
 TABLE_ORDER = [
-    "users", "categories", "categorization_rules", "account_balances",
-    "transactions", "budgets", "savings_goals", "monthly_balances",
-    "sms_history", "device_tokens", "financial_insights", "statement_analysis",
+    "users",
+    "categories",
+    "categorization_rules",
+    "account_balances",
+    "transactions",
+    "device_notifications",  # FK → users, transactions
+    "budgets",
+    "savings_goals",
+    "monthly_balances",
+    "sms_history",
+    "device_tokens",
+    "financial_insights",
+    "statement_analysis",
 ]
+
+
+def _sync_postgres_serial_sequences(engine) -> None:
+    """
+    After seeders INSERT explicit ids, bump SERIAL sequences so the next ORM INSERT does not
+    collide (PostgreSQL only).
+    """
+    if engine.dialect.name != "postgresql":
+        return
+    with engine.connect() as conn:
+        for table in TABLE_ORDER:
+            try:
+                seq = conn.execute(
+                    text("SELECT pg_get_serial_sequence(:t, 'id')"), {"t": table}
+                ).scalar()
+                if not seq:
+                    continue
+                mx = conn.execute(text(f"SELECT MAX(id) FROM {table}")).scalar()
+                if mx is None:
+                    continue
+                conn.execute(text("SELECT setval(:seq, :mx, true)"), {"seq": seq, "mx": int(mx)})
+            except Exception as e:
+                print(f"  ⚠️  [PostgreSQL] sequence sync skipped for {table}: {e}")
+        conn.commit()
+    print("  🔢 [PostgreSQL] SERIAL sequences synced to MAX(id).")
 
 
 def _strip_sql_comments(sql: str) -> str:
@@ -175,6 +211,7 @@ def setup_postgres(reset: bool = False):
 
     print("  🌱 Seeding tables...")
     run_all_seeders(engine, "postgres", "PostgreSQL")
+    _sync_postgres_serial_sequences(engine)
 
 
 def main():

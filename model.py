@@ -77,6 +77,10 @@ class Transaction(db.Model):
     categorization_status = db.Column(db.String(20), default='pending')  # 'pending', 'categorized', 'auto', 'manual'
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)  # Proper FK relationship
 
+    # Wallet slug for balance (e.g. bank, easypaisa); ledger applied when user categorizes if balance_applied is False
+    account_balance_source = db.Column(db.String(64), nullable=True)
+    balance_applied = db.Column(db.Boolean, nullable=False, default=True)
+
     is_deleted = db.Column(db.Boolean, default=False)
     is_spam = db.Column(db.Boolean, default=False)
 
@@ -121,6 +125,8 @@ class Transaction(db.Model):
             "type": self.type,
             "categorization_status": self.categorization_status,
             "category_id": self.category_id,
+            "account_balance_source": self.account_balance_source,
+            "balance_applied": self.balance_applied,
             "is_deleted": self.is_deleted,
             "is_spam": self.is_spam,
             "created_at": self.created_at.isoformat() if self.created_at else None
@@ -153,6 +159,65 @@ class SMSHistory(db.Model):
         }
 
 
+class DeviceNotification(db.Model):
+    """Android notification captured by the device listener (all apps, user-scoped)."""
+
+    __tablename__ = "device_notifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+    notification_key = db.Column(db.String(512), nullable=True)
+    dedupe_hash = db.Column(db.String(64), nullable=False)
+    package_name = db.Column(db.String(255), nullable=True)
+    title = db.Column(db.Text, nullable=True)
+    body = db.Column(db.Text, nullable=True)
+    combined_message = db.Column(db.Text, nullable=True)
+    post_time_ms = db.Column(db.BigInteger, nullable=True)
+    messaging_style_json = db.Column(db.Text, nullable=True)
+    client_parsed_json = db.Column(db.Text, nullable=True)
+    is_transactional = db.Column(db.Boolean, default=False)
+    parse_attempted = db.Column(db.Boolean, default=False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey("transactions.id"), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint("user_id", "dedupe_hash", name="uq_device_notif_user_dedupe"),)
+
+    def to_dict(self):
+        import json
+
+        msg_lines = []
+        if self.messaging_style_json:
+            try:
+                msg_lines = json.loads(self.messaging_style_json)
+            except (json.JSONDecodeError, TypeError):
+                msg_lines = []
+
+        cp = None
+        if self.client_parsed_json:
+            try:
+                cp = json.loads(self.client_parsed_json)
+            except (json.JSONDecodeError, TypeError):
+                cp = None
+
+        return {
+            "id": self.id,
+            "notification_key": self.notification_key,
+            "dedupe_hash": self.dedupe_hash,
+            "package_name": self.package_name,
+            "title": self.title,
+            "body": self.body,
+            "combined_message": self.combined_message,
+            "post_time_ms": self.post_time_ms,
+            "messaging_lines": msg_lines if isinstance(msg_lines, list) else [],
+            "client_parsed": cp,
+            "is_transactional": bool(self.is_transactional),
+            "transaction_id": self.transaction_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 class Budget(db.Model):
    
     __tablename__ = "budgets"
@@ -177,36 +242,85 @@ class Budget(db.Model):
 
 class AccountBalance(db.Model):
     """
-    Stores current balances for each account/wallet.
-    Updated whenever transactions are processed.
+    Stores current balances for each account/wallet (multiple rows allowed).
+    `source` is a stable slug used as Transaction.source and in APIs (unique).
     """
     __tablename__ = "account_balances"
-    
-    id = db.Column(db.Integer, primary_key=True)
-    
-    # Account source (matches Transaction.source)
-    source = db.Column(db.String(50), nullable=False, unique=True)  # e.g., "bank", "jazzcash", "easypaisa"
-    
-    # Current balance
-    current_balance = db.Column(db.Float, nullable=False, default=0.0)
-    
-    # Last update timestamp
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # NEW: Manual override flag
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Stable machine id / slug (matches Transaction.source), e.g. bank, jazzcash, hbl_main
+    source = db.Column(db.String(64), nullable=False, unique=True)
+
+    display_name = db.Column(db.String(120), nullable=False, default="")
+    # Legal / preferred account-holder name as printed by the bank (not the institution label).
+    holder_name = db.Column(db.String(160), nullable=False, default="")
+    # bank | mobile_wallet | cash | digital_bank
+    account_kind = db.Column(db.String(40), nullable=False, default="bank")
+    # JSON array of strings, matched case-insensitively against notification title/body
+    match_keywords = db.Column(db.Text, nullable=False, default="[]")
+    accent_color = db.Column(db.String(24), nullable=False, default="#6366F1")
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+    current_balance = db.Column(db.Float, nullable=False, default=0.0)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_manual = db.Column(db.Boolean, default=False)
-    
+    # JSON array of digit strings (full or partial account numbers) to match e-statement PDF text
+    statement_account_numbers = db.Column(db.Text, nullable=True)
+
+    KIND_LABELS = {
+        "bank": "BANK ACCOUNT",
+        "mobile_wallet": "MOBILE WALLET",
+        "cash": "PHYSICAL CASH",
+        "digital_bank": "DIGITAL BANK",
+    }
+
     def __repr__(self):
-        return f"<AccountBalance {self.source} | Balance: {self.current_balance:.2f}>"
-    
-    
+        return f"<AccountBalance {self.source} | {self.display_name} | {self.current_balance:.2f}>"
+
+    def kind_label(self) -> str:
+        return self.KIND_LABELS.get((self.account_kind or "").strip(), "ACCOUNT")
+
+    def keywords_list(self):
+        import json
+
+        try:
+            data = json.loads(self.match_keywords or "[]")
+            if isinstance(data, list):
+                return [str(x).strip() for x in data if str(x).strip()]
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return []
+
+    def statement_account_numbers_list(self):
+        import json
+
+        raw = self.statement_account_numbers
+        if not raw or not str(raw).strip():
+            return []
+        try:
+            data = json.loads(raw)
+            if isinstance(data, list):
+                return [str(x).strip() for x in data if str(x).strip()]
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return []
+
     def to_dict(self):
-        """Convert to dictionary for API responses"""
         return {
             "id": self.id,
             "source": self.source,
+            "display_name": self.display_name or self.source,
+            "holder_name": (self.holder_name or "").strip(),
+            "account_kind": self.account_kind or "bank",
+            "kind_label": self.kind_label(),
+            "match_keywords": self.keywords_list(),
+            "accent_color": self.accent_color or "#6366F1",
+            "sort_order": self.sort_order or 0,
             "balance": self.current_balance,
-            "last_updated": self.last_updated.isoformat() if self.last_updated else None
+            "last_updated": self.last_updated.isoformat() if self.last_updated else None,
+            "is_manual": bool(self.is_manual),
+            "statement_account_numbers": self.statement_account_numbers_list(),
         }
 
 
@@ -437,6 +551,8 @@ class StatementAnalysis(db.Model):
     # NEW: Processing status tracking
     processing_status = db.Column(db.String(20), default='success')  # 'success', 'partial', 'failed'
     processing_notes = db.Column(db.Text, nullable=True)  # Details about any parsing issues
+    # account_balances.source slug that received closing balance from this statement
+    account_balance_source = db.Column(db.String(64), nullable=True)
 
     def to_dict(self):
         import json
@@ -447,10 +563,18 @@ class StatementAnalysis(db.Model):
             except:
                 pass
         
-        # Get current account balance for comparison
-        from model import AccountBalance
-        account_balance_record = AccountBalance.query.order_by(AccountBalance.last_updated.desc()).first()
-        current_account_balance = account_balance_record.current_balance if account_balance_record else 0.0
+        # Current balance for the wallet this statement was mapped to (if known)
+        if self.account_balance_source:
+            account_balance_record = AccountBalance.query.filter_by(
+                source=self.account_balance_source
+            ).first()
+        else:
+            account_balance_record = AccountBalance.query.order_by(
+                AccountBalance.last_updated.desc()
+            ).first()
+        current_account_balance = (
+            account_balance_record.current_balance if account_balance_record else 0.0
+        )
         
         # Check if closing balance matches account balance
         balance_matches = abs(self.closing_balance - current_account_balance) < 0.01  # Allow small floating point difference
@@ -475,5 +599,6 @@ class StatementAnalysis(db.Model):
             "transaction_ids": json.loads(self.transaction_ids) if self.transaction_ids else [],
             "processing_status": self.processing_status,  # NEW
             "processing_notes": self.processing_notes,  # NEW
-            "read_status": "read" if self.reviewed_at else "unread"  # NEW: Show if statement has been viewed
+            "read_status": "read" if self.reviewed_at else "unread",  # NEW: Show if statement has been viewed
+            "account_balance_source": self.account_balance_source,
         }

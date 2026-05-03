@@ -215,7 +215,8 @@ def fetch_previous_month_statement(user, reference_date=None):
         load_dotenv(override=True)
         
         from config import BANK_PDF_PASSWORD, TARGET_ACCOUNT_NUMBER, IGNORE_ACCOUNT_NUMBER, BANK_SENDER
-        
+        from statement_wallet_match import extract_statement_account_numbers as _stmt_acct_nums
+
         print(f"📋 [API Fetch] Detailed Config Check for {user.email}")
         
         # 1. AUTHENTICATE
@@ -250,6 +251,9 @@ def fetch_previous_month_statement(user, reference_date=None):
         
         limit_start_date = last_month.replace(day=20)
         limit_end_date = today + timedelta(days=5)
+
+        statement_detected_account_numbers = []
+        statement_matching_parts = []
 
         for idx, m_meta in enumerate(messages):
             try:
@@ -306,6 +310,12 @@ def fetch_previous_month_statement(user, reference_date=None):
 
                     balances = extract_balances_from_bank(target_text, target_account=TARGET_ACCOUNT_NUMBER)
                     transactions = extract_transactions_from_bank(target_text)
+
+                    for n in _stmt_acct_nums(target_text):
+                        if n not in statement_detected_account_numbers:
+                            statement_detected_account_numbers.append(n)
+                    statement_matching_parts.append(target_text[:40000])
+
                     all_email_data.append({
                         'id': m_id, 'date': email_dt,
                         'opening_balance': safe_float(balances.get("opening_balance", 0)),
@@ -333,6 +343,8 @@ def fetch_previous_month_statement(user, reference_date=None):
             "balances": {"opening_balance": first_opening, "closing_balance": last_closing},
             "transactions": merged_transactions,
             "month_name": month_name,
+            "statement_detected_account_numbers": statement_detected_account_numbers,
+            "statement_matching_text": "\n---AURESTRA_STATEMENT_PART---\n".join(statement_matching_parts)[:80000],
             "all_email_data": [{
                 "date": e["date"].isoformat(),
                 "opening_balance": e["opening_balance"],

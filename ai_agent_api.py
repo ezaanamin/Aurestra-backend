@@ -19,6 +19,7 @@ from flask import Blueprint, jsonify, request, current_app
 from sqlalchemy import extract, func, and_, or_, case, text
 
 from database import db
+from transfer_matching import exclude_own_account_transfer_sql
 from model import (
     Transaction, MonthlyBalance, Budget, AccountBalance,
     SavingsGoal, Category, CategorizationRule, User,
@@ -99,11 +100,12 @@ def _parse_date(s):
 
 
 def _active_transactions(query=None):
-    """Base query filtering out deleted & spam transactions."""
+    """Base query: not deleted/spam; own-account transfers excluded from aggregates."""
     q = query if query is not None else Transaction.query
     return q.filter(
         Transaction.is_deleted != True,
         Transaction.is_spam != True,
+        exclude_own_account_transfer_sql(),
     )
 
 

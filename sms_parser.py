@@ -9,7 +9,16 @@ import hashlib
 from datetime import datetime
 from model import Transaction, AccountBalance
 from database import db
+from sqlalchemy import func
+import json
 import logging
+
+from ledger_sync import (
+    apply_pending_transaction_ledger,
+    ensure_account_balance_row,
+    log_wallet_attribution,
+    resolve_balance_slug_for_ingest,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +68,19 @@ class BankAlhabibSMSParser:
         re.IGNORECASE
     )
 
-    # Sent To Pattern (New Format)
+    # Generic app notification: "PKR 720.00 sent to NAME …" (no "from your BAHL" required)
+    SENT_TO_GENERIC_PATTERN = re.compile(
+        r'(?:PKR|Rs\.?)\s*([0-9,]+\.?\d*)\s+sent\s+to\s+(.+?)(?:\s+from\s+your|\s+on\s+\d|\s+fee|\.\s*$|$)',
+        re.IGNORECASE | re.DOTALL,
+    )
+
+    # Easypaisa push style: "easypaisa Rs. ..." or "easypaisa: Rs. ..." (colon common in shade/title)
+    EASYPAISA_SENT_PATTERN = re.compile(
+        r'easypaisa\s*:?\s*(?:rs\.?|pkr)\s*([0-9,]+\.?\d*)\s+sent\s+to\s+(.+?)\s+in\s+(.+?)(?:\.|\s+Fee)',
+        re.IGNORECASE | re.DOTALL,
+    )
+
+    # BAHL mobile app (notification title + body): Fund Transfer—Debit via Raast
     # PKR 720.00 sent to AZAN AMIN RAAST ID *7444 from your BAHL A/C *6801 on 21-Jan-2026 13:33
     SENT_TO_PATTERN = re.compile(
         r'(?:PKR|Rs\.)\s*([0-9,]+\.?\d*)\s+sent\s+to\s+(.+?)\s+from\s+your\s+BAHL\s+A/C.*?on\s+(\d{1,2}-[a-z]{3}-\d{4}\s+\d{1,2}:\d{2})',
@@ -220,7 +241,37 @@ class BankAlhabibSMSParser:
         - "debited by PKR 129.31 excluding FED for Debit Card Charges, your card no. ending with **6883"
         - "PKR 100.00 sent from IBAN XXXX6801 to..."
         """
-        
+        ep = cls.EASYPAISA_SENT_PATTERN.search(message)
+        if ep:
+            amount = cls.parse_amount(ep.group(1))
+            recipient = ep.group(2).strip()
+            bank_part = ep.group(3).strip()
+            return {
+                'type': 'debit',
+                'amount': amount,
+                'receiver': recipient,
+                'purpose': 'Uncategorized',
+                'date': datetime.utcnow(),
+                'notes': f"Easypaisa → {bank_part}"[:250],
+                'source': 'sms',
+            }
+
+        gen_sent = cls.SENT_TO_GENERIC_PATTERN.search(message)
+        if gen_sent:
+            from transfer_matching import scrub_counterparty
+
+            amount = cls.parse_amount(gen_sent.group(1))
+            receiver = scrub_counterparty(gen_sent.group(2).strip())
+            return {
+                'type': 'debit',
+                'amount': amount,
+                'receiver': receiver or gen_sent.group(2).strip(),
+                'purpose': 'Uncategorized',
+                'date': datetime.utcnow(),
+                'notes': (message[:220] + "…") if len(message) > 220 else message,
+                'source': 'sms',
+            }
+
         # Try Raast Send Pattern (Debit)
         match = cls.RAAST_SEND_PATTERN.search(message)
         if match:
@@ -402,12 +453,18 @@ class BankAlhabibSMSParser:
                 return False
         
         # Check if it's a transaction message
-        keywords = ['credited', 'debited', 'sent from', 'used for', 'pkr', 'rs.', 'payment', 'withdrawal', 'transfer', 'received', 'added', 'transferred']
-        
+        keywords = [
+            'credited', 'debited', 'sent from', 'sent to', 'used for', 'pkr', 'rs.', 'easypaisa',
+            'payment', 'withdrawal', 'transfer', 'received', 'added', 'transferred', 'trx id',
+            'fee:',
+            'e-statement', 'estatement', 'statement', 'mini statement', 'account statement',
+            'transaction history', 'fund transfer', 'balance alert', 'your bahl', 'a/c',
+        ]
+
         return any(kw in msg_lower for kw in keywords)
     
     @classmethod
-    def parse_sms(cls, message, sender='BAHL'):
+    def parse_sms(cls, message, sender='BAHL', skip_keyword_gate=False):
         """
         Main parsing method
         
@@ -419,10 +476,36 @@ class BankAlhabibSMSParser:
             message = message.strip()
             
             # Check if it's a transaction SMS
-            if not cls.is_transaction_sms(message):
+            if not skip_keyword_gate and not cls.is_transaction_sms(message):
                 logger.info("SMS is not a transaction message, skipping")
                 return None
-            
+
+            msg_lower = message.lower()
+
+            # Prefer debit when the text clearly describes money leaving the account.
+            # Credit patterns are tried first in the legacy path; that mis-classifies some spends as income.
+            debit_first = False
+            if "debited" in msg_lower:
+                debit_first = True
+            elif re.search(r"sent\s+to\s+.+\s+from\s+your\b", message, re.IGNORECASE | re.DOTALL):
+                debit_first = True
+            elif (
+                "sent to" in msg_lower
+                and "credited" not in msg_lower
+                and "received from" not in msg_lower
+                and not re.search(r"sent\s+to\s+your\b", msg_lower)
+            ):
+                debit_first = True
+
+            if debit_first:
+                transaction_data = cls.parse_debit_transaction(message)
+                if transaction_data:
+                    logger.info(
+                        "Parsed DEBIT transaction (debit-first): Rs. %s",
+                        transaction_data["amount"],
+                    )
+                    return transaction_data
+
             # Try to parse as credit transaction
             transaction_data = cls.parse_credit_transaction(message)
             if transaction_data:
@@ -468,7 +551,226 @@ def generate_transaction_hash(transaction_data):
     return hashlib.sha256(hash_string.encode()).hexdigest()
 
 
-def process_bank_sms(message, sender='BAHL', external_sms_hash=None):
+# PKR / Rs amounts in bank alerts (aligned with Android BankNotificationParser).
+MONEY_AMOUNT_RE = re.compile(
+    r"(?:PKR|Rs\.?|Rs)\s*([\d,]+(?:\.\d+)?)|([\d,]+(?:\.\d+)?)\s*(?:PKR|Rs\.?)\b",
+    re.IGNORECASE,
+)
+
+_CREDIT_SIGNALS = re.compile(
+    r"\bcredited\b|received\s+from|received\s+in|you(?:'ve)?\s+received|\bdeposit(?:ed)?\b|payment\s+received|"
+    r"money\s+received|credited\s+to\s+your|deposited\s+to\s+your|\bincoming\b|incoming\s+funds|"
+    r"\bibft\b|\bi\.?f\.?t\.?\b|\bfunds\s+received\b|\bcredit\s+alert\b|\bsalary\b|\bpayroll\b|\bwages\b|"
+    r"\bamount\s+received\b|\bpayment\s+by\b",
+    re.IGNORECASE,
+)
+
+_DEBIT_SIGNALS = re.compile(
+    r"\bdebited\b|sent\s+to\b.+?from\s+your\s+(?:bahl|a/c|account|iban)|"
+    r"(?:pkr|rs\.?)\s*[\d,]+(?:\.\d+)?\s+sent\s+to\b|fund\s+transfer.{0,120}\bdebit\b|"
+    r"easypaisa\s+rs.+?sent\s+to\b|\bpurchase\b|\bwithdraw|\braast\b.{0,80}\bsent\b|"
+    r"\bpaid\s+to\b|\bmoney\s+sent\b|\byou\s+sent\b|\bpayment\s+to\b|\btxn\s+debited\b|"
+    r"\bpurchase\s+at\b|\bpos\b|\batm\s+withdraw",
+    re.IGNORECASE,
+)
+
+
+def extract_money_amount_from_text(text: str | None) -> float | None:
+    """First plausible PKR/Rs amount in text (notification bodies often list the txn amount first)."""
+    if not text or not str(text).strip():
+        return None
+    for m in MONEY_AMOUNT_RE.finditer(text):
+        raw = m.group(1) or m.group(2)
+        if not raw:
+            continue
+        try:
+            v = float(raw.replace(",", ""))
+        except ValueError:
+            continue
+        if v > 0:
+            return v
+    return None
+
+
+def text_contains_money_amount(text: str | None) -> bool:
+    return extract_money_amount_from_text(text) is not None
+
+
+def infer_transaction_kind_from_text(text: str | None) -> str | None:
+    """Return 'credit' or 'debit' using the same cues as the Android parser (+ extras)."""
+    if not text or not str(text).strip():
+        return None
+    s = str(text).lower()
+    c_hit = _CREDIT_SIGNALS.search(s)
+    d_hit = _DEBIT_SIGNALS.search(s)
+    if d_hit and not c_hit:
+        return "debit"
+    if c_hit and not d_hit:
+        return "credit"
+    if d_hit and c_hit:
+        if "debited" in s or re.search(r"\bsent\s+to\b", s):
+            return "debit"
+        if "credited" in s or "received from" in s or "received in" in s:
+            return "credit"
+        return "debit"
+    return None
+
+
+def build_minimal_notification_transaction_data(
+    message: str,
+    *,
+    source: str,
+    notification_parse_hint: dict | None,
+) -> dict | None:
+    """
+    Last-resort parse for device notifications when regex SMS parsers miss (still updates balances).
+    """
+    hint = notification_parse_hint if isinstance(notification_parse_hint, dict) else None
+    amt = None
+    if hint:
+        try:
+            amt = float(hint.get("amount"))
+        except (TypeError, ValueError):
+            amt = None
+    if amt is None or amt <= 0:
+        amt = extract_money_amount_from_text(message)
+    if amt is None or amt <= 0:
+        return None
+
+    ttype = None
+    if hint:
+        ttype = (hint.get("type") or hint.get("transaction_type") or "").strip().lower()
+    if ttype not in ("debit", "credit"):
+        ttype = infer_transaction_kind_from_text(message)
+    if ttype not in ("debit", "credit"):
+        return None
+
+    cp = None
+    if hint:
+        cp = (hint.get("counterparty") or "").strip() or None
+    dt = _hint_datetime_from_notification(
+        hint.get("timestamp_iso") if hint else None,
+        hint.get("post_time_ms") if hint else None,
+    )
+    snippet = (message or "").strip()
+    if len(snippet) > 220:
+        snippet = snippet[:217] + "..."
+
+    if ttype == "debit":
+        return {
+            "type": "debit",
+            "amount": amt,
+            "receiver": cp or "Transfer",
+            "sender": "App notification",
+            "purpose": "Uncategorized",
+            "date": dt,
+            "notes": snippet or "Recorded from bank/wallet notification",
+            "source": source,
+        }
+
+    return {
+        "type": "credit",
+        "amount": amt,
+        "sender": cp or "Transfer",
+        "receiver": None,
+        "purpose": "Uncategorized",
+        "date": dt,
+        "notes": snippet or "Recorded from bank/wallet notification",
+        "source": source,
+    }
+
+
+def notification_hint_is_usable(hint: dict | None) -> bool:
+    if not hint or not isinstance(hint, dict):
+        return False
+    try:
+        if float(hint.get("amount")) <= 0:
+            return False
+    except (TypeError, ValueError):
+        return False
+    ttype = (hint.get("type") or hint.get("transaction_type") or "").strip().lower()
+    return ttype in ("debit", "credit")
+
+
+def _hint_datetime_from_notification(timestamp_iso: object, post_time_ms: object) -> datetime:
+    if timestamp_iso:
+        s = str(timestamp_iso).strip()
+        if s.endswith("Z"):
+            s = s[:-1] + "+00:00"
+        try:
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo is not None:
+                dt = dt.replace(tzinfo=None)
+            return dt
+        except ValueError:
+            pass
+    if post_time_ms is not None:
+        try:
+            ms = float(post_time_ms)
+            return datetime.utcfromtimestamp(ms / 1000.0)
+        except (TypeError, ValueError, OSError):
+            pass
+    return datetime.utcnow()
+
+
+def transaction_data_from_notification_hint(
+    message: str,
+    hint: dict,
+    *,
+    source: str,
+) -> dict | None:
+    try:
+        amt = float(hint.get("amount"))
+    except (TypeError, ValueError):
+        return None
+    if amt <= 0:
+        return None
+
+    ttype = (hint.get("type") or hint.get("transaction_type") or "").strip().lower()
+    if ttype not in ("debit", "credit"):
+        ttype = infer_transaction_kind_from_text(message)
+    if ttype not in ("debit", "credit"):
+        return None
+
+    cp = (hint.get("counterparty") or "").strip() or None
+    dt = _hint_datetime_from_notification(hint.get("timestamp_iso"), hint.get("post_time_ms"))
+    snippet = (message or "").strip()
+    if len(snippet) > 220:
+        snippet = snippet[:217] + "..."
+
+    if ttype == "debit":
+        return {
+            "type": "debit",
+            "amount": amt,
+            "receiver": cp or "Transfer",
+            "sender": "App notification",
+            "purpose": "Uncategorized",
+            "date": dt,
+            "notes": snippet or "Recorded from bank/wallet notification",
+            "source": source,
+        }
+
+    return {
+        "type": "credit",
+        "amount": amt,
+        "sender": cp or "Transfer",
+        "receiver": None,
+        "purpose": "Uncategorized",
+        "date": dt,
+        "notes": snippet or "Recorded from bank/wallet notification",
+        "source": source,
+    }
+
+
+def process_bank_sms(
+    message,
+    sender='BAHL',
+    external_sms_hash=None,
+    transaction_source_override=None,
+    balance_source_override=None,
+    notification_parse_hint=None,
+    notification_relaxed_gate=False,
+):
     """
     Process a bank SMS and save as transaction with robust deduplication
     
@@ -480,18 +782,76 @@ def process_bank_sms(message, sender='BAHL', external_sms_hash=None):
         tuple: (Transaction, is_new) where is_new is True if created, False if duplicate
     """
     try:
-        # Check if it's a transaction SMS
-        if not BankAlhabibSMSParser.is_transaction_sms(message):
+        usable_native_hint = notification_hint_is_usable(notification_parse_hint)
+        is_notification_source = (transaction_source_override or "").strip().lower() == "notification"
+        skip_kw = bool(is_notification_source and notification_relaxed_gate)
+        msg_ok = bool((message or "").strip())
+        if not msg_ok:
+            return None, False
+        # Notifications often fail keyword gate / regex parse — allow ingest-side relaxed parsing.
+        if (
+            not BankAlhabibSMSParser.is_transaction_sms(message)
+            and not usable_native_hint
+            and not skip_kw
+        ):
             logger.info("SMS is not a transaction message, skipping")
             return None, False
-        
-        # Parse SMS
-        transaction_data = BankAlhabibSMSParser.parse_sms(message, sender)
-        
+
+        # Notifications: prefer native debit/credit hint so we don't mis-classify (regex tries credit first).
+        transaction_data = None
+        if is_notification_source and usable_native_hint:
+            src = transaction_source_override or "sms"
+            transaction_data = transaction_data_from_notification_hint(
+                message,
+                notification_parse_hint,
+                source=src,
+            )
+            if transaction_data:
+                logger.info(
+                    "Notification (native hint): %s PKR %.2f",
+                    transaction_data["type"],
+                    transaction_data["amount"],
+                )
+
+        if not transaction_data:
+            transaction_data = BankAlhabibSMSParser.parse_sms(
+                message, sender, skip_keyword_gate=skip_kw
+            )
+
+        if not transaction_data and notification_parse_hint:
+            src = transaction_source_override or "sms"
+            transaction_data = transaction_data_from_notification_hint(
+                message,
+                notification_parse_hint,
+                source=src,
+            )
+            if transaction_data:
+                logger.info(
+                    "Used notification native parse fallback: %s PKR %.2f",
+                    transaction_data["type"],
+                    transaction_data["amount"],
+                )
+
+        if not transaction_data and is_notification_source and notification_relaxed_gate:
+            transaction_data = build_minimal_notification_transaction_data(
+                message,
+                source=transaction_source_override or "notification",
+                notification_parse_hint=notification_parse_hint,
+            )
+            if transaction_data:
+                logger.info(
+                    "Notification minimal fallback: %s PKR %.2f",
+                    transaction_data["type"],
+                    transaction_data["amount"],
+                )
+
         if not transaction_data:
             logger.warning(f"Could not parse transaction from SMS: {message[:100]}")
             return None, False
         
+        if transaction_source_override:
+            transaction_data['source'] = transaction_source_override
+
         # Generate hashes
         sms_hash = external_sms_hash or generate_sms_hash({
             'sender': sender,
@@ -522,26 +882,32 @@ def process_bank_sms(message, sender='BAHL', external_sms_hash=None):
                 db.session.commit()
             return existing_by_tx, False
             
-        # Check 3: By date + amount + type (fallback for transactions without hash)
-        tx_date = transaction_data['date']
-        similar_tx = Transaction.query.filter(
-            db.func.date(Transaction.date) == tx_date.date(),
-            Transaction.amount == transaction_data['amount'],
-            Transaction.type == transaction_data['type']
-        ).first()
-        
-        if similar_tx:
-            logger.info(f"Similar transaction found: Date={tx_date.date()}, Amount={transaction_data['amount']}")
-            
-            # Update hashes on existing transaction
-            if not similar_tx.sms_hash:
-                similar_tx.sms_hash = sms_hash
-            if not similar_tx.transaction_hash:
-                similar_tx.transaction_hash = transaction_hash
-            
-            db.session.commit()
-            return similar_tx, False
-        
+        # Check 3: Same calendar day + amount + type — legacy SMS fallback only.
+        # Notifications always carry external_sms_hash; without it this matcher is too aggressive
+        # (e.g. two Rs.10 debits same day → wrong row, Uncategorized stays empty).
+        if not external_sms_hash and not is_notification_source:
+            tx_date = transaction_data['date']
+            similar_tx = Transaction.query.filter(
+                db.func.date(Transaction.date) == tx_date.date(),
+                Transaction.amount == transaction_data['amount'],
+                Transaction.type == transaction_data['type']
+            ).first()
+
+            if similar_tx:
+                logger.info(
+                    "Similar transaction found: Date=%s, Amount=%s",
+                    tx_date.date(),
+                    transaction_data['amount'],
+                )
+
+                if not similar_tx.sms_hash:
+                    similar_tx.sms_hash = sms_hash
+                if not similar_tx.transaction_hash:
+                    similar_tx.transaction_hash = transaction_hash
+
+                db.session.commit()
+                return similar_tx, False
+
         # Check 4: Legacy transaction_id check (for backward compatibility)
         message_hash = hashlib.md5(message.encode()).hexdigest()[:16]
         legacy_id = f"sms_{message_hash}"
@@ -567,40 +933,62 @@ def process_bank_sms(message, sender='BAHL', external_sms_hash=None):
         transaction_data['sms_hash'] = sms_hash
         transaction_data['transaction_hash'] = transaction_hash
         transaction_data['transaction_id'] = legacy_id  # Keep for backward compatibility
-        transaction_data['source'] = 'bank_sms'
         transaction_data['categorization_status'] = 'pending'
         
-        # Create transaction
+        target_source = resolve_balance_slug_for_ingest(
+            sender, message, balance_source_override, transaction_data
+        )
+        # Persist on INSERT so balance_applied is reliably 0 (post-flush assign can miss on some SA/SQLite paths).
+        transaction_data["account_balance_source"] = target_source
+        transaction_data["balance_applied"] = False
+
+        # Create transaction (wallet balance updates when user categorizes — ledger_sync)
         transaction = Transaction(**transaction_data)
         db.session.add(transaction)
         db.session.flush()  # Get the ID
-        
-        # ============================================
-        # UPDATE ACCOUNT BALANCE
-        # ============================================
-        
-        # Determine which account to update
-        target_source = 'bank' if sender in ['BAHL', 'BankALHabib', 'AL-Habib', '8810', '8812'] else 'sms'
-        
-        balance = AccountBalance.query.filter_by(source=target_source).first()
-        if not balance:
-            balance = AccountBalance(source=target_source, current_balance=0.0)
-            db.session.add(balance)
-        
-        # Update balance (Only if is_new=True, which is implied since we are here)
-        if transaction.type == 'credit':
-            balance.current_balance += transaction.amount
-            logger.info(f"Credit: +{transaction.amount} → {balance.current_balance}")
-        else:
-            balance.current_balance -= transaction.amount
-            logger.info(f"Debit: -{transaction.amount} → {balance.current_balance}")
-        
-        balance.last_updated = datetime.now()
-        
-        # Commit everything
+
+        accounts_all = AccountBalance.query.all()
+        try:
+            from transfer_matching import maybe_mark_own_account_transfer
+
+            maybe_mark_own_account_transfer(
+                transaction,
+                accounts_all,
+                balance_slug=target_source,
+            )
+        except Exception as tm_err:
+            logger.warning("transfer_matching skipped: %s", tm_err)
+
+        transaction.categorization_status = "pending"
+        transaction.category_id = None
+        transaction.account_balance_source = target_source
+        transaction.balance_applied = False
+        ensure_account_balance_row(target_source)
+        try:
+            apply_pending_transaction_ledger(transaction, respect_manual_lock=False)
+        except Exception as led_err:
+            logger.warning("ingest ledger apply skipped: %s", led_err)
+
         db.session.commit()
         
         logger.info(f"✅ Created transaction {transaction.id}: {transaction.type} Rs.{transaction.amount}")
+        try:
+            from transfer_matching import is_own_account_transfer_row
+
+            log_wallet_attribution(
+                "INGEST_TXN_COMMITTED",
+                transaction_id=transaction.id,
+                resolved_wallet_slug=target_source,
+                txn_type=transaction.type,
+                amount=transaction.amount,
+                purpose=getattr(transaction, "purpose", None),
+                self_transfer=is_own_account_transfer_row(transaction),
+                txn_sender=getattr(transaction, "sender", None),
+                txn_receiver=getattr(transaction, "receiver", None),
+                sms_or_notif_source=str(transaction_data.get("source") or ""),
+            )
+        except Exception as log_err:
+            logger.warning("wallet attribution log skipped: %s", log_err)
         return transaction, True
         
     except Exception as e:

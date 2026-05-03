@@ -87,7 +87,7 @@ def run_migrations():
                         db.session.execute(text(stmt))
                     except Exception as e:
                         err_str = str(e).lower()
-                        if "already exists" in err_str:
+                        if "already exists" in err_str or "duplicate column" in err_str:
                             print(f"   ⚠️  Already exists — skipping.")
                         else:
                             print(f"   ❌ Error: {e}")
