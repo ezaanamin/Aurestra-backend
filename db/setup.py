@@ -53,21 +53,30 @@ def _sync_postgres_serial_sequences(engine) -> None:
     """
     if engine.dialect.name != "postgresql":
         return
-    with engine.connect() as conn:
-        for table in TABLE_ORDER:
-            try:
-                seq = conn.execute(
-                    text("SELECT pg_get_serial_sequence(:t, 'id')"), {"t": table}
-                ).scalar()
-                if not seq:
-                    continue
-                mx = conn.execute(text(f"SELECT MAX(id) FROM {table}")).scalar()
-                if mx is None:
-                    continue
-                conn.execute(text("SELECT setval(:seq, :mx, true)"), {"seq": seq, "mx": int(mx)})
-            except Exception as e:
-                print(f"  ⚠️  [PostgreSQL] sequence sync skipped for {table}: {e}")
-        conn.commit()
+    insp = sa_inspect(engine)
+    for table in TABLE_ORDER:
+        if not insp.has_table(table):
+            print(f"  ⏭️  [PostgreSQL] sequence sync skipped (no table): {table}")
+            continue
+        # One connection + transaction per table so a missing sequence / error does not
+        # poison the whole run (PostgreSQL aborts the transaction on the first error).
+        try:
+            with engine.connect() as conn:
+                with conn.begin():
+                    seq = conn.execute(
+                        text("SELECT pg_get_serial_sequence(:t, 'id')"), {"t": table}
+                    ).scalar()
+                    if not seq:
+                        continue
+                    mx = conn.execute(text(f"SELECT MAX(id) FROM {table}")).scalar()
+                    if mx is None:
+                        continue
+                    conn.execute(
+                        text("SELECT setval(:seq, :mx, true)"),
+                        {"seq": seq, "mx": int(mx)},
+                    )
+        except Exception as e:
+            print(f"  ⚠️  [PostgreSQL] sequence sync skipped for {table}: {e}")
     print("  🔢 [PostgreSQL] SERIAL sequences synced to MAX(id).")
 
 
@@ -95,9 +104,10 @@ def run_sql_file(engine, filepath: str, label: str):
         for stmt in statements:
             try:
                 conn.execute(text(stmt))
+                conn.commit()
             except Exception as e:
                 print(f"  ⚠️  [{label}] statement error: {e}\n      SQL: {stmt[:80]}...")
-        conn.commit()
+                conn.rollback()
 
 
 def drop_all_tables(engine, dialect: str):
