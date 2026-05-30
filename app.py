@@ -65,6 +65,10 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'default_dev_secret_change
 from ai_agent_api import ai_agent_bp
 app.register_blueprint(ai_agent_bp)
 
+# Register Financial API Blueprint
+from financial_api import financial_api_bp
+app.register_blueprint(financial_api_bp)
+
 # ──────────────────────────────────────────────────────
 # SCHEDULER  (Midnight jobs)
 # ──────────────────────────────────────────────────────
@@ -191,147 +195,7 @@ def token_required(f):
     
     return decorated
 
-def generate_otp():
-    """Generates a secure 6-digit OTP."""
-    return ''.join([str(secrets.randbelow(10)) for _ in range(6)])
 
-def _build_otp_raw_email(to_email, otp_code, expiry_minutes=5):
-    """Build a base64url-encoded RFC 2822 email for the Gmail API."""
-    html_content = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-</head>
-<body style="margin:0;padding:0;background:#0a0f1e;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1e;padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="100%" style="max-width:540px;background:#0f172a;border-radius:16px;border:1px solid #1e293b;overflow:hidden;">
-
-          <!-- Header -->
-          <tr>
-            <td style="padding:32px 36px 24px;border-bottom:1px solid #1e293b;">
-              <p style="margin:0;font-size:11px;letter-spacing:3px;color:#64748b;text-transform:uppercase;">Centralized AI System</p>
-              <h1 style="margin:8px 0 0;font-size:26px;font-weight:700;color:#f8fafc;letter-spacing:-0.5px;">Eleystra</h1>
-            </td>
-          </tr>
-
-          <!-- Body -->
-          <tr>
-            <td style="padding:32px 36px;">
-              <p style="margin:0 0 16px;font-size:15px;color:#94a3b8;line-height:1.6;">Hello,</p>
-              <p style="margin:0 0 24px;font-size:15px;color:#cbd5e1;line-height:1.7;">
-                This code was requested to verify your identity and grant access to <strong style="color:#f8fafc;">Eleystra</strong>.
-              </p>
-              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.7;">
-                Eleystra is your centralized AI system — a unified intelligence layer connecting all your apps, agents, and services.
-                Once verified, your access extends seamlessly across the entire Eleystra ecosystem.
-              </p>
-
-              <!-- OTP Block -->
-              <p style="margin:0 0 12px;font-size:12px;letter-spacing:2px;color:#64748b;text-transform:uppercase;">Your One-Time Passcode (OTP)</p>
-              <div style="background:#0d1117;border:1px solid #22d3ee;border-radius:12px;padding:24px;text-align:center;margin:0 0 24px;">
-                <span style="font-size:42px;font-weight:800;letter-spacing:14px;color:#22d3ee;font-variant-numeric:tabular-nums;">{otp_code}</span>
-              </div>
-
-              <p style="margin:0 0 32px;font-size:13px;color:#64748b;text-align:center;">
-                This code will expire in <strong style="color:#94a3b8;">{expiry_minutes} minutes</strong>.
-              </p>
-
-              <div style="background:#0f1f2e;border-left:3px solid #1e40af;border-radius:4px;padding:14px 18px;margin:0 0 24px;">
-                <p style="margin:0;font-size:13px;color:#64748b;line-height:1.6;">
-                  If you did not request this verification, you can safely ignore this email. No action is required.
-                </p>
-              </div>
-
-              <p style="margin:0;font-size:13px;color:#475569;">
-                For support, contact:
-                <a href="mailto:support@eleystra.com" style="color:#22d3ee;text-decoration:none;">support@eleystra.com</a>
-              </p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="padding:20px 36px;border-top:1px solid #1e293b;">
-              <p style="margin:0;font-size:12px;color:#334155;">— Eleystra Security</p>
-              <p style="margin:8px 0 0;font-size:11px;color:#1e293b;">&copy; 2026 Eleystra. All rights reserved.</p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"""
-    raw = (
-        f"From: Eleystra Security <{AUTH_API_OWNER_EMAIL}>\r\n"
-        f"To: {to_email}\r\n"
-        f"Subject: Your Eleystra Verification Code\r\n"
-        f"MIME-Version: 1.0\r\n"
-        f"Content-Type: text/html; charset=utf-8\r\n"
-        f"\r\n"
-        f"{html_content}"
-    )
-    return base64.urlsafe_b64encode(raw.encode('utf-8')).decode('utf-8')
-
-
-def send_otp_via_auth_api(to_email, otp_code):
-    """Send OTP email using the centralized Auth-api Gmail proxy."""
-    try:
-        raw = _build_otp_raw_email(to_email, otp_code)
-        resp = http_requests.post(
-            f"{AUTH_API_URL}/google/proxy/gmail/v1/users/me/messages/send",
-            params={'email': AUTH_API_OWNER_EMAIL},
-            json={'raw': raw},
-            timeout=15,
-        )
-        data = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else {}
-        if resp.status_code == 200 and data.get('id'):
-            print(f"✅ OTP sent via Auth-api Gmail proxy to {to_email}")
-            return True
-        # Auth-api may return login_required if its token expired
-        if data.get('action') == 'login_required':
-            print(f"⚠️ Auth-api token expired — re-login to Auth-api required.")
-        else:
-            print(f"⚠️ Auth-api Gmail proxy returned {resp.status_code}: {data}")
-        return False
-    except Exception as e:
-        print(f"⚠️ Failed to send OTP via Auth-api: {e}")
-        return False
-
-
-def send_otp_email(to_email, otp_code):
-    # Primary: Auth-api proxy (no local Google tokens needed)
-    if send_otp_via_auth_api(to_email, otp_code):
-        return True
-
-    print(f"⚠️ Auth-api proxy failed, falling back to direct Gmail API for {to_email}...")
-    try:
-        user = User.query.filter_by(email=to_email).first()
-        if not user or not user.google_refresh_token:
-            print(f"⚠️ No refresh token for {to_email}. OTP cannot be sent.")
-            return False
-        service = get_gmail_service(user)
-        if not service:
-            return False
-        text_content = (
-            f"Your Eleystra verification code is: {otp_code}\n\n"
-            f"This code expires in 5 minutes.\n\n"
-            f"If you did not request this, ignore this email.\n\n"
-            f"For support: support@eleystra.com\n\n— Eleystra Security"
-        )
-        message = create_message("me", to_email, "Your Eleystra Verification Code", text_content, "")
-        result = send_gmail_message(service, "me", message)
-        if result:
-            print(f"✅ OTP sent via direct Gmail API to {to_email}")
-            return True
-        return False
-    except Exception as e:
-        print(f"⚠️ Direct Gmail API also failed: {e}")
-        return False
 
 # Simple in-memory rate limiting
 from collections import defaultdict
@@ -455,39 +319,6 @@ def home():
 # -------------------------
 # AUTH ROUTES
 # -------------------------
-@app.route("/api/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    email = data.get('email')
-    # Updated Flow: Email ONLY -> OTP
-    # No password check here as per user request (Passwordless/OTP-only)
-    
-    user = User.query.filter_by(email=email).first()
-    
-    if not user:
-        # Prevent auto-creation for security, or keep it? 
-        # User said "user shouldn't have any password". 
-        # Usually this implies they just type email and get OTP.
-        # But we must ensure the user exists.
-        return jsonify({'message': 'User not found'}), 404
-
-    # Generate Real Random OTP (Secure)
-    # Using secrets for cryptographic randomness
-    otp = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
-    
-    user.otp_code = otp
-    user.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
-    db.session.commit()
-    
-    # Attempt to send Email
-    email_success = send_otp_email(user.email, otp)
-    
-    if email_success:
-        return jsonify({'message': 'OTP sent to email', 'otp_required': True}), 200
-    else:
-        # Fallback: Log OTP to console and allow login flow (Soft Fail)
-        print(f"⚠️ [AUTH] Email sending failed. DEBUG OTP for {email}: {otp}")
-        return jsonify({'message': 'OTP sent (Check Console/Dev)', 'otp_required': True}), 200
 
 @app.route("/api/google/login", methods=["POST"])
 def google_login():
@@ -545,25 +376,19 @@ def google_login():
                 user.full_name = name
             db.session.commit()
             
-        # 4. Generate OTP for 2FA (Keeping existing security layer)
-        otp = generate_otp()
-        from datetime import timezone
-        expiry = datetime.now(timezone.utc) + timedelta(minutes=5)
-        
-        user.otp_code = otp
-        user.otp_expiry = expiry
-        db.session.commit()
-        
-        # Send OTP
-        try:
-            from drive_utils import send_otp_email
-            send_otp_email(user.email, otp)
-        except Exception as e:
-            print(f"⚠️ [AUTH] OTP Email failed: {e}")
+        exp_ts = id_info.get('exp')
+        exp_date = datetime.utcfromtimestamp(exp_ts) if exp_ts else datetime.utcnow() + timedelta(hours=2)
+            
+        token = jwt.encode({
+            'user_id': user.id,
+            'email': user.email,
+            'exp': exp_date
+        }, app.config['SECRET_KEY'], algorithm="HS256")
         
         return jsonify({
-            'message': 'Please verify OTP',
-            'otp_required': True,
+            'message': 'Login successful',
+            'token': token,
+            'user': user.to_dict(),
             'email': email,
             'centralized_auth': centralized_auth,
             'auth_service_url': auth_url if not centralized_auth else None
@@ -633,61 +458,32 @@ def auth_verify():
             user.google_email = email
             db.session.commit()
 
-    # 3. Generate OTP for 2FA
-    otp = generate_otp()
-    from datetime import timezone
-    user.otp_code = otp
-    user.otp_expiry = datetime.now(timezone.utc) + timedelta(minutes=5)
-    db.session.commit()
-
-    # 4. Send OTP via Auth-api Gmail proxy
-    try:
-        send_otp_email(email, otp)
-    except Exception as e:
-        print(f"⚠️ [AUTH VERIFY] OTP send failed: {e}")
-
-    return jsonify({
-        'message': 'OTP sent to your email',
-        'otp_required': True,
-        'email': email,
-    }), 200
-
-@app.route("/api/verify-otp", methods=["POST"])
-def verify_otp():
-    data = request.get_json()
-    email = data.get('email')
-    otp = data.get('otp')
+    id_token_str = data.get('idToken')
     
-    print(f"🔒 [OTP] Verifying for email: {email} with OTP: {otp}")
-    user = User.query.filter_by(email=email).first()
-    
-    if not user:
-        print(f"❌ [OTP] User not found for email: {email}")
-        return jsonify({'message': 'User not found'}), 404
-        
-    if user.otp_code != otp:
-        print(f"❌ [OTP] Mismatch! Expected: {user.otp_code}, Got: {otp}")
-        return jsonify({'message': 'Invalid OTP'}), 400
-        
-    if user.otp_expiry and datetime.utcnow() > user.otp_expiry:
-        print(f"❌ [OTP] Expired! Expiry: {user.otp_expiry}, Now: {datetime.utcnow()}")
-        return jsonify({'message': 'OTP expired'}), 400
-        
-    # Generate JWT
+    exp_date = datetime.utcnow() + timedelta(hours=2)
+    if id_token_str:
+        try:
+            decoded = jwt.decode(id_token_str, options={"verify_signature": False})
+            exp_ts = decoded.get('exp')
+            if exp_ts:
+                exp_date = datetime.utcfromtimestamp(exp_ts)
+        except Exception as e:
+            print(f"⚠️ Could not parse idToken for exp: {e}")
+
+    # 3. Generate JWT
     token = jwt.encode({
         'user_id': user.id,
         'email': user.email,
-        'exp': datetime.utcnow() + timedelta(hours=2)
+        'exp': exp_date
     }, app.config['SECRET_KEY'], algorithm="HS256")
-    
-    # Clear OTP
-    user.otp_code = None
-    db.session.commit()
-    
+
     return jsonify({
+        'message': 'Login successful',
         'token': token,
-        'user': user.to_dict()
+        'user': user.to_dict(),
+        'email': email,
     }), 200
+
 
 @app.route("/api/profile", methods=["GET", "POST"])
 @token_required
@@ -3675,18 +3471,6 @@ def create_transaction(current_user):
         print(f"❌ Transaction creation error: {e}")
         return jsonify({"error": str(e)}), 500
 
-# --- Scheduler & Backup ---
-from flask_apscheduler import APScheduler
-from backup_manager import BackupManager
-
-scheduler = APScheduler()
-backup_manager = BackupManager()
-
-def scheduled_backup_job():
-    with app.app_context():
-        # NOTE: Scheduler runs in its own context, so we re-push app context
-        backup_manager.perform_backup()
-
 # --- Gunicorn/Production Entry Point ---
 # This block runs when Gunicorn imports 'app'
 with app.app_context():
@@ -3694,17 +3478,7 @@ with app.app_context():
     # verify_columns(app) # Optional: if you have the helper
     # seed_categories() # Good to have seeded
     # print("✅ [Prod/Dev] Database tables ensured.")
-    
-    # Init Backup
-    backup_manager.init_app(app)
-    
-    # Init Scheduler (only if not already running to avoid double-init on reloads)
-    if not scheduler.running:
-        # Schedule Daily Backup at 12:00 AM (Midnight)
-        scheduler.add_job(id='daily_backup', func=scheduled_backup_job, trigger='cron', hour=0, minute=0)
-        scheduler.init_app(app)
-        scheduler.start()
-        print("⏰ [System] Backup Scheduler Started (Daily @ 00:00)")
+
 
 @app.route("/api/backup/trigger", methods=["POST"])
 @token_required

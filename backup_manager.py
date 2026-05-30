@@ -1,16 +1,3 @@
-"""
-backup_manager.py
-─────────────────
-Midnight backup strategy (3 destinations, in order):
-
-  1. Google Drive  — AES-256-encrypted ZIP of the SQLite file
-  2. Local disk    — same encrypted ZIP at LOCAL_BACKUP_PATH (or ./backups/)
-  3. PostgreSQL    — full table-by-table data sync (SQLite → PG upsert)
-
-All three destinations are attempted independently; a failure in one does
-NOT abort the others.
-"""
-
 import os
 import io
 import shutil
@@ -212,8 +199,19 @@ class BackupManager:
             self._rotate_local_backups(dest_dir, keep=14)
             return True
         except Exception as e:
-            print(f"❌ [Backup → Local] Error: {e}")
-            return False
+            print(f"❌ [Backup → Local] Error at primary path: {e}")
+            try:
+                print("⚠️ [Backup → Local] Attempting fallback to local 'backups' directory...")
+                fallback_dir = os.path.join(self.base_dir, "backups")
+                os.makedirs(fallback_dir, exist_ok=True)
+                fallback_file = os.path.join(fallback_dir, os.path.basename(encrypted_path))
+                shutil.copy2(encrypted_path, fallback_file)
+                print(f"✅ [Backup → Local] Saved to fallback: {fallback_file}")
+                self._rotate_local_backups(fallback_dir, keep=14)
+                return True
+            except Exception as fallback_e:
+                print(f"❌ [Backup → Local] Fallback error: {fallback_e}")
+                return False
 
     def _rotate_local_backups(self, directory: str, keep: int = 14) -> None:
         """Delete oldest encrypted backups, retaining *keep* most recent."""
