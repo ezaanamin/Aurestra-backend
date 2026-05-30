@@ -423,7 +423,14 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    
+    # Aurestra specific
     full_name = db.Column(db.String(100), nullable=True)
+    avatar_url = db.Column(db.String(512), nullable=True)
+    
+    # Central Auth API specific
+    name = db.Column(db.String(100), nullable=True)
+    profile_picture = db.Column(db.String(512), nullable=True)
     
     # Google Auth Fields
     google_id = db.Column(db.String(50), nullable=True)
@@ -432,9 +439,6 @@ class User(db.Model):
     
     # OTP fields removed
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # New Avatar URL
-    avatar_url = db.Column(db.String(512), nullable=True)
     
     # Notifications Preference
     notifications_enabled = db.Column(db.Boolean, default=True)
