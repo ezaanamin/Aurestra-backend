@@ -285,8 +285,35 @@ def get_categories(current_user):
 def get_trends(current_user):
     """Spending/income trends across periods (month, year)."""
     try:
-        func_to_call = getattr(ai_monthly_balance_trends, '__wrapped__', ai_monthly_balance_trends)
-        return func_to_call()
+        func_to_call = getattr(
+            ai_monthly_balance_trends,
+            '__wrapped__',
+            ai_monthly_balance_trends
+        )
+
+        response = func_to_call()
+        data = response.get_json()
+
+        for trend in data.get("trend", []):
+
+            # Values that should never be negative
+            if trend.get("recorded_expense") is not None:
+                trend["recorded_expense"] = max(0, trend["recorded_expense"])
+
+            if trend.get("transaction_expense") is not None:
+                trend["transaction_expense"] = max(0, trend["transaction_expense"])
+
+            if trend.get("recorded_savings") is not None:
+                trend["recorded_savings"] = max(0, trend["recorded_savings"])
+
+            if trend.get("opening_balance") is not None:
+                trend["opening_balance"] = max(0, trend["opening_balance"])
+
+            if trend.get("closing_balance") is not None:
+                trend["closing_balance"] = max(0, trend["closing_balance"])
+
+        return jsonify(data)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
