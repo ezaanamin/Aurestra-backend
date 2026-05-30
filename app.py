@@ -106,7 +106,10 @@ def do_midnight_backup_job():
 
 
 # Email Config (Gmail)
- 
+ @app.route('/api/debug/push-diagnostics')
+def push_diagnostics():
+    from fcm_utils import get_push_service_diagnostics
+    return jsonify(get_push_service_diagnostics())
 
 # -------------------------
 # HEALTH CHECK ROUTES
