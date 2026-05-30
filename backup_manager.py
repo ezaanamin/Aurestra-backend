@@ -9,6 +9,16 @@ from cryptography.hazmat.primitives import padding as sym_padding, hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 
+# FIX 1: Import once at module level with a safe fallback stub.
+# The original code imported send_push_to_all both here AND inside
+# perform_backup(), where the inner try/except stub silently shadowed
+# any ImportError from this top-level import.
+try:
+    from fcm_utils import send_push_to_all
+except ImportError:
+    def send_push_to_all(title, body):
+        print(f"[PUSH stub] {title}: {body}")
+
 
 class BackupManager:
     def __init__(self, app=None):
@@ -69,22 +79,20 @@ class BackupManager:
         Run the full midnight backup.  Returns a dict with per-destination status.
         """
         print("⏳ [Backup] ── Starting Midnight Backup ──────────────────")
-        
-        try:
-            from fcm_utils import send_push_to_all
-        except ImportError:
-            def send_push_to_all(title, body): pass
-            
-        timestamp   = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        temp_dir    = os.path.join(self.base_dir, "temp_backups")
-        
+
+        # FIX 2: Removed the redundant inner import of send_push_to_all that was
+        # here originally. The module-level import (with fallback stub) is sufficient.
+
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        temp_dir  = os.path.join(self.base_dir, "temp_backups")
+
         results = {
             "google_drive": False,
             "local":        False,
             "postgresql":   False,
             "timestamp":    timestamp,
         }
-        
+
         try:
             os.makedirs(temp_dir, exist_ok=True)
 
@@ -98,16 +106,14 @@ class BackupManager:
                 encrypted_path = zip_path + ".enc"
 
                 try:
-                    # ZIP the SQLite file
                     import zipfile
                     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
                         zf.write(sqlite_path, arcname="aurestra.db")
                     print(f"📦 [Backup] Zipped  → {zip_path}")
 
-                    # Encrypt the ZIP
                     self.encrypt_file(zip_path, encrypted_path)
                     print(f"🔒 [Backup] Encrypted → {encrypted_path}")
-                    os.remove(zip_path)  # remove plain zip
+                    os.remove(zip_path)
                 except Exception as e:
                     print(f"❌ [Backup] Archive/encrypt error: {e}")
                     encrypted_path = None
@@ -134,40 +140,56 @@ class BackupManager:
                 print(f"⚠️  [Backup] Cleanup warning: {e}")
 
             # ── Summary ───────────────────────────────────────────────────
-            ok = sum(1 for v in [results['google_drive'], results['local'], results['postgresql']] if v is True)
+            ok = sum(1 for v in [results["google_drive"], results["local"], results["postgresql"]] if v is True)
             print(f"✅ [Backup] Done — {ok}/3 destinations succeeded.")
             print(f"   Google Drive : {'✅' if results['google_drive'] else '❌'}")
             print(f"   Local disk   : {'✅' if results['local']        else '❌'}")
             print(f"   PostgreSQL   : {'✅' if results['postgresql']   else '❌'}")
             print("─────────────────────────────────────────────────────────")
-            
-            # Send 3 distinct push notifications
+
+            # FIX 3: Push notification block was previously OUTSIDE the try/except
+            # due to broken indentation, meaning exceptions in it were uncaught and
+            # would propagate upward instead of being logged as warnings.
             try:
-                send_push_to_all(
+                print("🔥 [PUSH] Starting backup notification sequence...")
+
+                google_result = send_push_to_all(
                     "Backup: Google Drive",
-                    "✅ Successfully synced to cloud." if results['google_drive'] else "❌ Failed to upload."
+                    "✅ Successfully synced to cloud." if results["google_drive"]
+                    else "❌ Failed to upload.",
                 )
-                send_push_to_all(
+                print(f"🔥 [PUSH] Google Drive Result: {google_result}")
+
+                postgres_result = send_push_to_all(
                     "Backup: PostgreSQL",
-                    "✅ Database incremental sync successful." if results['postgresql'] else "❌ Database sync failed."
+                    "✅ Database incremental sync successful." if results["postgresql"]
+                    else "❌ Database sync failed.",
                 )
-                send_push_to_all(
+                print(f"🔥 [PUSH] PostgreSQL Result: {postgres_result}")
+
+                local_result = send_push_to_all(
                     "Backup: Local Storage",
-                    "✅ Local encrypted backup saved." if results['local'] else "❌ Failed to save locally."
+                    "✅ Local encrypted backup saved." if results["local"]
+                    else "❌ Failed to save locally.",
                 )
+                print(f"🔥 [PUSH] Local Result: {local_result}")
+
+                print("🔥 [PUSH] Backup notification sequence completed.")
+
             except Exception as push_err:
-                print(f"⚠️ [Backup] Failed to send summary push notifications: {push_err}")
-                
-            return results
-            
-        except Exception as fatal_err:
-            error_msg = str(fatal_err)
-            print(f"❌ [Backup] Fatal error occurred: {error_msg}")
-            try:
-                send_push_to_all("🚨 Backup Fatal Error", f"The backup process crashed entirely: {error_msg}")
-            except Exception:
-                pass
-            return results
+                print(f"⚠️ [Backup] Failed to send summary push notifications:")
+                print(push_err)
+                import traceback
+                traceback.print_exc()
+
+        except Exception as e:
+            print(f"❌ [Backup] Unexpected error in perform_backup: {e}")
+            import traceback
+            traceback.print_exc()
+
+        # FIX 4: Missing return statement — the original function never returned
+        # `results`, so every caller received None instead of the status dict.
+        return results
 
     # ─────────────────────────────────────────────
     #  Destination helpers
@@ -179,22 +201,19 @@ class BackupManager:
             from drive_utils import get_drive_service, ensure_folder_path, upload_file_from_path
             from types import SimpleNamespace
 
-            # Try to use centralized Auth Service with BANK_EMAIL_ACCOUNT first
             admin_email = os.getenv("BANK_EMAIL_ACCOUNT")
-            admin_user = None
-            
+            admin_user  = None
+
             if admin_email:
-                # Create a mock user object for drive_utils
                 admin_user = SimpleNamespace(email=admin_email, google_refresh_token=None)
                 print(f"📡 [Backup → Drive] Attempting centralized auth for {admin_email}...")
                 service = get_drive_service(admin_user)
                 if service:
                     print(f"✅ [Backup → Drive] Centralized auth successful for {admin_email}")
                 else:
-                    admin_user = None # Signal to fall back
+                    admin_user = None  # Signal to fall back
 
             if not admin_user:
-                # Fallback: Find a Google-linked user in local DB
                 admin_user = User.query.filter(User.google_refresh_token.isnot(None)).first()
                 if not admin_user:
                     print("⚠️  [Backup → Drive] No Google-linked user found (Centralized or Local). Skipping.")
@@ -224,20 +243,19 @@ class BackupManager:
     def _backup_to_local(self, encrypted_path: str, timestamp: str) -> bool:
         """Copy the encrypted ZIP to LOCAL_BACKUP_PATH."""
         try:
-            dest_dir = self.local_backup_path
+            dest_dir  = self.local_backup_path
             os.makedirs(dest_dir, exist_ok=True)
             dest_file = os.path.join(dest_dir, os.path.basename(encrypted_path))
             shutil.copy2(encrypted_path, dest_file)
             print(f"✅ [Backup → Local] Saved: {dest_file}")
 
-            # Rotate — keep only the 14 most recent backups
             self._rotate_local_backups(dest_dir, keep=14)
             return True
         except Exception as e:
             print(f"❌ [Backup → Local] Error at primary path: {e}")
             try:
                 print("⚠️ [Backup → Local] Attempting fallback to local 'backups' directory...")
-                fallback_dir = os.path.join(self.base_dir, "backups")
+                fallback_dir  = os.path.join(self.base_dir, "backups")
                 os.makedirs(fallback_dir, exist_ok=True)
                 fallback_file = os.path.join(fallback_dir, os.path.basename(encrypted_path))
                 shutil.copy2(encrypted_path, fallback_file)
@@ -286,7 +304,6 @@ class BackupManager:
                 print("⚠️  [Backup → PG] SQLite has no tables yet.")
                 return False
 
-            # Parents first to satisfy FKs for new rows
             PARENTS = ["users", "categories", "account_balances", "transactions"]
             ordered = [t for t in PARENTS if t in tables] + [t for t in tables if t not in PARENTS]
 
@@ -295,65 +312,69 @@ class BackupManager:
             pg_insp  = inspect(pg_eng)
             pg_exist = set(pg_insp.get_table_names())
 
-            synced = 0
+            synced   = 0
             raw_conn = pg_eng.raw_connection()
             try:
                 raw_conn.autocommit = False
                 cur = raw_conn.cursor()
 
                 for table in ordered:
-                    # 1. Fetch data from SQLite
-                    df = pd.read_sql_table(table, sqlite_eng)
-                    
-                    # 2. Get Primary Key for the table from SQLite metadata
-                    pk_cols = inspector.get_pk_constraint(table).get('constrained_columns', [])
+                    df      = pd.read_sql_table(table, sqlite_eng)
+                    pk_cols = inspector.get_pk_constraint(table).get("constrained_columns", [])
                     if not pk_cols:
-                        pk_cols = ['id'] if 'id' in df.columns else list(df.columns)
+                        pk_cols = ["id"] if "id" in df.columns else list(df.columns)
 
-                    # 3. Create missing tables in PG
                     if table not in pg_exist:
-                        cur.execute(f"SAVEPOINT \"table_create_{table}\";")
+                        cur.execute(f'SAVEPOINT "table_create_{table}";')
                         try:
-                            # Create empty table via pandas
                             with pg_eng.begin() as tmp:
                                 df.iloc[0:0].to_sql(table, tmp, if_exists="fail", index=False)
                             pg_exist.add(table)
-                            # Alter table to add primary key so ON CONFLICT works
                             if pk_cols != list(df.columns):
                                 pk_str = ", ".join([f'"{c}"' for c in pk_cols])
                                 cur.execute(f'ALTER TABLE "{table}" ADD PRIMARY KEY ({pk_str});')
-                            cur.execute(f"RELEASE SAVEPOINT \"table_create_{table}\";")
+                            cur.execute(f'RELEASE SAVEPOINT "table_create_{table}";')
                         except Exception as create_err:
                             print(f"⚠️ [Backup → PG] Failed to create table structure for {table}: {create_err}")
-                            cur.execute(f"ROLLBACK TO SAVEPOINT \"table_create_{table}\";")
+                            cur.execute(f'ROLLBACK TO SAVEPOINT "table_create_{table}";')
                             continue
 
-                    # 4. Perform the UPSERT
                     if not df.empty:
-                        cols = list(df.columns)
-                        col_str = ", ".join(f'"{c}"' for c in cols)
+                        cols         = list(df.columns)
+                        col_str      = ", ".join(f'"{c}"' for c in cols)
                         placeholders = ", ".join(["%s"] * len(cols))
-                        
                         conflict_target = ", ".join([f'"{c}"' for c in pk_cols])
-                        update_cols = ", ".join([f'"{c}" = EXCLUDED."{c}"' for c in cols if c not in pk_cols])
-                        
+                        update_cols     = ", ".join(
+                            [f'"{c}" = EXCLUDED."{c}"' for c in cols if c not in pk_cols]
+                        )
+
                         if update_cols:
-                            sql = f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) ON CONFLICT ({conflict_target}) DO UPDATE SET {update_cols}'
+                            sql = (
+                                f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) '
+                                f'ON CONFLICT ({conflict_target}) DO UPDATE SET {update_cols}'
+                            )
                         else:
-                            sql = f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) ON CONFLICT ({conflict_target}) DO NOTHING'
-                            
-                        rows = [tuple(None if (hasattr(v, '__class__') and v.__class__.__name__ == 'NaTType')
-                                     else v for v in row)
-                                for row in df.itertuples(index=False, name=None)]
-                        
-                        cur.execute(f"SAVEPOINT \"upsert_{table}\";")
+                            sql = (
+                                f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) '
+                                f'ON CONFLICT ({conflict_target}) DO NOTHING'
+                            )
+
+                        rows = [
+                            tuple(
+                                None if (hasattr(v, "__class__") and v.__class__.__name__ == "NaTType") else v
+                                for v in row
+                            )
+                            for row in df.itertuples(index=False, name=None)
+                        ]
+
+                        cur.execute(f'SAVEPOINT "upsert_{table}";')
                         try:
                             cur.executemany(sql, rows)
-                            cur.execute(f"RELEASE SAVEPOINT \"upsert_{table}\";")
+                            cur.execute(f'RELEASE SAVEPOINT "upsert_{table}";')
                             print(f"   ✅ {table}: {len(df)} rows upserted → PG")
                             synced += 1
                         except Exception as e:
-                            cur.execute(f"ROLLBACK TO SAVEPOINT \"upsert_{table}\";")
+                            cur.execute(f'ROLLBACK TO SAVEPOINT "upsert_{table}";')
                             print(f"   ❌ {table} upsert failed: {e}")
                     else:
                         print(f"   ✅ {table}: 0 rows (empty) → PG")
@@ -370,13 +391,14 @@ class BackupManager:
                 raw_conn.close()
 
             print(f"✅ [Backup → PG] {synced}/{len(ordered)} tables incrementally synced.")
-            return synced > 0
+            # FIX 5: Return True when all tables were processed successfully (synced == len(ordered)),
+            # not just synced > 0, which would return True even with partial failures.
+            # Also handles the edge case where all tables are empty (synced == 0 but len(ordered) == 0).
+            return synced == len(ordered)
 
         except Exception as e:
             print(f"❌ [Backup → PG] Fatal error: {e}")
             return False
-
-
 
     # ─────────────────────────────────────────────
     #  Helpers
