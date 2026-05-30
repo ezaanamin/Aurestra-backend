@@ -3491,7 +3491,9 @@ def trigger_manual_backup(current_user):
         
         def run_backup():
             with app.app_context():
-                backup_manager.perform_backup()
+                from backup_manager import BackupManager
+                bm = BackupManager(app)
+                bm.perform_backup()
                 
         thread = threading.Thread(target=run_backup)
         thread.start()
