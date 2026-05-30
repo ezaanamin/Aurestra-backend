@@ -194,19 +194,25 @@ def executive_snapshot(current_user):
 @financial_api_bp.route("/financial-intelligence/months", methods=["GET"])
 @token_required
 def get_months(current_user):
-    """Lists all months that have data, with high-level summary."""
     limit = request.args.get("limit", 24, type=int)
-    records = MonthlyBalance.query.order_by(MonthlyBalance.month.desc()).limit(limit).all()
-    
+
+    records = (
+        MonthlyBalance.query
+        .order_by(MonthlyBalance.month.desc())
+        .limit(limit)
+        .all()
+    )
+
     return jsonify({
         "months": [
             {
                 "month": r.month,
-                "opening_balance": r.opening_balance,
-                "closing_balance": r.closing_balance,
-                "expense": r.expense,
-                "savings": r.savings
-            } for r in records
+                "opening_balance": max(r.opening_balance or 0, 0),
+                "closing_balance": max(r.closing_balance or 0, 0),
+                "expense": max(r.expense or 0, 0),
+                "savings": max(r.savings or 0, 0),
+            }
+            for r in records
         ]
     })
 
