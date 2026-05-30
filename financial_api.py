@@ -332,8 +332,28 @@ def get_comparisons(current_user):
 def get_cashflow(current_user):
     """Daily cash flow with rolling averages."""
     try:
-        func_to_call = getattr(ai_cashflow_trends, '__wrapped__', ai_cashflow_trends)
-        return func_to_call()
+        func_to_call = getattr(
+            ai_cashflow_trends,
+            '__wrapped__',
+            ai_cashflow_trends
+        )
+
+        response = func_to_call()
+        data = response.get_json()
+
+        data["total_income"] = max(0, data.get("total_income", 0))
+        data["total_expense"] = max(0, data.get("total_expense", 0))
+        data["avg_daily_income"] = max(0, data.get("avg_daily_income", 0))
+        data["avg_daily_expense"] = max(0, data.get("avg_daily_expense", 0))
+
+        for day in data.get("daily_series", []):
+            day["income"] = max(0, day.get("income", 0))
+            day["expense"] = max(0, day.get("expense", 0))
+            day["rolling_7d_expense"] = max(0, day.get("rolling_7d_expense", 0))
+            day["rolling_30d_expense"] = max(0, day.get("rolling_30d_expense", 0))
+
+        return jsonify(data)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
