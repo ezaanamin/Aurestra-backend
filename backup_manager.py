@@ -69,70 +69,105 @@ class BackupManager:
         Run the full midnight backup.  Returns a dict with per-destination status.
         """
         print("⏳ [Backup] ── Starting Midnight Backup ──────────────────")
+        
+        try:
+            from fcm_utils import send_push_to_all
+        except ImportError:
+            def send_push_to_all(title, body): pass
+            
         timestamp   = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         temp_dir    = os.path.join(self.base_dir, "temp_backups")
-        os.makedirs(temp_dir, exist_ok=True)
-
+        
         results = {
             "google_drive": False,
             "local":        False,
             "postgresql":   False,
             "timestamp":    timestamp,
         }
-
-        # ── Build encrypted ZIP of SQLite file ────────────────────────
-        sqlite_path = self._get_sqlite_path()
-        if not sqlite_path or not os.path.exists(sqlite_path):
-            print(f"❌ [Backup] SQLite file not found at '{sqlite_path}'. Aborting file-based backups.")
-            encrypted_path = None
-        else:
-            zip_path       = os.path.join(temp_dir, f"aurestra_backup_{timestamp}.zip")
-            encrypted_path = zip_path + ".enc"
-
-            try:
-                # ZIP the SQLite file
-                import zipfile
-                with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-                    zf.write(sqlite_path, arcname="aurestra.db")
-                print(f"📦 [Backup] Zipped  → {zip_path}")
-
-                # Encrypt the ZIP
-                self.encrypt_file(zip_path, encrypted_path)
-                print(f"🔒 [Backup] Encrypted → {encrypted_path}")
-                os.remove(zip_path)  # remove plain zip
-            except Exception as e:
-                print(f"❌ [Backup] Archive/encrypt error: {e}")
-                encrypted_path = None
-
-        # ── Destination 1: Google Drive ───────────────────────────────
-        if encrypted_path:
-            results["google_drive"] = self._backup_to_google_drive(encrypted_path, timestamp)
-
-        # ── Destination 2: Local disk ─────────────────────────────────
-        if encrypted_path:
-            results["local"] = self._backup_to_local(encrypted_path, timestamp)
-
-        # ── Destination 3: PostgreSQL ─────────────────────────────────
-        results["postgresql"] = self._backup_to_postgres()
-
-        # ── Cleanup temp ──────────────────────────────────────────────
+        
         try:
-            if encrypted_path and os.path.exists(encrypted_path):
-                os.remove(encrypted_path)
-            shutil.rmtree(temp_dir, ignore_errors=True)
             os.makedirs(temp_dir, exist_ok=True)
-            print("🧹 [Backup] Temp directory cleaned.")
-        except Exception as e:
-            print(f"⚠️  [Backup] Cleanup warning: {e}")
 
-        # ── Summary ───────────────────────────────────────────────────
-        ok = sum(1 for v in results.values() if v is True)
-        print(f"✅ [Backup] Done — {ok}/3 destinations succeeded.")
-        print(f"   Google Drive : {'✅' if results['google_drive'] else '❌'}")
-        print(f"   Local disk   : {'✅' if results['local']        else '❌'}")
-        print(f"   PostgreSQL   : {'✅' if results['postgresql']   else '❌'}")
-        print("─────────────────────────────────────────────────────────")
-        return results
+            # ── Build encrypted ZIP of SQLite file ────────────────────────
+            sqlite_path = self._get_sqlite_path()
+            if not sqlite_path or not os.path.exists(sqlite_path):
+                print(f"❌ [Backup] SQLite file not found at '{sqlite_path}'. Aborting file-based backups.")
+                encrypted_path = None
+            else:
+                zip_path       = os.path.join(temp_dir, f"aurestra_backup_{timestamp}.zip")
+                encrypted_path = zip_path + ".enc"
+
+                try:
+                    # ZIP the SQLite file
+                    import zipfile
+                    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                        zf.write(sqlite_path, arcname="aurestra.db")
+                    print(f"📦 [Backup] Zipped  → {zip_path}")
+
+                    # Encrypt the ZIP
+                    self.encrypt_file(zip_path, encrypted_path)
+                    print(f"🔒 [Backup] Encrypted → {encrypted_path}")
+                    os.remove(zip_path)  # remove plain zip
+                except Exception as e:
+                    print(f"❌ [Backup] Archive/encrypt error: {e}")
+                    encrypted_path = None
+
+            # ── Destination 1: Google Drive ───────────────────────────────
+            if encrypted_path:
+                results["google_drive"] = self._backup_to_google_drive(encrypted_path, timestamp)
+
+            # ── Destination 2: Local disk ─────────────────────────────────
+            if encrypted_path:
+                results["local"] = self._backup_to_local(encrypted_path, timestamp)
+
+            # ── Destination 3: PostgreSQL ─────────────────────────────────
+            results["postgresql"] = self._backup_to_postgres()
+
+            # ── Cleanup temp ──────────────────────────────────────────────
+            try:
+                if encrypted_path and os.path.exists(encrypted_path):
+                    os.remove(encrypted_path)
+                shutil.rmtree(temp_dir, ignore_errors=True)
+                os.makedirs(temp_dir, exist_ok=True)
+                print("🧹 [Backup] Temp directory cleaned.")
+            except Exception as e:
+                print(f"⚠️  [Backup] Cleanup warning: {e}")
+
+            # ── Summary ───────────────────────────────────────────────────
+            ok = sum(1 for v in [results['google_drive'], results['local'], results['postgresql']] if v is True)
+            print(f"✅ [Backup] Done — {ok}/3 destinations succeeded.")
+            print(f"   Google Drive : {'✅' if results['google_drive'] else '❌'}")
+            print(f"   Local disk   : {'✅' if results['local']        else '❌'}")
+            print(f"   PostgreSQL   : {'✅' if results['postgresql']   else '❌'}")
+            print("─────────────────────────────────────────────────────────")
+            
+            # Send 3 distinct push notifications
+            try:
+                send_push_to_all(
+                    "Backup: Google Drive",
+                    "✅ Successfully synced to cloud." if results['google_drive'] else "❌ Failed to upload."
+                )
+                send_push_to_all(
+                    "Backup: PostgreSQL",
+                    "✅ Database incremental sync successful." if results['postgresql'] else "❌ Database sync failed."
+                )
+                send_push_to_all(
+                    "Backup: Local Storage",
+                    "✅ Local encrypted backup saved." if results['local'] else "❌ Failed to save locally."
+                )
+            except Exception as push_err:
+                print(f"⚠️ [Backup] Failed to send summary push notifications: {push_err}")
+                
+            return results
+            
+        except Exception as fatal_err:
+            error_msg = str(fatal_err)
+            print(f"❌ [Backup] Fatal error occurred: {error_msg}")
+            try:
+                send_push_to_all("🚨 Backup Fatal Error", f"The backup process crashed entirely: {error_msg}")
+            except Exception:
+                pass
+            return results
 
     # ─────────────────────────────────────────────
     #  Destination helpers
@@ -228,11 +263,9 @@ class BackupManager:
 
     def _backup_to_postgres(self) -> bool:
         """
-        Full SQLite → PostgreSQL sync (no superuser required).
-
-        Strategy:
-          • Sync tables in reverse FK-dependency order using TRUNCATE … CASCADE
-          • Each table wrapped in its own SAVEPOINT so one failure doesn't abort others
+        Incremental SQLite → PostgreSQL sync (no data wiping).
+        Uses PostgreSQL UPSERT (ON CONFLICT DO UPDATE) to safely merge data
+        without ever truncating or deleting existing backup data.
         """
         try:
             import pandas as pd
@@ -253,63 +286,78 @@ class BackupManager:
                 print("⚠️  [Backup → PG] SQLite has no tables yet.")
                 return False
 
-            # Build a safe deletion/truncation order: tables with FK deps last
-            # For simplicity we use a known safe order for this schema.
-            # Tables that other tables reference must be truncated LAST (or use CASCADE).
-            FK_LAST = {"users", "categories"}   # referenced by other tables
-            ordered = [t for t in tables if t not in FK_LAST] + \
-                      [t for t in tables if t in FK_LAST]
+            # Parents first to satisfy FKs for new rows
+            PARENTS = ["users", "categories", "account_balances", "transactions"]
+            ordered = [t for t in PARENTS if t in tables] + [t for t in tables if t not in PARENTS]
 
-            print(f"📊 [Backup → PG] Syncing {len(ordered)} tables ...")
+            print(f"📊 [Backup → PG] Incremental Syncing {len(ordered)} tables ...")
 
-            synced   = 0
             pg_insp  = inspect(pg_eng)
             pg_exist = set(pg_insp.get_table_names())
 
+            synced = 0
             raw_conn = pg_eng.raw_connection()
             try:
                 raw_conn.autocommit = False
                 cur = raw_conn.cursor()
 
                 for table in ordered:
-                    sp = f"sp_{table}"
-                    try:
-                        df = pd.read_sql_table(table, sqlite_eng)
-                        cur.execute(f"SAVEPOINT \"{sp}\";")
+                    # 1. Fetch data from SQLite
+                    df = pd.read_sql_table(table, sqlite_eng)
+                    
+                    # 2. Get Primary Key for the table from SQLite metadata
+                    pk_cols = inspector.get_pk_constraint(table).get('constrained_columns', [])
+                    if not pk_cols:
+                        pk_cols = ['id'] if 'id' in df.columns else list(df.columns)
 
-                        if table in pg_exist:
-                            # Truncate existing table (CASCADE removes dependent FK rows first)
-                            cur.execute(f'TRUNCATE TABLE "{table}" CASCADE;')
-                        else:
-                            # Create empty table structure via pandas on a fresh connection
-                            cur.execute(f'RELEASE SAVEPOINT "{sp}";')
+                    # 3. Create missing tables in PG
+                    if table not in pg_exist:
+                        cur.execute(f"SAVEPOINT \"table_create_{table}\";")
+                        try:
+                            # Create empty table via pandas
                             with pg_eng.begin() as tmp:
                                 df.iloc[0:0].to_sql(table, tmp, if_exists="fail", index=False)
                             pg_exist.add(table)
-                            cur.execute(f'SAVEPOINT "{sp}";')
+                            # Alter table to add primary key so ON CONFLICT works
+                            if pk_cols != list(df.columns):
+                                pk_str = ", ".join([f'"{c}"' for c in pk_cols])
+                                cur.execute(f'ALTER TABLE "{table}" ADD PRIMARY KEY ({pk_str});')
+                            cur.execute(f"RELEASE SAVEPOINT \"table_create_{table}\";")
+                        except Exception as create_err:
+                            print(f"⚠️ [Backup → PG] Failed to create table structure for {table}: {create_err}")
+                            cur.execute(f"ROLLBACK TO SAVEPOINT \"table_create_{table}\";")
+                            continue
 
-                        # Bulk-insert rows
-                        if not df.empty:
-                            cols = list(df.columns)
-                            col_str      = ", ".join(f'"{c}"' for c in cols)
-                            placeholders = ", ".join(["%s"] * len(cols))
-                            sql          = f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders})'
-                            rows = [tuple(None if (hasattr(v, '__class__') and v.__class__.__name__ == 'NaTType')
-                                         else v for v in row)
-                                    for row in df.itertuples(index=False, name=None)]
-                            cur.executemany(sql, rows)
-
-                        cur.execute(f'RELEASE SAVEPOINT "{sp}";')
-                        print(f"   ✅ {table}: {len(df)} rows → PG")
-                        synced += 1
-
-                    except Exception as te:
-                        print(f"   ❌ {table}: {te}")
+                    # 4. Perform the UPSERT
+                    if not df.empty:
+                        cols = list(df.columns)
+                        col_str = ", ".join(f'"{c}"' for c in cols)
+                        placeholders = ", ".join(["%s"] * len(cols))
+                        
+                        conflict_target = ", ".join([f'"{c}"' for c in pk_cols])
+                        update_cols = ", ".join([f'"{c}" = EXCLUDED."{c}"' for c in cols if c not in pk_cols])
+                        
+                        if update_cols:
+                            sql = f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) ON CONFLICT ({conflict_target}) DO UPDATE SET {update_cols}'
+                        else:
+                            sql = f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) ON CONFLICT ({conflict_target}) DO NOTHING'
+                            
+                        rows = [tuple(None if (hasattr(v, '__class__') and v.__class__.__name__ == 'NaTType')
+                                     else v for v in row)
+                                for row in df.itertuples(index=False, name=None)]
+                        
+                        cur.execute(f"SAVEPOINT \"upsert_{table}\";")
                         try:
-                            cur.execute(f'ROLLBACK TO SAVEPOINT "{sp}";')
-                            cur.execute(f'RELEASE SAVEPOINT "{sp}";')
-                        except Exception:
-                            pass
+                            cur.executemany(sql, rows)
+                            cur.execute(f"RELEASE SAVEPOINT \"upsert_{table}\";")
+                            print(f"   ✅ {table}: {len(df)} rows upserted → PG")
+                            synced += 1
+                        except Exception as e:
+                            cur.execute(f"ROLLBACK TO SAVEPOINT \"upsert_{table}\";")
+                            print(f"   ❌ {table} upsert failed: {e}")
+                    else:
+                        print(f"   ✅ {table}: 0 rows (empty) → PG")
+                        synced += 1
 
                 raw_conn.commit()
                 cur.close()
@@ -321,7 +369,7 @@ class BackupManager:
             finally:
                 raw_conn.close()
 
-            print(f"✅ [Backup → PG] {synced}/{len(ordered)} tables synced.")
+            print(f"✅ [Backup → PG] {synced}/{len(ordered)} tables incrementally synced.")
             return synced > 0
 
         except Exception as e:

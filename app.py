@@ -3485,20 +3485,10 @@ with app.app_context():
 def trigger_manual_backup(current_user):
     """Manually trigger the backup process"""
     try:
-        # Run asynchronously in a real app, but for now synchronous is okay or use thread
-        # Using a thread to avoid blocking response
-        import threading
-        
-        def run_backup():
-            with app.app_context():
-                from backup_manager import BackupManager
-                bm = BackupManager(app)
-                bm.perform_backup()
-                
-        thread = threading.Thread(target=run_backup)
-        thread.start()
-        
-        return jsonify({"message": "Backup started in background"}), 200
+        from backup_manager import BackupManager
+        bm = BackupManager(app)
+        results = bm.perform_backup()
+        return jsonify({"message": "Backup completed successfully", "results": results}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
