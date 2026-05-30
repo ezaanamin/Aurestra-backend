@@ -18,7 +18,6 @@ from ai_agent_api import (
     _parse_date, _category_name
 )
 
-# Also import existing analytical functions to reuse
 from ai_agent_api import (
     anomaly_detection as ai_anomaly_detection,
     recurring_expenses as ai_recurring_expenses,
@@ -36,25 +35,19 @@ financial_api_bp = Blueprint("financial_api", __name__, url_prefix="/api")
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None
-        if 'Authorization' in request.headers:
-            auth_header = request.headers['Authorization']
-            if auth_header.startswith('Bearer '):
-                token = auth_header.split(" ")[1]
-        
-        if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
-            
-        try:
-            # Match app.py logic
-            secret = os.environ.get("SECRET_KEY", "0aefb44af279f5bb0ad9ecce393be138")
-            data = jwt.decode(token, secret, algorithms=["HS256"])
-            current_user = User.query.filter_by(id=data['user_id']).first()
-            if not current_user:
-                return jsonify({'message': 'User not found!'}), 401
-        except Exception as e:
-            return jsonify({'message': 'Token is invalid!', 'error': str(e)}), 401
-            
+        expected = os.environ.get("SECRET_KEY", "0aefb44af279f5bb0ad9ecce393be138")
+
+        # Read from Authorization header — strips "Bearer " prefix if present
+        auth = request.headers.get('Authorization', '').strip()
+        token = auth[7:].strip() if auth.lower().startswith('bearer ') else auth
+
+        if not token or token != expected:
+            return jsonify({'message': 'Invalid or missing API key!'}), 401
+
+        current_user = User.query.order_by(User.id).first()
+        if not current_user:
+            return jsonify({'message': 'No user found in database!'}), 401
+
         return f(current_user, *args, **kwargs)
     return decorated
 
@@ -169,21 +162,6 @@ def executive_snapshot(current_user):
         "net_change": round(net - prev_net, 2)
     }
 
-    # 7. Dynamic Insights
-    insights = []
-    if budget_data:
-        if budget_status == "on_track":
-            insights.append(f"Budget on track: {budget_data['remaining']:,.0f} remaining with {days_remaining} days left.")
-        elif budget_status == "warning":
-            insights.append(f"Budget warning: {budget_data['usage_pct']}% used with {days_remaining} days left.")
-        else:
-            insights.append(f"Over budget by {abs(budget_data['remaining']):,.0f}.")
-            
-    insights.append(f"Savings rate this month: {savings_rate}%.")
-    if top_categories_list:
-        top = top_categories_list[0]
-        insights.append(f"Top spending: {top['name']} at {top['amount']:,.0f} ({top['pct_of_expense']}% of total).")
-
     return jsonify({
         "month": month_param,
         "generated_at": now.isoformat(),
@@ -206,9 +184,8 @@ def executive_snapshot(current_user):
             "overall_pct": overall_pct
         },
         "top_categories": top_categories_list,
-        "comparison": comp_data,
-        "insights": insights
-    })
+        "comparison": comp_data
+    }), 200
 
 # =============================================================================
 # API Group 2: Financial Intelligence
