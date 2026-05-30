@@ -241,12 +241,29 @@ def get_month_deep_dive(current_user, month_str):
 @financial_api_bp.route("/financial-intelligence/transactions", methods=["GET"])
 @token_required
 def get_transactions(current_user):
-    """Paginated, searchable, filterable transaction list."""
+    """Return all transactions with minimal fields."""
+
     try:
-        # Wrap AI agent api function
-        from ai_agent_api import transaction_search as ai_tx_search
-        func_to_call = getattr(ai_tx_search, '__wrapped__', ai_tx_search)
-        return func_to_call()
+        transactions = (
+            Transaction.query
+            .filter(Transaction.is_deleted == False)
+            .order_by(Transaction.date.desc())
+            .all()
+        )
+
+        return jsonify({
+            "count": len(transactions),
+            "results": [
+                {
+                    "amount": t.amount,
+                    "sender": t.sender,
+                    "date": t.date.isoformat() if t.date else None,
+                    "type": t.type
+                }
+                for t in transactions
+            ]
+        }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
