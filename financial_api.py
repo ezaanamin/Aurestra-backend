@@ -241,12 +241,15 @@ def get_month_deep_dive(current_user, month_str):
 @financial_api_bp.route("/financial-intelligence/transactions", methods=["GET"])
 @token_required
 def get_transactions(current_user):
-    """Return all transactions with minimal fields."""
+    """Return all non-spam, non-deleted transactions with minimal fields."""
 
     try:
         transactions = (
             Transaction.query
-            .filter(Transaction.is_deleted == False)
+            .filter(
+                Transaction.is_deleted == False,
+                Transaction.is_spam == False
+            )
             .order_by(Transaction.date.desc())
             .all()
         )
@@ -255,9 +258,9 @@ def get_transactions(current_user):
             "count": len(transactions),
             "results": [
                 {
-                    "amount": t.amount,
+                    "amount": round(t.amount, 2),
                     "sender": t.sender,
-                    "date": t.date.isoformat() if t.date else None,
+                    "date": t.date.strftime("%Y-%m-%d") if t.date else None,
                     "type": t.type
                 }
                 for t in transactions
