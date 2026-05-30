@@ -106,10 +106,26 @@ def do_midnight_backup_job():
 
 
 # Email Config (Gmail)
- @app.route('/api/debug/push-diagnostics')
+@app.route('/api/debug/push-diagnostics')
 def push_diagnostics():
-    from fcm_utils import get_push_service_diagnostics
-    return jsonify(get_push_service_diagnostics())
+    try:
+        from fcm_utils import get_push_service_diagnostics
+
+        diagnostics = get_push_service_diagnostics()
+
+        return jsonify({
+            "success": True,
+            "diagnostics": diagnostics
+        }), 200
+
+    except Exception as e:
+        import traceback
+
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
 
 # -------------------------
 # HEALTH CHECK ROUTES
