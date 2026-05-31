@@ -101,7 +101,7 @@ def do_midnight_backup_job():
     "cron",
     id="do_8am_retry_backup",
     hour=8,
-    minute=15,
+    minute=30,
     misfire_grace_time=300,
     max_instances=1,
     timezone="Asia/Karachi",
