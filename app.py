@@ -90,6 +90,7 @@ def _run_backup(label: str) -> bool:
     minute=2,
     misfire_grace_time=300,
     max_instances=1,
+    timezone="Asia/Karachi",
 )
 def do_midnight_backup_job():
     global _midnight_backup_succeeded
@@ -100,9 +101,10 @@ def do_midnight_backup_job():
     "cron",
     id="do_8am_retry_backup",
     hour=8,
-    minute=0,
+    minute=15,
     misfire_grace_time=300,
     max_instances=1,
+    timezone="Asia/Karachi",
 )
 def do_8am_retry_backup_job():
     global _midnight_backup_succeeded
