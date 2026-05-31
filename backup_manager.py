@@ -31,6 +31,7 @@ class BackupManager:
     # ─────────────────────────────────────────────
     def init_app(self, app):
         self.backup_password   = os.getenv("BACKUP_PASSWORD", "default_secure_password")
+        print(f"🔑 [Backup] Password: {self.backup_password}")
         self.local_backup_path = (
             os.getenv("LOCAL_BACKUP_PATH")
             or os.getenv("BACKUP_EXTERNAL_PATH")
