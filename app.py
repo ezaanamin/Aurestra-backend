@@ -107,12 +107,8 @@ def do_midnight_backup_job():
     timezone="Asia/Karachi",
 )
 def do_8am_retry_backup_job():
-    global _midnight_backup_succeeded
-    if _midnight_backup_succeeded:
-        print("⏭️  [8AM Retry] Midnight backup was successful — skipping retry.")
-        return
-    print("⚠️  [8AM Retry] Midnight backup failed or didn't run — retrying now...")
-    _midnight_backup_succeeded = _run_backup("8AM retry")
+    print("⏰ [8AM] Running scheduled backup...")
+    _run_backup("8AM")
 
 
 scheduler.init_app(app)
