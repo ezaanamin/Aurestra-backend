@@ -108,8 +108,19 @@ class BackupManager:
 
                 try:
                     import zipfile
+                    import sqlite3
+
+                    # Use SQLite backup API to flush WAL and get a consistent snapshot
+                    consistent_db_path = zip_path + ".snapshot.db"
+                    src_conn = sqlite3.connect(sqlite_path)
+                    dst_conn = sqlite3.connect(consistent_db_path)
+                    src_conn.backup(dst_conn)
+                    dst_conn.close()
+                    src_conn.close()
+
                     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-                        zf.write(sqlite_path, arcname="aurestra.db")
+                        zf.write(consistent_db_path, arcname="aurestra.db")
+                    os.remove(consistent_db_path)
                     print(f"📦 [Backup] Zipped  → {zip_path}")
 
                     self.encrypt_file(zip_path, encrypted_path)
@@ -319,26 +330,6 @@ class BackupManager:
                 raw_conn.autocommit = False
                 cur = raw_conn.cursor()
 
-                PG_BIGINT_MAX = 9_223_372_036_854_775_807
-                PG_BIGINT_MIN = -9_223_372_036_854_775_808
-
-                def _safe_val(v, tbl):
-                    if hasattr(v, "__class__") and v.__class__.__name__ == "NaTType":
-                        return None
-                    if tbl == "device_tokens":
-                        int_val = None
-                        if isinstance(v, int):
-                            int_val = v
-                        elif isinstance(v, str):
-                            try:
-                                int_val = int(v)
-                            except (ValueError, TypeError):
-                                pass
-                        if int_val is not None and (int_val > PG_BIGINT_MAX or int_val < PG_BIGINT_MIN):
-                            print(f"   ⚠️  [Backup → PG] device_tokens: out-of-range value → None")
-                            return None
-                    return v
-
                 for table in ordered:
                     if table in ("users", "device_tokens"):
                         print(f"   ⏭️  {table}: skipped (excluded from backup sync)")
@@ -384,6 +375,14 @@ class BackupManager:
                                 f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) '
                                 f'ON CONFLICT ({conflict_target}) DO NOTHING'
                             )
+
+                        PG_BIGINT_MAX = 9_223_372_036_854_775_807
+                        PG_BIGINT_MIN = -9_223_372_036_854_775_808
+
+                        def _safe_val(v, tbl):
+                            if hasattr(v, "__class__") and v.__class__.__name__ == "NaTType":
+                                return None
+                            return v
 
                         rows = [
                             tuple(_safe_val(v, table) for v in row)
