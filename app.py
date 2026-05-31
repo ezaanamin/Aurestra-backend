@@ -113,6 +113,11 @@ def do_midnight_backup_job():
 
 scheduler.init_app(app)
 
+# Print backup password on startup for decryption reference
+import os as _os
+_backup_pw = _os.getenv("BACKUP_PASSWORD", "default_secure_password")
+print(f"🔑 [Backup] Password: {_backup_pw}")
+
 # Prevent duplicate scheduler in Flask debug mode.
 # In debug mode Flask spawns a reloader parent + a worker child process.
 # We only want the scheduler running in the worker (WERKZEUG_RUN_MAIN=true).
