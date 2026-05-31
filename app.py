@@ -51,17 +51,13 @@ for bp in blueprints:
 # ─────────────────────────────────────────────────────────────
 scheduler = APScheduler()
 
+# Tracks whether the midnight backup fully succeeded
+_midnight_backup_succeeded = False
 
-@scheduler.task(
-    "cron",
-    id="do_midnight_backup",
-    hour=0,
-    minute=2,
-    misfire_grace_time=300
-)
-def do_midnight_backup_job():
-    print("⏰ Running midnight backup...")
 
+def _run_backup(label: str) -> bool:
+    """Shared backup runner. Returns True if all destinations succeeded."""
+    print(f"⏰ Running {label} backup...")
     try:
         from backup_manager import BackupManager
 
@@ -74,14 +70,47 @@ def do_midnight_backup_job():
             success_count = sum(
                 1 for result in results.values() if result is True
             )
+            total = len(results)
 
             print(
                 f"✅ Backup complete: "
-                f"{success_count}/{len(results)} destinations succeeded."
+                f"{success_count}/{total} destinations succeeded."
             )
+            return success_count == total
 
     except Exception as e:
         print(f"❌ Backup failed: {str(e)}")
+        return False
+
+
+@scheduler.task(
+    "cron",
+    id="do_midnight_backup",
+    hour=0,
+    minute=2,
+    misfire_grace_time=300,
+    max_instances=1,
+)
+def do_midnight_backup_job():
+    global _midnight_backup_succeeded
+    _midnight_backup_succeeded = _run_backup("midnight")
+
+
+@scheduler.task(
+    "cron",
+    id="do_8am_retry_backup",
+    hour=8,
+    minute=0,
+    misfire_grace_time=300,
+    max_instances=1,
+)
+def do_8am_retry_backup_job():
+    global _midnight_backup_succeeded
+    if _midnight_backup_succeeded:
+        print("⏭️  [8AM Retry] Midnight backup was successful — skipping retry.")
+        return
+    print("⚠️  [8AM Retry] Midnight backup failed or didn't run — retrying now...")
+    _midnight_backup_succeeded = _run_backup("8AM retry")
 
 
 scheduler.init_app(app)
