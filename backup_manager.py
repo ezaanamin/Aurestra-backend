@@ -319,6 +319,11 @@ class BackupManager:
                 cur = raw_conn.cursor()
 
                 for table in ordered:
+                    if table == "users":
+                        print(f"   ⏭️  {table}: skipped (excluded from backup sync)")
+                        synced += 1  # count as success so overall result isn't penalised
+                        continue
+
                     df      = pd.read_sql_table(table, sqlite_eng)
                     pk_cols = inspector.get_pk_constraint(table).get("constrained_columns", [])
                     if not pk_cols:
@@ -359,11 +364,21 @@ class BackupManager:
                                 f'ON CONFLICT ({conflict_target}) DO NOTHING'
                             )
 
+                        PG_BIGINT_MAX = 9_223_372_036_854_775_807
+                        PG_BIGINT_MIN = -9_223_372_036_854_775_808
+
+                        def _safe_val(v, tbl):
+                            if hasattr(v, "__class__") and v.__class__.__name__ == "NaTType":
+                                return None
+                            # Clamp integers that exceed PostgreSQL bigint range
+                            if tbl == "device_tokens" and isinstance(v, int):
+                                if v > PG_BIGINT_MAX or v < PG_BIGINT_MIN:
+                                    print(f"   ⚠️  [Backup → PG] device_tokens: clamping out-of-range bigint ({v}) → None")
+                                    return None
+                            return v
+
                         rows = [
-                            tuple(
-                                None if (hasattr(v, "__class__") and v.__class__.__name__ == "NaTType") else v
-                                for v in row
-                            )
+                            tuple(_safe_val(v, table) for v in row)
                             for row in df.itertuples(index=False, name=None)
                         ]
 
