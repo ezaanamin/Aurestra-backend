@@ -100,8 +100,8 @@ def do_midnight_backup_job():
 @scheduler.task(
     "cron",
     id="do_8am_retry_backup",
-    hour=8,
-    minute=15,
+    hour=9,
+    minute=2,
     misfire_grace_time=300,
     max_instances=1,
     timezone="Asia/Karachi",
@@ -139,5 +139,5 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=5000,
-        debug=True,
+        debug=False,
     )
