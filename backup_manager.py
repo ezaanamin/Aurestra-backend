@@ -318,10 +318,30 @@ class BackupManager:
                 raw_conn.autocommit = False
                 cur = raw_conn.cursor()
 
+                PG_BIGINT_MAX = 9_223_372_036_854_775_807
+                PG_BIGINT_MIN = -9_223_372_036_854_775_808
+
+                def _safe_val(v, tbl):
+                    if hasattr(v, "__class__") and v.__class__.__name__ == "NaTType":
+                        return None
+                    if tbl == "device_tokens":
+                        int_val = None
+                        if isinstance(v, int):
+                            int_val = v
+                        elif isinstance(v, str):
+                            try:
+                                int_val = int(v)
+                            except (ValueError, TypeError):
+                                pass
+                        if int_val is not None and (int_val > PG_BIGINT_MAX or int_val < PG_BIGINT_MIN):
+                            print(f"   ⚠️  [Backup → PG] device_tokens: out-of-range value → None")
+                            return None
+                    return v
+
                 for table in ordered:
                     if table == "users":
-                        print(f"   ⏭️  {table}: skipped (excluded from backup sync)")
-                        synced += 1  # count as success so overall result isn't penalised
+                        print(f"   ⏭️  users: skipped (excluded from backup sync)")
+                        synced += 1
                         continue
 
                     df      = pd.read_sql_table(table, sqlite_eng)
@@ -363,19 +383,6 @@ class BackupManager:
                                 f'INSERT INTO "{table}" ({col_str}) VALUES ({placeholders}) '
                                 f'ON CONFLICT ({conflict_target}) DO NOTHING'
                             )
-
-                        PG_BIGINT_MAX = 9_223_372_036_854_775_807
-                        PG_BIGINT_MIN = -9_223_372_036_854_775_808
-
-                        def _safe_val(v, tbl):
-                            if hasattr(v, "__class__") and v.__class__.__name__ == "NaTType":
-                                return None
-                            # Clamp integers that exceed PostgreSQL bigint range
-                            if tbl == "device_tokens" and isinstance(v, int):
-                                if v > PG_BIGINT_MAX or v < PG_BIGINT_MIN:
-                                    print(f"   ⚠️  [Backup → PG] device_tokens: clamping out-of-range bigint ({v}) → None")
-                                    return None
-                            return v
 
                         rows = [
                             tuple(_safe_val(v, table) for v in row)

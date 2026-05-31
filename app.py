@@ -101,7 +101,7 @@ def do_midnight_backup_job():
     "cron",
     id="do_8am_retry_backup",
     hour=8,
-    minute=30,
+    minute=15,
     misfire_grace_time=300,
     max_instances=1,
     timezone="Asia/Karachi",
@@ -113,8 +113,12 @@ def do_8am_retry_backup_job():
 
 scheduler.init_app(app)
 
-# Prevent duplicate scheduler in Flask debug mode
-if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+# Prevent duplicate scheduler in Flask debug mode.
+# In debug mode Flask spawns a reloader parent + a worker child process.
+# We only want the scheduler running in the worker (WERKZEUG_RUN_MAIN=true).
+# When running normally (production/gunicorn) app.debug is False so it always starts.
+_is_reloader_parent = app.debug and os.environ.get("WERKZEUG_RUN_MAIN") != "true"
+if not _is_reloader_parent:
     scheduler.start()
 
 # ─────────────────────────────────────────────────────────────
