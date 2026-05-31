@@ -339,8 +339,8 @@ class BackupManager:
                     return v
 
                 for table in ordered:
-                    if table == "users":
-                        print(f"   ⏭️  users: skipped (excluded from backup sync)")
+                    if table in ("users", "device_tokens"):
+                        print(f"   ⏭️  {table}: skipped (excluded from backup sync)")
                         synced += 1
                         continue
 
