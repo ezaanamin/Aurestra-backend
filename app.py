@@ -97,18 +97,18 @@ def do_midnight_backup_job():
     _midnight_backup_succeeded = _run_backup("midnight")
 
 
-# @scheduler.task(
-#     "cron",
-#     id="do_8am_retry_backup",
-#     hour=8,
-#     minute=45,
-#     misfire_grace_time=300,
-#     max_instances=1,
-#     timezone="Asia/Karachi",
-# )
-# def do_8am_retry_backup_job():
-#     print("⏰ [8AM] Running scheduled backup...")
-#     _run_backup("8AM")
+@scheduler.task(
+    "cron",
+    id="do_8am_retry_backup",
+    hour=9,
+    minute=40,
+    misfire_grace_time=300,
+    max_instances=1,
+    timezone="Asia/Karachi",
+)
+def do_8am_retry_backup_job():
+    print("⏰ [8AM] Running scheduled backup...")
+    _run_backup("8AM")
 
 
 scheduler.init_app(app)
