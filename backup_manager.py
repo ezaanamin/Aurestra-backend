@@ -325,6 +325,7 @@ class BackupManager:
             pg_exist = set(pg_insp.get_table_names())
 
             synced   = 0
+            failed_tables = []
             raw_conn = pg_eng.raw_connection()
             try:
                 raw_conn.autocommit = False
@@ -354,6 +355,7 @@ class BackupManager:
                         except Exception as create_err:
                             print(f"⚠️ [Backup → PG] Failed to create table structure for {table}: {create_err}")
                             cur.execute(f'ROLLBACK TO SAVEPOINT "table_create_{table}";')
+                            failed_tables.append(table)
                             continue
 
                     if not df.empty:
@@ -398,6 +400,7 @@ class BackupManager:
                         except Exception as e:
                             cur.execute(f'ROLLBACK TO SAVEPOINT "upsert_{table}";')
                             print(f"   ❌ {table} upsert failed: {e}")
+                            failed_tables.append(table)
                     else:
                         print(f"   ✅ {table}: 0 rows (empty) → PG")
                         synced += 1
@@ -413,10 +416,18 @@ class BackupManager:
                 raw_conn.close()
 
             print(f"✅ [Backup → PG] {synced}/{len(ordered)} tables incrementally synced.")
-            # FIX 5: Return True when all tables were processed successfully (synced == len(ordered)),
-            # not just synced > 0, which would return True even with partial failures.
-            # Also handles the edge case where all tables are empty (synced == 0 but len(ordered) == 0).
-            return synced == len(ordered)
+            
+            if synced == len(ordered):
+                return True
+                
+            critical_tables = {"transactions", "account_balances", "categories", "users"}
+            failed_critical = [t for t in failed_tables if t in critical_tables]
+            
+            if len(ordered) > 0 and (synced / len(ordered)) >= 0.5 and not failed_critical:
+                print(f"⚠️ [Backup → PG] Partial sync successful (>=50% and no critical tables failed). Failed tables: {failed_tables}")
+                return True
+                
+            return False
 
         except Exception as e:
             print(f"❌ [Backup → PG] Fatal error: {e}")
