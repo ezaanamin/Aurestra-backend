@@ -85,15 +85,15 @@ def _run_backup(label: str) -> bool:
         return False
 
 
-@scheduler.task(
-    "cron",
-    id="do_midnight_backup",
-    hour=0,
-    minute=2,
-    misfire_grace_time=300,
-    max_instances=1,
-    timezone="Asia/Karachi",
-)
+# @scheduler.task(
+#     "cron",
+#     id="do_midnight_backup",
+#     hour=0,
+#     minute=2,
+#     misfire_grace_time=300,
+#     max_instances=1,
+#     timezone="Asia/Karachi",
+# )
 def do_midnight_backup_job():
     global _midnight_backup_succeeded
     _midnight_backup_succeeded = _run_backup("midnight")
