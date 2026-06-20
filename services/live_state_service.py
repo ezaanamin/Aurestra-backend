@@ -54,7 +54,7 @@ def _txn_snapshot(t: Transaction) -> dict:
 # 1. Current balance (sum of all AccountBalance rows)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_current_balance(user_id: int) -> dict:
+def get_current_balance() -> dict:
     """
     LIVE_STATE: What is my current balance?
     Returns the live balance for every account plus a combined total.
@@ -88,7 +88,7 @@ def get_current_balance(user_id: int) -> dict:
 # 2. Available balance (total minus pending/held debits)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_available_balance(user_id: int) -> dict:
+def get_available_balance() -> dict:
     """
     LIVE_STATE: How much is actually available right now?
     Deducts any pending (not yet settled) debit transactions from the
@@ -125,7 +125,7 @@ def get_available_balance(user_id: int) -> dict:
 # 3. Last transaction
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_last_transaction(user_id: int) -> dict:
+def get_last_transaction() -> dict:
     """
     LIVE_STATE: What was my last transaction?
     Returns the single most-recent non-deleted, non-spam transaction.
@@ -146,7 +146,7 @@ def get_last_transaction(user_id: int) -> dict:
 # 4. Pending transactions
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_pending_transactions(user_id: int) -> dict:
+def get_pending_transactions() -> dict:
     """
     LIVE_STATE: Are there any pending charges on my account?
     Returns all transactions still in categorization_status = 'pending'.
@@ -176,7 +176,7 @@ def get_pending_transactions(user_id: int) -> dict:
 # 5. Today's transactions
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_todays_transactions(user_id: int) -> dict:
+def get_todays_transactions() -> dict:
     """
     LIVE_STATE: What transactions happened today?
     Filters by Transaction.date falling within today's calendar day (UTC).
@@ -214,7 +214,7 @@ _SALARY_KEYWORDS = [
 ]
 
 
-def has_salary_arrived(user_id: int) -> dict:
+def has_salary_arrived() -> dict:
     """
     LIVE_STATE: Did my salary arrive yet this month?
     Looks for a credit transaction this calendar month whose purpose/notes/sender
@@ -255,7 +255,7 @@ def has_salary_arrived(user_id: int) -> dict:
 # 7. Today's spending total (debits only)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_todays_spending_total(user_id: int) -> dict:
+def get_todays_spending_total() -> dict:
     """
     LIVE_STATE: How much have I spent today?
     Sums all debit transactions where Transaction.date is today (UTC).
@@ -305,7 +305,7 @@ _SUBSCRIPTION_KEYWORDS = [
 ]
 
 
-def get_subscriptions_charged_this_week(user_id: int) -> dict:
+def get_subscriptions_charged_this_week() -> dict:
     """
     LIVE_STATE: What subscriptions were charged this week (last 7 days)?
     Identifies debit transactions whose purpose/notes/sender match common
@@ -345,7 +345,7 @@ def get_subscriptions_charged_this_week(user_id: int) -> dict:
 # 9. Bill / direct-debit payment status
 # ─────────────────────────────────────────────────────────────────────────────
 
-def check_bill_payment_status(user_id: int, bill_name: str) -> dict:
+def check_bill_payment_status(bill_name: str) -> dict:
     """
     LIVE_STATE: Did my [bill_name] payment go through this month?
     Performs a case-insensitive substring search across purpose, notes,
@@ -388,7 +388,7 @@ def check_bill_payment_status(user_id: int, bill_name: str) -> dict:
 # 10. Overdraft / credit status
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_overdraft_or_credit_status(user_id: int) -> dict:
+def get_overdraft_or_credit_status() -> dict:
     """
     LIVE_STATE: Am I in overdraft or using a credit facility?
     Identifies accounts with a negative current_balance (overdraft) and
