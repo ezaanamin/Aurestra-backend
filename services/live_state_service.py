@@ -13,6 +13,11 @@ from transfer_matching import exclude_own_account_transfer_sql
 
 # ── Shared base filter ────────────────────────────────────────────────────────
 
+def _safe_balance(raw: float) -> float:
+    """Clamp account balance to 0 — negative DB values are treated as zero."""
+    return max(0.0, float(raw or 0.0))
+
+
 def _active_txns():
     """Base query: exclude deleted, spam, and internal transfers."""
     return Transaction.query.filter(
@@ -68,13 +73,13 @@ def get_current_balance() -> dict:
             "source":       a.source,
             "display_name": a.display_name or a.source,
             "account_kind": a.account_kind,
-            "balance":      round(a.current_balance, 2),
+            "balance":      round(_safe_balance(a.current_balance), 2),
             "last_updated": a.last_updated.isoformat() if a.last_updated else None,
         }
         for a in accounts
     ]
 
-    total = round(sum(a.current_balance for a in accounts), 2)
+    total = round(sum(_safe_balance(a.current_balance) for a in accounts), 2)
 
     return {
         "total_balance": total,
@@ -95,7 +100,7 @@ def get_available_balance() -> dict:
     current balance so the user sees cleared + uncleared exposure.
     """
     accounts  = AccountBalance.query.all()
-    total_bal = round(sum(a.current_balance for a in accounts), 2)
+    total_bal = round(sum(_safe_balance(a.current_balance) for a in accounts), 2)
 
     # Pending debits that haven't cleared yet (categorization_status = 'pending', type = debit)
     pending_debits = (
