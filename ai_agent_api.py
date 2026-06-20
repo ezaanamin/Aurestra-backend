@@ -133,17 +133,19 @@ def _build_category_map():
 
 
 # ---------------------------------------------------------------------------
-# 0.  TOKEN GENERATION (utility — not client-facing in production)
+# 0.  TOKEN GENERATION (DEV-ONLY — DISABLED IN PRODUCTION)
+#     AGENT_FIXED_TOKEN is already stored in .env — do not re-expose this.
 # ---------------------------------------------------------------------------
 
-@ai_agent_bp.route("/generate-token", methods=["GET"])
-def generate_token():
-    """
-    DEV-ONLY endpoint to generate the fixed agent JWT.
-    Should be disabled / removed in production.
-    """
-    token = _generate_agent_token()
-    return jsonify({"token": token, "note": "Store this permanently. It does not expire."})
+# @ai_agent_bp.route("/generate-token", methods=["GET"])
+# def generate_token():
+#     """
+#     DEV-ONLY endpoint to generate the fixed agent JWT.
+#     Disabled — token is already in AGENT_FIXED_TOKEN env var.
+#     """
+#     token = _generate_agent_token()
+#     return jsonify({"token": token, "note": "Store this permanently. It does not expire."})
+
 
 
 # ---------------------------------------------------------------------------

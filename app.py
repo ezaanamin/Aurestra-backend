@@ -85,15 +85,15 @@ def _run_backup(label: str) -> bool:
         return False
 
 
-# @scheduler.task(
-#     "cron",
-#     id="do_midnight_backup",
-#     hour=0,
-#     minute=2,
-#     misfire_grace_time=300,
-#     max_instances=1,
-#     timezone="Asia/Karachi",
-# )
+@scheduler.task(
+    "cron",
+    id="do_midnight_backup",
+    hour=0,
+    minute=2,
+    misfire_grace_time=300,
+    max_instances=1,
+    timezone="Asia/Karachi",
+)
 def do_midnight_backup_job():
     global _midnight_backup_succeeded
     _midnight_backup_succeeded = _run_backup("midnight")
@@ -132,20 +132,20 @@ def scheduled_monthly_summary():
         generate_monthly_rag_summary(month_str)
 
 
-@scheduler.task(
-    "interval",
-    id="generate_monthly_summary_test",
-    minutes=2, # Change this to 2 or 5 to test more frequently
-    misfire_grace_time=300,
-)
-def test_monthly_summary():
-    print("⏰ [TEST INTERVAL] Running TEST RAG summary...")
-    from services.rag_service import generate_monthly_rag_summary
-    with app.app_context():
-        import datetime
-        now = datetime.datetime.now(datetime.timezone.utc)
-        month_str = now.strftime('%Y-%m')
-        generate_monthly_rag_summary(month_str)
+# @scheduler.task(
+#     "interval",
+#     id="generate_monthly_summary_test",
+#     minutes=2,  # DEV ONLY — do not enable in production
+#     misfire_grace_time=300,
+# )
+# def test_monthly_summary():
+#     print("⏰ [TEST INTERVAL] Running TEST RAG summary...")
+#     from services.rag_service import generate_monthly_rag_summary
+#     with app.app_context():
+#         import datetime
+#         now = datetime.datetime.now(datetime.timezone.utc)
+#         month_str = now.strftime('%Y-%m')
+#         generate_monthly_rag_summary(month_str)
 
 
 scheduler.init_app(app)
