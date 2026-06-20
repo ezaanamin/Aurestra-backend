@@ -18,6 +18,7 @@ transaction_bp.route('/api/transactions/categorized',     methods=['GET'])(token
 
 # Write
 transaction_bp.route('/api/transactions',                 methods=['POST'])(token_required(ctrl.create_transaction))
+transaction_bp.route('/api/transactions/upload-receipt',  methods=['POST'])(token_required(ctrl.upload_receipt))
 transaction_bp.route('/api/transactions/<int:id>',        methods=['PUT'])(ctrl.update_transaction)
 transaction_bp.route('/api/transactions/<int:txn_id>',    methods=['DELETE'])(token_required(ctrl.delete_transaction))
 transaction_bp.route('/api/transactions/<int:txn_id>/spam', methods=['POST'])(token_required(ctrl.mark_spam))

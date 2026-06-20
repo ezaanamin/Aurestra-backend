@@ -81,6 +81,9 @@ class Transaction(db.Model):
     account_balance_source = db.Column(db.String(64), nullable=True)
     balance_applied = db.Column(db.Boolean, nullable=False, default=True)
 
+    # NEW - linking to an uploaded receipt
+    receipt_id = db.Column(db.Integer, db.ForeignKey('uploaded_receipts.id'), nullable=True)
+
     is_deleted = db.Column(db.Boolean, default=False)
     is_spam = db.Column(db.Boolean, default=False)
 
@@ -127,6 +130,7 @@ class Transaction(db.Model):
             "category_id": self.category_id,
             "account_balance_source": self.account_balance_source,
             "balance_applied": self.balance_applied,
+            "receipt_id": self.receipt_id,
             "is_deleted": self.is_deleted,
             "is_spam": self.is_spam,
             "created_at": self.created_at.isoformat() if self.created_at else None
@@ -155,6 +159,29 @@ class SMSHistory(db.Model):
             'sender': self.sender,
             'body': self.body,
             'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class UploadedReceipt(db.Model):
+    __tablename__ = 'uploaded_receipts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(512), nullable=False)
+    mime_type = db.Column(db.String(50))
+    
+    ocr_status = db.Column(db.String(20), default='pending') # pending, completed, failed
+    ocr_raw_text = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'filename': self.filename,
+            'ocr_status': self.ocr_status,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
@@ -317,7 +344,7 @@ class AccountBalance(db.Model):
             "match_keywords": self.keywords_list(),
             "accent_color": self.accent_color or "#6366F1",
             "sort_order": self.sort_order or 0,
-            "balance": self.current_balance,
+            "balance": max(0.0, float(self.current_balance or 0.0)),
             "last_updated": self.last_updated.isoformat() if self.last_updated else None,
             "is_manual": bool(self.is_manual),
             "statement_account_numbers": self.statement_account_numbers_list(),

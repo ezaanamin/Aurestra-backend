@@ -1,16 +1,112 @@
+FIREBASE_CRED_PATH set but file not found: /media/ezaan-amin/DATA/Documents/Aurestra/backend/ezaanamin-7cbcf-firebase-adminsdk-xz65x-c6fc4897e9.json
+Firebase not initialized: FIREBASE_CRED_PATH set but file not found: /media/ezaan-amin/DATA/Documents/Aurestra/backend/ezaanamin-7cbcf-firebase-adminsdk-xz65x-c6fc4897e9.json
+✅ [Database] Primary: SQLite (/media/ezaan-amin/DATA1/Documents/Aurestra/backend/aurestra.db)
+✅ [Database] Secondary: PostgreSQL (unix socket / peer auth → finance)
+✅ [Database] PostgreSQL engine created (backup target).
+🔑 [Backup] Password: change_this_to_something_secure
+✅ Categories seeded
+ * Serving Flask app 'database'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.7.145:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [20/Jun/2026 09:56:54] "POST /api/transactions/upload-receipt HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:57:12] "POST /api/transactions/upload-receipt HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:58:24] "POST /api/transactions/upload-receipt HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:58:45] "POST /api/transactions/upload-receipt HTTP/1.1" 200 -
+[2026-06-20 09:59:51,308] ERROR in app: Exception on /api/reports/statement/calculate [POST]
 Traceback (most recent call last):
-  File "/media/ezaan-amin/DATA/Documents/Aurestra/backend/app.py", line 1, in <module>
-    from flask import jsonify, request
-ModuleNotFoundError: No module named 'flask'
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/utils/auth.py", line 39, in decorated
+    return f(current_user, *args, **kwargs)
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/controllers/report_controller.py", line 73, in calculate_statement
+    from fetchers import fetch_previous_month_statement
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/fetchers.py", line 9, in <module>
+    from utils import decode_mime_words, extract_text_from_pdf
+ImportError: cannot import name 'decode_mime_words' from 'utils' (unknown location)
+127.0.0.1 - - [20/Jun/2026 09:59:51] "[35m[1mPOST /api/reports/statement/calculate HTTP/1.1[0m" 500 -
+127.0.0.1 - - [20/Jun/2026 09:59:51] "GET /api/transactions/top-categories?period=month HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:51] "[33mGET /api/budget HTTP/1.1[0m" 404 -
+127.0.0.1 - - [20/Jun/2026 09:59:51] "GET /api/latest-transactions?limit=4 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:51] "GET /api/expenses/total HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:51] "GET /api/accounts HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:51] "GET /api/savings-goals HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:51] "GET /api/monthly-summary HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:52] "GET /api/insights HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:52] "GET /api/transactions/uncategorized HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:52] "GET /api/categories HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 09:59:53] "GET /api/categories/monthly?month=2026-06 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:01:07] "GET /api/analytics/trend?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:01:07] "GET /api/transactions/top-categories?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:01:07] "GET /api/latest-transactions?limit=50 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:20] "GET /api/analytics/trend?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:20] "GET /api/transactions/top-categories?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:20] "GET /api/accounts HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:20] "GET /api/categories HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:20] "GET /api/latest-transactions?limit=50 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:21] "GET /api/expenses/total HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:21] "GET /api/insights HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:02:21] "GET /api/budget/history HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:03:19] "POST /api/transactions/upload-receipt HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:14] "GET /api/latest-transactions?limit=50 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:14] "GET /api/analytics/trend?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:15] "GET /api/categories HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:15] "GET /api/transactions/top-categories?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:15] "GET /api/accounts HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:15] "GET /api/insights HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:15] "GET /api/expenses/total HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:05:15] "GET /api/budget/history HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:42] "GET /api/latest-transactions?limit=50 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:43] "GET /api/transactions/top-categories?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:43] "GET /api/accounts HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:43] "GET /api/categories HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:43] "GET /api/analytics/trend?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:44] "GET /api/expenses/total HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:44] "GET /api/transactions/top-categories?period=month HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:44] "GET /api/insights HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:44] "GET /api/latest-transactions?limit=4 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:44] "GET /api/budget/history HTTP/1.1" 200 -
+[2026-06-20 10:12:45,101] ERROR in app: Exception on /api/reports/statement/calculate [POST]
 Traceback (most recent call last):
-  File "/media/ezaan-amin/DATA/Documents/Aurestra/backend/app.py", line 1, in <module>
-    from flask import jsonify, request
-ModuleNotFoundError: No module named 'flask'
-Traceback (most recent call last):
-  File "/media/ezaan-amin/DATA/Documents/Aurestra/backend/app.py", line 1, in <module>
-    from flask import jsonify, request
-ModuleNotFoundError: No module named 'flask'
-Traceback (most recent call last):
-  File "/media/ezaan-amin/DATA/Documents/Aurestra/backend/app.py", line 1, in <module>
-    from flask import jsonify, request
-ModuleNotFoundError: No module named 'flask'
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/venv/lib/python3.13/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/utils/auth.py", line 39, in decorated
+    return f(current_user, *args, **kwargs)
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/controllers/report_controller.py", line 73, in calculate_statement
+    from fetchers import fetch_previous_month_statement
+  File "/media/ezaan-amin/DATA1/Documents/Aurestra/backend/fetchers.py", line 9, in <module>
+    from utils import decode_mime_words, extract_text_from_pdf
+ImportError: cannot import name 'decode_mime_words' from 'utils' (unknown location)
+127.0.0.1 - - [20/Jun/2026 10:12:45] "[35m[1mPOST /api/reports/statement/calculate HTTP/1.1[0m" 500 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "GET /api/expenses/total HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "[33mGET /api/budget HTTP/1.1[0m" 404 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "GET /api/accounts HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "GET /api/monthly-summary HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "GET /api/savings-goals HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "GET /api/insights HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "GET /api/categories HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:45] "GET /api/transactions/uncategorized HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jun/2026 10:12:51] "GET /api/categories/monthly?month=2026-06 HTTP/1.1" 200 -

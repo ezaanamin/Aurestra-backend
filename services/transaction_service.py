@@ -4,10 +4,15 @@ from datetime import datetime, timedelta, date
 from sqlalchemy import func, extract, case, desc
 from dateutil.relativedelta import relativedelta
 from database import db
-from model import Transaction, Category, AccountBalance, Budget
+from model import Transaction, Category, AccountBalance, Budget, UploadedReceipt
 from transfer_matching import exclude_own_account_transfer_sql, is_own_account_transfer_row
 from ledger_sync import apply_pending_transaction_ledger, ensure_account_balance_row, log_wallet_attribution
 from decorator.helpers import calculate_month_expenses
+
+import os
+from werkzeug.utils import secure_filename
+from services.ocr_service import perform_ocr
+from services.receipt_parser import parse_receipt_text
 
 # ── Read ──────────────────────────────────────────────────────────────────────
 
@@ -180,6 +185,11 @@ def create_manual_transaction(data: dict) -> tuple:
     if not slug:
         raise ValueError("account_balance_source is required (wallet slug, e.g. bank, easypaisa, cash)")
 
+    if t_type == "debit":
+        account = ensure_account_balance_row(slug)
+        if float(account.current_balance or 0.0) < amount:
+            raise ValueError(f"Insufficient funds in wallet '{account.display_name or slug}'. Balance is {float(account.current_balance or 0.0)}.")
+
     date_str = data.get("date")
     tx_date = datetime.utcnow()
     if date_str:
@@ -191,11 +201,14 @@ def create_manual_transaction(data: dict) -> tuple:
     new_tx = Transaction(
         source="manual", date=tx_date, amount=amount, type=t_type,
         purpose=data.get("category", "Uncategorized"),
-        sender="Manual Entry", receiver="Me" if t_type == "credit" else "Merchant",
+        sender=data.get("sender") or "Manual Entry",
+        receiver=data.get("receiver") or data.get("recipient") or ("Me" if t_type == "credit" else "Merchant"),
+        transaction_id=data.get("transaction_id"),
         notes=data.get("notes", ""),
         categorization_status="confirmed",
         account_balance_source=slug,
         balance_applied=False,
+        receipt_id=data.get("receipt_id"),
     )
     db.session.add(new_tx)
     db.session.flush()
@@ -354,4 +367,61 @@ def get_total_expenses_for_current_month():
         "total_expense":  total_expenses,
         "total_debits":   total_debits,
         "total_credits":  total_credits,
+    }
+
+
+def process_receipt_upload(file, current_user):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+    def allowed_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    if not file or not file.filename:
+        raise ValueError("No file provided")
+        
+    if not allowed_file(file.filename):
+        raise ValueError("File type not allowed")
+        
+    # Ensure dir exists
+    upload_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'attachments', 'receipts')
+    os.makedirs(upload_folder, exist_ok=True)
+    
+    timestamp_str = str(datetime.utcnow().timestamp()).replace('.', '')
+    filename = secure_filename(f"{timestamp_str}_{current_user.id}_{file.filename}")
+    file_path = os.path.join(upload_folder, filename)
+    file.save(file_path)
+    
+    receipt = UploadedReceipt(
+        user_id=current_user.id,
+        filename=filename,
+        file_path=file_path,
+        mime_type=file.mimetype,
+        ocr_status='pending'
+    )
+    db.session.add(receipt)
+    db.session.commit()
+    
+    try:
+        raw_text = perform_ocr(file_path)
+        print("====== RAW TEXT FROM OCR ======")
+        print(repr(raw_text))
+        print("===============================")
+        receipt.ocr_raw_text = raw_text
+        receipt.ocr_status = 'completed'
+        extracted_data = parse_receipt_text(raw_text)
+    except Exception as e:
+        import traceback
+        print("====== OCR / PARSER PIPELINE FAILED ======")
+        print(traceback.format_exc())
+        print("==========================================")
+        receipt.ocr_status = 'failed'
+        receipt.ocr_raw_text = None
+        extracted_data = {}
+        
+    db.session.commit()
+    
+    return {
+        "success": True,
+        "receipt_id": receipt.id,
+        "ocr_status": receipt.ocr_status,
+        "extracted_data": extracted_data
     }

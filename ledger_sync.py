@@ -400,7 +400,10 @@ def _apply_balance_delta(
     if respect_manual_lock and getattr(balance, "is_manual", False):
         logger.info("Categorize ledger: skip delta on manual-locked account %s", slug)
         return
-    balance.current_balance = float(balance.current_balance or 0) + delta
+    new_bal = float(balance.current_balance or 0) + delta
+    if new_bal < 0:
+        new_bal = 0.0
+    balance.current_balance = new_bal
     balance.last_updated = datetime.now()
     if not respect_manual_lock:
         balance.is_manual = False

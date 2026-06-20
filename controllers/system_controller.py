@@ -59,11 +59,11 @@ def trigger_backup(current_user):
 
 
 def list_api_insights(current_user):
-    """Returns API endpoint documentation for the AI Agent."""
+    """Returns API endpoint documentation for the LIVE_STATE service."""
     try:
         endpoints = []
         for rule in current_app.url_map.iter_rules():
-            if rule.endpoint.startswith("ai_agent."):
+            if rule.endpoint.startswith("live_state."):
                 func = current_app.view_functions[rule.endpoint]
                 endpoints.append({
                     "id":          str(rule),

@@ -10,4 +10,6 @@ report_bp.route('/api/reports/statement',          methods=['POST'])(token_requi
 report_bp.route('/api/reports/statement/calculate', methods=['POST'])(token_required(ctrl.calculate_statement))
 report_bp.route('/api/reports/statement/mark-read', methods=['POST'])(token_required(ctrl.mark_read))
 report_bp.route('/api/insights/generate',          methods=['POST'])(token_required(ctrl.generate_insights))
+report_bp.route('/api/insights/list',              methods=['GET'])(token_required(ctrl.list_insights))
+report_bp.route('/api/insights/available-months',  methods=['GET'])(token_required(ctrl.get_available_months))
 report_bp.route('/api/calculate-summary',          methods=['POST'])(ctrl.calculate_summary)

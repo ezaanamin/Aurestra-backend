@@ -133,3 +133,21 @@ def bulk_spam(current_user):
         return jsonify({"message": f"Marked {n} as spam"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+def upload_receipt(current_user):
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected for uploading"}), 400
+        
+    try:
+        result = svc.process_receipt_upload(file, current_user)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+

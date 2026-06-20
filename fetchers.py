@@ -6,7 +6,7 @@ import base64
 from datetime import datetime, timedelta
 from email.header import decode_header
 import fitz  # PyMuPDF
-from utils import decode_mime_words, extract_text_from_pdf
+from common_utils import decode_mime_words, extract_text_from_pdf
 from balances import extract_balances_from_bank, extract_transactions_from_bank
 from config import *
 from PIL import Image

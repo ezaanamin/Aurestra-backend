@@ -25,6 +25,7 @@ from routes.category_routes import category_bp
 from routes.report_routes import report_bp
 from routes.notification_routes import notification_bp
 from routes.system_routes import system_bp
+from routes.live_state_routes import live_state_bp
 from ai_agent_api import ai_agent_bp
 from financial_api import financial_api_bp
 
@@ -41,6 +42,7 @@ blueprints = [
     system_bp,
     ai_agent_bp,
     financial_api_bp,
+    live_state_bp,
 ]
 
 for bp in blueprints:
@@ -109,6 +111,41 @@ def do_midnight_backup_job():
 def do_8am_retry_backup_job():
     print("⏰ [8AM] Running scheduled backup...")
     _run_backup("8AM")
+
+
+@scheduler.task(
+    "cron",
+    id="generate_monthly_summary",
+    day="last",
+    hour=23,
+    minute=50,
+    misfire_grace_time=3600,
+    timezone="Asia/Karachi",
+)
+def scheduled_monthly_summary():
+    print("⏰ [CRON] Running end-of-month RAG summary...")
+    from services.rag_service import generate_monthly_rag_summary
+    with app.app_context():
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc)
+        month_str = now.strftime('%Y-%m')
+        generate_monthly_rag_summary(month_str)
+
+
+@scheduler.task(
+    "interval",
+    id="generate_monthly_summary_test",
+    minutes=2, # Change this to 2 or 5 to test more frequently
+    misfire_grace_time=300,
+)
+def test_monthly_summary():
+    print("⏰ [TEST INTERVAL] Running TEST RAG summary...")
+    from services.rag_service import generate_monthly_rag_summary
+    with app.app_context():
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc)
+        month_str = now.strftime('%Y-%m')
+        generate_monthly_rag_summary(month_str)
 
 
 scheduler.init_app(app)

@@ -141,6 +141,20 @@ class BackupManager:
             # ── Destination 3: PostgreSQL ─────────────────────────────────
             results["postgresql"] = self._backup_to_postgres()
 
+            # ── Additional Backups (PG Dump & Receipts) ───────────────────
+            try:
+                pg_enc_path = self._create_pg_dump(temp_dir, timestamp)
+                if pg_enc_path:
+                    self._backup_to_google_drive(pg_enc_path, timestamp)
+                    self._backup_to_local(pg_enc_path, timestamp)
+                    
+                receipts_zip = self._create_receipts_zip(temp_dir, timestamp)
+                if receipts_zip:
+                    self._backup_to_google_drive(receipts_zip, timestamp)
+                    self._backup_to_local(receipts_zip, timestamp)
+            except Exception as ext_err:
+                print(f"⚠️ [Backup] Error creating extra backups: {ext_err}")
+
             # ── Cleanup temp ──────────────────────────────────────────────
             try:
                 if encrypted_path and os.path.exists(encrypted_path):
@@ -202,6 +216,68 @@ class BackupManager:
         # FIX 4: Missing return statement — the original function never returned
         # `results`, so every caller received None instead of the status dict.
         return results
+
+    def _create_pg_dump(self, temp_dir: str, timestamp: str) -> str | None:
+        """Create a pg_dump, encrypt it, and return the encrypted file path."""
+        try:
+            import subprocess
+            from database import DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
+            
+            if not DB_USER:
+                print("⚠️ [Backup] No PostgreSQL user defined. Skipping pg_dump.")
+                return None
+            
+            dump_file = os.path.join(temp_dir, f"pg_backup_{timestamp}.sql")
+            encrypted_path = dump_file + ".enc"
+            
+            env = os.environ.copy()
+            if DB_PASSWORD:
+                env['PGPASSWORD'] = DB_PASSWORD
+            
+            cmd = ["pg_dump", "-U", DB_USER]
+            if DB_HOST:
+                cmd.extend(["-h", DB_HOST])
+            if DB_PORT:
+                cmd.extend(["-p", str(DB_PORT)])
+            cmd.extend(["-F", "p", "-f", dump_file, DB_NAME])
+            
+            result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+            if result.returncode != 0:
+                print(f"❌ [Backup] pg_dump failed: {result.stderr}")
+                return None
+                
+            self.encrypt_file(dump_file, encrypted_path)
+            os.remove(dump_file)
+            print(f"📦 [Backup] pg_dump created & encrypted → {encrypted_path}")
+            return encrypted_path
+        except Exception as e:
+            print(f"❌ [Backup] PG Dump error: {e}")
+            return None
+
+    def _create_receipts_zip(self, temp_dir: str, timestamp: str) -> str | None:
+        """Create a standard password-protected ZIP of the receipts directory."""
+        try:
+            import subprocess
+            receipts_dir = os.path.join(self.base_dir, 'attachments', 'receipts')
+            if not os.path.exists(receipts_dir):
+                print("⚠️ [Backup] Receipts directory not found. Skipping receipts zip.")
+                return None
+                
+            zip_path = os.path.join(temp_dir, f"receipts_backup_{timestamp}.zip")
+            
+            # Using the system 'zip' command to create a password-protected zip
+            cmd = ["zip", "-P", self.backup_password, "-r", zip_path, "."]
+            result = subprocess.run(cmd, cwd=receipts_dir, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"❌ [Backup] Failed to zip receipts: {result.stderr}")
+                return None
+                
+            print(f"📦 [Backup] Receipts zipped with password → {zip_path}")
+            return zip_path
+        except Exception as e:
+            print(f"❌ [Backup] Receipts ZIP error: {e}")
+            return None
 
     # ─────────────────────────────────────────────
     #  Destination helpers

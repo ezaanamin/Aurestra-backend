@@ -206,7 +206,7 @@ def mark_read(current_user):
 
 def generate_insights(current_user):
     try:
-        from financial_agent import FinancialAgent
+        from services.rag_service import generate_monthly_rag_summary
         from fetchers import fetch_latest_bank_email
         data = request.get_json() or {}
         try:
@@ -215,15 +215,49 @@ def generate_insights(current_user):
             pass
 
         month_str = data.get("month")
-        if month_str:
-            dt = datetime.strptime(month_str, "%Y-%m")
-            yr, mo = dt.year, dt.month
-        else:
+        if not month_str:
             prev = (date.today().replace(day=1) - timedelta(days=1))
-            yr, mo = prev.year, prev.month
+            month_str = prev.strftime("%Y-%m")
 
-        FinancialAgent().analyze_month(yr, mo)
-        return jsonify({"message": f"Insights generated for {yr}-{mo:02d}", "month": f"{yr}-{mo:02d}"}), 200
+        summary = generate_monthly_rag_summary(month_str)
+        if summary:
+            return jsonify({"message": f"Insights generated for {month_str}", "month": month_str}), 200
+        else:
+            return jsonify({"error": "Failed to generate summary"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def list_insights(current_user):
+    try:
+        from model import FinancialInsight
+        insights = FinancialInsight.query.order_by(FinancialInsight.month.desc()).all()
+        return jsonify([i.to_dict() for i in insights]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def get_available_months(current_user):
+    try:
+        from model import Transaction, FinancialInsight
+        
+        tx_dates = db.session.query(Transaction.date).all()
+        months_with_data = set()
+        for (d,) in tx_dates:
+            if d:
+                months_with_data.add(d.strftime("%Y-%m"))
+                
+        existing_insights = db.session.query(FinancialInsight.month).all()
+        existing_months = set(m[0] for m in existing_insights if m[0])
+        
+        all_months = sorted(list(months_with_data), reverse=True)
+        
+        result = []
+        for m in all_months:
+            result.append({
+                "month": m,
+                "has_insight": m in existing_months
+            })
+            
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
