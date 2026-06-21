@@ -433,3 +433,24 @@ def get_overdraft_or_credit_status() -> dict:
         "credit_accounts":      credit_accounts,
         "as_of":                datetime.utcnow().isoformat(),
     }
+
+def get_total_balance():
+    accounts = AccountBalance.query.all()
+
+    total = round(
+        sum(_safe_balance(a.current_balance) for a in accounts),
+        2
+    )
+
+    return {
+        "total_balance": total,
+        "account_count": len(accounts),
+        "as_of": datetime.utcnow().isoformat(),
+    }
+
+def get_online_status():
+    return {
+        "online": True,
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat()
+    }
