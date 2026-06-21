@@ -5,7 +5,7 @@
 # no current_user is injected, these are agent-identity aware.
 
 from flask import jsonify, request
-from models.model import FinancialInsight
+from model import FinancialInsight
 
 
 def _insight_not_found(month: str | None = None):
