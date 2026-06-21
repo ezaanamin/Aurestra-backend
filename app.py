@@ -26,6 +26,7 @@ from routes.report_routes import report_bp
 from routes.notification_routes import notification_bp
 from routes.system_routes import system_bp
 from routes.live_state_routes import live_state_bp
+from routes.financial_insight_routes import financial_insight_bp
 from ai_agent_api import ai_agent_bp
 from financial_api import financial_api_bp
 
@@ -43,6 +44,7 @@ blueprints = [
     ai_agent_bp,
     financial_api_bp,
     live_state_bp,
+    financial_insight_bp,
 ]
 
 for bp in blueprints:
