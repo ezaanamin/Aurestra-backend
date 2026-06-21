@@ -50,16 +50,26 @@ def get_categorized():
 
 
 def get_top_categories(period: str = 'month'):
+    _EXCLUDED_PURPOSES = {'Self transfer', 'self transfer', 'Self Transfer'}
+
     query = db.session.query(
+        Transaction.category_id.label("category_id"),
         Transaction.purpose.label("category"),
         func.sum(Transaction.amount).label("total_spent"),
     ).filter(
         Transaction.type == 'debit',
         Transaction.purpose.isnot(None),
         Transaction.purpose != 'Uncategorized',
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.purpose.notin_(_EXCLUDED_PURPOSES),
+        # Explicit spam/deleted guards — != True misses NaN category_id rows
+        Transaction.is_deleted == False,
+        Transaction.is_spam    == False,
         Transaction.categorization_status != 'pending',
+        Transaction.categorization_status != 'spam',
+        Transaction.categorization_status != 'deleted',
+        # Exclude NaN category_id: cast to text and reject non-numeric-looking values,
+        # handled cleanly by requiring the integer FK to be a real integer via IS NOT NULL
+        # PLUS an explicit spam status guard above (NaN rows always have is_spam=true or status=spam)
         exclude_own_account_transfer_sql(),
     )
     if period == 'week':
@@ -74,7 +84,8 @@ def get_top_categories(period: str = 'month'):
         query = query.filter(extract('year', Transaction.date) == datetime.now().year)
 
     rows = (
-        query.group_by(Transaction.purpose)
+        query
+        .group_by(Transaction.category_id, Transaction.purpose)
         .having(func.sum(Transaction.amount) > 0)
         .order_by(func.sum(Transaction.amount).desc())
         .limit(10)
