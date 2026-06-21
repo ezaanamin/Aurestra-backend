@@ -148,6 +148,8 @@ def get_analytics_trend(period: str = 'month'):
 
 
 def get_monthly_category_totals(month_str: str):
+    _EXCLUDED_PURPOSES = {'Self transfer', 'self transfer', 'Self Transfer'}
+
     start_date = datetime.strptime(f"{month_str}-01", "%Y-%m-%d")
     end_date = (
         start_date.replace(year=start_date.year + 1, month=1)
@@ -155,23 +157,31 @@ def get_monthly_category_totals(month_str: str):
         else start_date.replace(month=start_date.month + 1)
     )
     rows = db.session.query(
+        Transaction.category_id.label('category_id'),
         Transaction.purpose.label('category'),
-        func.sum(case(
-            (Transaction.type == 'debit',  Transaction.amount),
-            (Transaction.type == 'credit', -Transaction.amount),
-            else_=0,
-        )).label('total'),
+        func.sum(Transaction.amount).label('total'),
     ).filter(
         Transaction.date >= start_date,
         Transaction.date <  end_date,
+        # Only debit transactions — credits are income, not spending
+        Transaction.type == 'debit',
         Transaction.is_deleted == False,
+        Transaction.is_spam    == False,
+        Transaction.categorization_status != 'pending',
+        Transaction.categorization_status != 'spam',
+        Transaction.categorization_status != 'deleted',
         Transaction.purpose.isnot(None),
+        Transaction.purpose.notin_(_EXCLUDED_PURPOSES),
         Transaction.purpose.ilike('Uncategorized') == False,
         exclude_own_account_transfer_sql(),
-    ).group_by(Transaction.purpose).all()
+    ).group_by(Transaction.category_id, Transaction.purpose).all()
 
     return sorted(
-        [{"category": r.category, "total": float(r.total or 0)} for r in rows],
+        [
+            {"category": r.category, "total": float(r.total or 0)}
+            for r in rows
+            if (r.total or 0) > 0
+        ],
         key=lambda x: x["total"],
         reverse=True,
     )
