@@ -132,3 +132,27 @@ def credit_status():
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+def total_balance():
+    """
+    LIVE_STATE: What is my total balance across all accounts?
+    """
+    try:
+        result = svc.get_total_balance()
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+def online_status():
+    """
+    LIVE_STATE: Is the banking service online?
+    """
+    try:
+        result = svc.get_online_status()
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+    

@@ -73,3 +73,16 @@ live_state_bp.route(
     "/api/live-state/credit-status",
     methods=["GET"],
 )(agent_auth_required(ctrl.credit_status))
+
+# ── Status ───────────────────────────────────────────────────────────────────
+
+live_state_bp.route(
+    "/api/live-state/balance/total",
+    methods=["GET"],
+)(agent_auth_required(ctrl.total_balance))
+
+live_state_bp.route(
+    "/api/live-state/status/online",
+    methods=["GET"],
+)(agent_auth_required(ctrl.online_status))
+
