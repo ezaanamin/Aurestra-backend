@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from database import db
 from model import Transaction, Budget, FinancialInsight, Category
 
-LLM_URL = 'http://nascar-biography-greater-musical.trycloudflare.com/api/generate'
+LLM_URL = 'https://boring-fell-sentence-clearing.trycloudflare.com/api/generate'
 LLM_MODEL = 'qwen2.5:3b'
 
 
