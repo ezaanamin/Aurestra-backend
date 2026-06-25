@@ -9,15 +9,15 @@ from cryptography.hazmat.primitives import padding as sym_padding, hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 
-# FIX 1: Import once at module level with a safe fallback stub.
-# The original code imported send_push_to_all both here AND inside
-# perform_backup(), where the inner try/except stub silently shadowed
-# any ImportError from this top-level import.
 try:
     from fcm_utils import send_push_to_all
 except ImportError:
     def send_push_to_all(title, body):
         print(f"[PUSH stub] {title}: {body}")
+
+
+# Tables never synced to PostgreSQL
+PG_SKIP_TABLES = {"users", "device_tokens", "device_notifications"}
 
 
 class BackupManager:
@@ -30,15 +30,16 @@ class BackupManager:
     #  Init
     # ─────────────────────────────────────────────
     def init_app(self, app):
-        self.backup_password   = os.getenv("BACKUP_PASSWORD", "default_secure_password")
-        print(f"🔑 [Backup] Password: {self.backup_password}")
+        self.backup_password = os.getenv("BACKUP_PASSWORD", "default_secure_password")
+        # SECURITY: Do not log the password in production
+        # print(f"🔑 [Backup] Password: {self.backup_password}")
         self.local_backup_path = (
             os.getenv("LOCAL_BACKUP_PATH")
             or os.getenv("BACKUP_EXTERNAL_PATH")
             or os.path.join(os.path.dirname(os.path.abspath(__file__)), "backups")
         )
-        self.gdrive_local_path = os.getenv("BACKUP_GDRIVE_PATH")  # optional Google Drive local mount
-        self.base_dir          = os.path.dirname(os.path.abspath(__file__))
+        self.gdrive_local_path = os.getenv("BACKUP_GDRIVE_PATH")
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
 
     # ─────────────────────────────────────────────
     #  AES-256 helpers
@@ -76,13 +77,8 @@ class BackupManager:
     #  Main entry point
     # ─────────────────────────────────────────────
     def perform_backup(self) -> dict:
-        """
-        Run the full midnight backup.  Returns a dict with per-destination status.
-        """
+        """Run the full backup. Returns a dict with per-destination status."""
         print("⏳ [Backup] ── Starting Midnight Backup ──────────────────")
-
-        # FIX 2: Removed the redundant inner import of send_push_to_all that was
-        # here originally. The module-level import (with fallback stub) is sufficient.
 
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         temp_dir  = os.path.join(self.base_dir, "temp_backups")
@@ -110,7 +106,6 @@ class BackupManager:
                     import zipfile
                     import sqlite3
 
-                    # Use SQLite backup API to flush WAL and get a consistent snapshot
                     consistent_db_path = zip_path + ".snapshot.db"
                     src_conn = sqlite3.connect(sqlite_path)
                     dst_conn = sqlite3.connect(consistent_db_path)
@@ -147,7 +142,7 @@ class BackupManager:
                 if pg_enc_path:
                     self._backup_to_google_drive(pg_enc_path, timestamp)
                     self._backup_to_local(pg_enc_path, timestamp)
-                    
+
                 receipts_zip = self._create_receipts_zip(temp_dir, timestamp)
                 if receipts_zip:
                     self._backup_to_google_drive(receipts_zip, timestamp)
@@ -173,9 +168,7 @@ class BackupManager:
             print(f"   PostgreSQL   : {'✅' if results['postgresql']   else '❌'}")
             print("─────────────────────────────────────────────────────────")
 
-            # FIX 3: Push notification block was previously OUTSIDE the try/except
-            # due to broken indentation, meaning exceptions in it were uncaught and
-            # would propagate upward instead of being logged as warnings.
+            # ── Push notifications ────────────────────────────────────────
             try:
                 print("🔥 [PUSH] Starting backup notification sequence...")
 
@@ -213,39 +206,40 @@ class BackupManager:
             import traceback
             traceback.print_exc()
 
-        # FIX 4: Missing return statement — the original function never returned
-        # `results`, so every caller received None instead of the status dict.
         return results
 
+    # ─────────────────────────────────────────────
+    #  Extra backup helpers
+    # ─────────────────────────────────────────────
     def _create_pg_dump(self, temp_dir: str, timestamp: str) -> str | None:
         """Create a pg_dump, encrypt it, and return the encrypted file path."""
         try:
             import subprocess
             from database import DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
-            
+
             if not DB_USER:
                 print("⚠️ [Backup] No PostgreSQL user defined. Skipping pg_dump.")
                 return None
-            
-            dump_file = os.path.join(temp_dir, f"pg_backup_{timestamp}.sql")
+
+            dump_file      = os.path.join(temp_dir, f"pg_backup_{timestamp}.sql")
             encrypted_path = dump_file + ".enc"
-            
+
             env = os.environ.copy()
             if DB_PASSWORD:
-                env['PGPASSWORD'] = DB_PASSWORD
-            
+                env["PGPASSWORD"] = DB_PASSWORD
+
             cmd = ["pg_dump", "-U", DB_USER]
             if DB_HOST:
                 cmd.extend(["-h", DB_HOST])
             if DB_PORT:
                 cmd.extend(["-p", str(DB_PORT)])
             cmd.extend(["-F", "p", "-f", dump_file, DB_NAME])
-            
+
             result = subprocess.run(cmd, env=env, capture_output=True, text=True)
             if result.returncode != 0:
                 print(f"❌ [Backup] pg_dump failed: {result.stderr}")
                 return None
-                
+
             self.encrypt_file(dump_file, encrypted_path)
             os.remove(dump_file)
             print(f"📦 [Backup] pg_dump created & encrypted → {encrypted_path}")
@@ -255,24 +249,22 @@ class BackupManager:
             return None
 
     def _create_receipts_zip(self, temp_dir: str, timestamp: str) -> str | None:
-        """Create a standard password-protected ZIP of the receipts directory."""
+        """Create a password-protected ZIP of the receipts directory."""
         try:
             import subprocess
-            receipts_dir = os.path.join(self.base_dir, 'attachments', 'receipts')
+            receipts_dir = os.path.join(self.base_dir, "attachments", "receipts")
             if not os.path.exists(receipts_dir):
                 print("⚠️ [Backup] Receipts directory not found. Skipping receipts zip.")
                 return None
-                
+
             zip_path = os.path.join(temp_dir, f"receipts_backup_{timestamp}.zip")
-            
-            # Using the system 'zip' command to create a password-protected zip
-            cmd = ["zip", "-P", self.backup_password, "-r", zip_path, "."]
-            result = subprocess.run(cmd, cwd=receipts_dir, capture_output=True, text=True)
-            
+            cmd      = ["zip", "-P", self.backup_password, "-r", zip_path, "."]
+            result   = subprocess.run(cmd, cwd=receipts_dir, capture_output=True, text=True)
+
             if result.returncode != 0:
                 print(f"❌ [Backup] Failed to zip receipts: {result.stderr}")
                 return None
-                
+
             print(f"📦 [Backup] Receipts zipped with password → {zip_path}")
             return zip_path
         except Exception as e:
@@ -299,12 +291,12 @@ class BackupManager:
                 if service:
                     print(f"✅ [Backup → Drive] Centralized auth successful for {admin_email}")
                 else:
-                    admin_user = None  # Signal to fall back
+                    admin_user = None
 
             if not admin_user:
                 admin_user = User.query.filter(User.google_refresh_token.isnot(None)).first()
                 if not admin_user:
-                    print("⚠️  [Backup → Drive] No Google-linked user found (Centralized or Local). Skipping.")
+                    print("⚠️  [Backup → Drive] No Google-linked user found. Skipping.")
                     return False
                 service = get_drive_service(admin_user)
 
@@ -336,7 +328,6 @@ class BackupManager:
             dest_file = os.path.join(dest_dir, os.path.basename(encrypted_path))
             shutil.copy2(encrypted_path, dest_file)
             print(f"✅ [Backup → Local] Saved: {dest_file}")
-
             self._rotate_local_backups(dest_dir, keep=14)
             return True
         except Exception as e:
@@ -369,14 +360,13 @@ class BackupManager:
 
     def _backup_to_postgres(self) -> bool:
         """
-        Incremental SQLite → PostgreSQL sync (no data wiping).
-        Uses PostgreSQL UPSERT (ON CONFLICT DO UPDATE) to safely merge data
-        without ever truncating or deleting existing backup data.
+        Incremental SQLite → PostgreSQL sync using UPSERT.
+        Skips tables in PG_SKIP_TABLES (users, device_tokens, device_notifications).
         """
         try:
             import pandas as pd
             from database import get_sqlite_engine, get_postgres_engine
-            from sqlalchemy import inspect, text
+            from sqlalchemy import inspect
 
             sqlite_eng = get_sqlite_engine()
             pg_eng     = get_postgres_engine()
@@ -400,15 +390,17 @@ class BackupManager:
             pg_insp  = inspect(pg_eng)
             pg_exist = set(pg_insp.get_table_names())
 
-            synced   = 0
+            synced        = 0
             failed_tables = []
-            raw_conn = pg_eng.raw_connection()
+            raw_conn      = pg_eng.raw_connection()
+
             try:
                 raw_conn.autocommit = False
                 cur = raw_conn.cursor()
 
                 for table in ordered:
-                    if table in ("users", "device_tokens"):
+                    # FIX: Skip device_notifications along with users and device_tokens
+                    if table in PG_SKIP_TABLES:
                         print(f"   ⏭️  {table}: skipped (excluded from backup sync)")
                         synced += 1
                         continue
@@ -435,9 +427,9 @@ class BackupManager:
                             continue
 
                     if not df.empty:
-                        cols         = list(df.columns)
-                        col_str      = ", ".join(f'"{c}"' for c in cols)
-                        placeholders = ", ".join(["%s"] * len(cols))
+                        cols            = list(df.columns)
+                        col_str         = ", ".join(f'"{c}"' for c in cols)
+                        placeholders    = ", ".join(["%s"] * len(cols))
                         conflict_target = ", ".join([f'"{c}"' for c in pk_cols])
                         update_cols     = ", ".join(
                             [f'"{c}" = EXCLUDED."{c}"' for c in cols if c not in pk_cols]
@@ -454,16 +446,13 @@ class BackupManager:
                                 f'ON CONFLICT ({conflict_target}) DO NOTHING'
                             )
 
-                        PG_BIGINT_MAX = 9_223_372_036_854_775_807
-                        PG_BIGINT_MIN = -9_223_372_036_854_775_808
-
-                        def _safe_val(v, tbl):
+                        def _safe_val(v):
                             if hasattr(v, "__class__") and v.__class__.__name__ == "NaTType":
                                 return None
                             return v
 
                         rows = [
-                            tuple(_safe_val(v, table) for v in row)
+                            tuple(_safe_val(v) for v in row)
                             for row in df.itertuples(index=False, name=None)
                         ]
 
@@ -492,17 +481,17 @@ class BackupManager:
                 raw_conn.close()
 
             print(f"✅ [Backup → PG] {synced}/{len(ordered)} tables incrementally synced.")
-            
+
             if synced == len(ordered):
                 return True
-                
-            critical_tables = {"transactions", "account_balances", "categories", "users"}
-            failed_critical = [t for t in failed_tables if t in critical_tables]
-            
+
+            critical_tables  = {"transactions", "account_balances", "categories"}
+            failed_critical  = [t for t in failed_tables if t in critical_tables]
+
             if len(ordered) > 0 and (synced / len(ordered)) >= 0.5 and not failed_critical:
-                print(f"⚠️ [Backup → PG] Partial sync successful (>=50% and no critical tables failed). Failed tables: {failed_tables}")
+                print(f"⚠️ [Backup → PG] Partial sync (>=50%, no critical failures). Failed: {failed_tables}")
                 return True
-                
+
             return False
 
         except Exception as e:
