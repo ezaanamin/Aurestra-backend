@@ -449,6 +449,13 @@ class BackupManager:
                         def _safe_val(v):
                             if hasattr(v, "__class__") and v.__class__.__name__ == "NaTType":
                                 return None
+                            # Convert float to int if it's a whole number (e.g. 6.0 → 6)
+                            import math
+                            if isinstance(v, float):
+                                if math.isnan(v):
+                                    return None
+                                if v == int(v):
+                                    return int(v)
                             return v
 
                         rows = [
