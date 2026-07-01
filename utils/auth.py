@@ -31,15 +31,14 @@ def token_required(f):
 
             # Check for decryption key header and derive encryption key
             dec_key = request.headers.get("X-Decryption-Key")
-            if dec_key:
-                if not current_user.decryption_key_hash:
-                    return jsonify({'message': 'Decryption key is not set up on this account.'}), 400
+            if dec_key and current_user.decryption_key_hash:
+                # Hash is registered — verify the key
                 if not verify_decryption_key(dec_key, current_user.decryption_key_hash):
                     return jsonify({'message': 'Invalid decryption key provided.'}), 401
 
                 # Derive symmetric key and bind to request-scoped g
-                # (this is what EncryptedString/EncryptedText TypeDecorators read)
                 g.encryption_key = derive_encryption_key(dec_key, current_user.decryption_key_salt)
+            # If dec_key header present but no hash yet → first-time setup, allow through
 
         except jwt.ExpiredSignatureError:
             return jsonify({'message': 'Token expired!'}), 401
