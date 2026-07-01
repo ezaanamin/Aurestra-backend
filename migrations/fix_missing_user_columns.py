@@ -41,7 +41,9 @@ def migrate():
         "google_refresh_token": "VARCHAR(255)",
         "created_at": "DATETIME",
         "notifications_enabled": "BOOLEAN DEFAULT 1",
-        "decryption_key": "VARCHAR(255) DEFAULT NULL"
+        "decryption_key": "VARCHAR(255) DEFAULT NULL",
+        "decryption_key_hash": "VARCHAR(255) DEFAULT NULL",
+        "decryption_key_salt": "VARCHAR(255) DEFAULT NULL"
     }
     
     added = []

@@ -278,11 +278,37 @@ def get_profile(current_user):
 
 
 def update_profile(current_user):
+    from utils.crypto_helpers import (
+        hash_decryption_key, verify_decryption_key, generate_crypto_salt
+    )
+    import re
     data = request.get_json() or {}
     if 'full_name'             in data: current_user.full_name            = data['full_name']
     if 'email'                 in data: current_user.email                = data['email']
     if 'avatar_url'            in data: current_user.avatar_url           = data['avatar_url']
     if 'notifications_enabled' in data: current_user.notifications_enabled = bool(data['notifications_enabled'])
-    if 'decryption_key'        in data: current_user.decryption_key       = data['decryption_key']
+    
+    if 'decryption_key' in data:
+        key_val = data['decryption_key']
+        is_reset = data.get('reset_decryption_key', False)
+        
+        # 1. Strength validation
+        if len(key_val) < 8 or not re.search(r'[A-Z]', key_val) or not re.search(r'[0-9]', key_val) or not re.search(r'[^A-Za-z0-9]', key_val):
+            return jsonify({"error": "Key must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters."}), 400
+            
+        # 2. Check if a hash already exists
+        if current_user.decryption_key_hash and not is_reset:
+            # Verify existing key
+            if not verify_decryption_key(key_val, current_user.decryption_key_hash):
+                return jsonify({"error": "Incorrect decryption key. Please try again."}), 400
+        else:
+            # First time setup OR forced reset
+            salt = generate_crypto_salt()
+            hashed_key = hash_decryption_key(key_val)
+            current_user.decryption_key_salt = salt
+            current_user.decryption_key_hash = hashed_key
+            # Deprecate/clear plaintext decryption_key column
+            current_user.decryption_key = None
+            
     db.session.commit()
     return jsonify(current_user.to_dict())

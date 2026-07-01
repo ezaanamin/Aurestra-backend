@@ -125,13 +125,20 @@ def do_8am_retry_backup_job():
     timezone="Asia/Karachi",
 )
 def scheduled_monthly_summary():
-    print("⏰ [CRON] Running end-of-month RAG summary...")
+    print("⏰ [CRON] Running end-of-month RAG summary for all users...")
     from services.rag_service import generate_monthly_rag_summary
+    from model import User
     with app.app_context():
         import datetime
         now = datetime.datetime.now(datetime.timezone.utc)
         month_str = now.strftime('%Y-%m')
-        generate_monthly_rag_summary(month_str)
+        users = User.query.all()
+        for u in users:
+            try:
+                generate_monthly_rag_summary(u.id, month_str)
+                print(f"✅ Generated summary for user {u.email}")
+            except Exception as e:
+                print(f"❌ Failed to generate summary for user {u.email}: {e}")
 
 
 # @scheduler.task(

@@ -219,7 +219,7 @@ def generate_insights(current_user):
             prev = (date.today().replace(day=1) - timedelta(days=1))
             month_str = prev.strftime("%Y-%m")
 
-        summary = generate_monthly_rag_summary(month_str)
+        summary = generate_monthly_rag_summary(current_user.id, month_str)
         if summary:
             return jsonify({"message": f"Insights generated for {month_str}", "month": month_str}), 200
         else:

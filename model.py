@@ -1,6 +1,49 @@
 from database import db
 from datetime import datetime
 from sqlalchemy.orm import validates
+from sqlalchemy.types import TypeDecorator, String, Text
+from flask import has_app_context, g
+from utils.crypto_helpers import encrypt_field, decrypt_field
+
+class EncryptedString(TypeDecorator):
+    impl = String
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if not has_app_context():
+            return value
+        key = getattr(g, 'encryption_key', None)
+        if key and value is not None:
+            return encrypt_field(value, key)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if not has_app_context():
+            return value
+        key = getattr(g, 'encryption_key', None)
+        if value is not None:
+            return decrypt_field(value, key)
+        return value
+
+class EncryptedText(TypeDecorator):
+    impl = Text
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if not has_app_context():
+            return value
+        key = getattr(g, 'encryption_key', None)
+        if key and value is not None:
+            return encrypt_field(value, key)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if not has_app_context():
+            return value
+        key = getattr(g, 'encryption_key', None)
+        if value is not None:
+            return decrypt_field(value, key)
+        return value
 
 class MonthlyBalance(db.Model):
     """
@@ -54,16 +97,16 @@ class Transaction(db.Model):
     date = db.Column(db.DateTime, nullable=False)
 
     # Category (prints, gym, food, research paper etc.)
-    purpose = db.Column(db.String(255), nullable=True)
+    purpose = db.Column(EncryptedString(255), nullable=True)
 
     # Amount received
     amount = db.Column(db.Float, nullable=False)
 
     # Sender / Who actually sent the money
-    sender = db.Column(db.String(255), nullable=True)
+    sender = db.Column(EncryptedString(255), nullable=True)
 
     # NEW — Receiver (Hiba Dawood, Haris Masood, Umair etc.)
-    receiver = db.Column(db.String(255), nullable=True)
+    receiver = db.Column(EncryptedString(255), nullable=True)
 
     # NEW — unique easypaisa transaction ID for duplicate protection
     transaction_id = db.Column(db.String(50), nullable=True)
@@ -80,7 +123,7 @@ class Transaction(db.Model):
     )
 
     # Optional extra details (store name, bank name etc.)
-    notes = db.Column(db.String(255), nullable=True)
+    notes = db.Column(EncryptedString(255), nullable=True)
 
     # NEW — type: credit or debit
     type = db.Column(db.String(10), nullable=False)
@@ -189,7 +232,7 @@ class UploadedReceipt(db.Model):
     mime_type = db.Column(db.String(50))
     
     ocr_status = db.Column(db.String(20), default='pending') # pending, completed, failed
-    ocr_raw_text = db.Column(db.Text, nullable=True)
+    ocr_raw_text = db.Column(EncryptedText, nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -524,6 +567,8 @@ class User(db.Model):
     # ── Preferences ───────────────────────────────────────────
     notifications_enabled = db.Column(db.Boolean, default=True)
     decryption_key = db.Column(db.String(255), nullable=True)
+    decryption_key_hash = db.Column(db.String(255), nullable=True)
+    decryption_key_salt = db.Column(db.String(255), nullable=True)
 
     def to_dict(self):
         return {
@@ -534,7 +579,7 @@ class User(db.Model):
             "notifications_enabled": self.notifications_enabled,
             "is_email_verified": bool(self.is_email_verified),
             "auth_method": self.auth_method or "google",
-            "decryption_key": self.decryption_key,
+            "has_decryption_key": self.decryption_key_hash is not None,
         }
 
 
@@ -574,7 +619,7 @@ class FinancialInsight(db.Model):
     month = db.Column(db.String(7), nullable=False) # "YYYY-MM"
     
     # Natural Language Content (The 'Story')
-    content = db.Column(db.Text, nullable=False)
+    content = db.Column(EncryptedText, nullable=False)
     
     # Structured Metrics (for graphing/analysis later)
     # Stored as JSON string or use db.JSON if supported by all envs (SQLite supports json in recent versions, but Text is safest)
