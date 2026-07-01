@@ -9,6 +9,8 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 # ── User Backup Constants (AES-256-GCM) ──────────────────────────────
 MAGIC        = b"AUBE"
 FILE_VERSION = 1
+APP_VERSION  = "1.0.0"
+DB_VERSION   = 1
 ENC_VERSION  = "AES256GCM-v1"
 PBKDF2_ITER  = 310_000
 
