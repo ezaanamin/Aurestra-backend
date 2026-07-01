@@ -1,7 +1,7 @@
 # routes/transaction_routes.py
 
 from flask import Blueprint
-from utils.auth import token_required
+from utils.auth import token_required, decryption_key_required
 from controllers import transaction_controller as ctrl
 
 transaction_bp = Blueprint('transactions', __name__)
@@ -16,10 +16,10 @@ transaction_bp.route('/api/transactions/uncategorized',   methods=['GET'])(token
 transaction_bp.route('/api/transactions/spam',            methods=['GET'])(token_required(ctrl.get_spam))
 transaction_bp.route('/api/transactions/categorized',     methods=['GET'])(token_required(ctrl.get_categorized))
 
-# Write
-transaction_bp.route('/api/transactions',                 methods=['POST'])(token_required(ctrl.create_transaction))
-transaction_bp.route('/api/transactions/upload-receipt',  methods=['POST'])(token_required(ctrl.upload_receipt))
-transaction_bp.route('/api/transactions/<int:id>',        methods=['PUT'])(token_required(ctrl.update_transaction))
+# Write — decryption key required to ensure data is encrypted at rest
+transaction_bp.route('/api/transactions',                 methods=['POST'])(token_required(decryption_key_required(ctrl.create_transaction)))
+transaction_bp.route('/api/transactions/upload-receipt',  methods=['POST'])(token_required(decryption_key_required(ctrl.upload_receipt)))
+transaction_bp.route('/api/transactions/<int:id>',        methods=['PUT'])(token_required(decryption_key_required(ctrl.update_transaction)))
 transaction_bp.route('/api/transactions/<int:txn_id>',    methods=['DELETE'])(token_required(ctrl.delete_transaction))
 transaction_bp.route('/api/transactions/<int:txn_id>/spam', methods=['POST'])(token_required(ctrl.mark_spam))
 

@@ -53,21 +53,36 @@ def token_required(f):
 
 
 def decryption_key_required(f):
-    """Enforces that a valid decryption key is provided and derived in the request."""
+    """Enforces that a valid decryption key is provided and derived in the request.
+    Must be stacked INSIDE token_required: token_required(decryption_key_required(fn))
+    """
     @wraps(f)
     def decorated(current_user, *args, **kwargs):
-        if not getattr(g, 'encryption_key', None):
-            dec_key = request.headers.get("X-Decryption-Key")
-            if not dec_key:
-                return jsonify({'message': 'Decryption key required. Please provide it in the X-Decryption-Key header.'}), 400
-            
-            if not current_user.decryption_key_hash:
-                return jsonify({'message': 'Decryption key is not set up on this account.'}), 400
-                
-            if not verify_decryption_key(dec_key, current_user.decryption_key_hash):
-                return jsonify({'message': 'Invalid decryption key provided.'}), 401
-                
-            g.encryption_key = derive_encryption_key(dec_key, current_user.decryption_key_salt)
-            
+        # Already derived this request (token_required verified it)
+        if getattr(g, 'encryption_key', None):
+            return f(current_user, *args, **kwargs)
+
+        # User hasn't set up a key yet at all
+        if not current_user.decryption_key_hash:
+            return jsonify({
+                'message': 'Decryption key not configured. Please set up your vault key in the app.',
+                'code': 'KEY_NOT_CONFIGURED'
+            }), 403
+
+        # Key configured on account but header missing from this request
+        dec_key = request.headers.get("X-Decryption-Key")
+        if not dec_key:
+            return jsonify({
+                'message': 'X-Decryption-Key header is required for this operation.',
+                'code': 'KEY_MISSING'
+            }), 400
+
+        if not verify_decryption_key(dec_key, current_user.decryption_key_hash):
+            return jsonify({
+                'message': 'Invalid decryption key.',
+                'code': 'KEY_INVALID'
+            }), 401
+
+        g.encryption_key = derive_encryption_key(dec_key, current_user.decryption_key_salt)
         return f(current_user, *args, **kwargs)
     return decorated
