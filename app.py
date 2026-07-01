@@ -65,53 +65,16 @@ def _run_backup(label: str) -> bool:
     """Shared backup runner. Returns True if all destinations succeeded."""
     print(f"⏰ Running {label} backup...")
     try:
-        from backup_manager import BackupManager
+        from services.backup.backup_manager import BackupOrchestrator
 
         with app.app_context():
-            # 1. Run system-wide backup (using primary user key as password)
-            bm = BackupManager()
-            bm.init_app(app)
-            results = bm.perform_backup()
+            orchestrator = BackupOrchestrator(app)
+            summary = orchestrator.perform_full_backup()
 
-            success_count = sum(
-                1 for result in results.values() if result is True
-            )
-            total = len(results)
-
-            print(
-                f"✅ System backup complete: "
-                f"{success_count}/{total} destinations succeeded."
-            )
-
-            # 2. Run per-user backups
-            from model import User
-            from services.backup_service import create_user_backup
-            from utils.crypto_helpers import verify_decryption_key
-
-            # Query all users who have configured a decryption key
-            users = User.query.filter(User.decryption_key_hash.isnot(None)).all()
-            print(f"⏰ Generating per-user encrypted backups for {len(users)} users...")
-            for u in users:
-                try:
-                    dec_key = u.decryption_key
-                    if not dec_key:
-                        # Dev fallback/self-healing: check if system BACKUP_PASSWORD matches the user's decryption key hash
-                        sys_pass = os.getenv("BACKUP_PASSWORD", "default_secure_password")
-                        if sys_pass and verify_decryption_key(sys_pass, u.decryption_key_hash):
-                            u.decryption_key = sys_pass
-                            db.session.commit()
-                            dec_key = sys_pass
-                            print(f"✅ [Backup] Self-healed missing decryption key for {u.email} using BACKUP_PASSWORD")
-                    
-                    if not dec_key:
-                        raise ValueError("Plaintext decryption key is missing in DB (user has not logged in since update).")
-
-                    create_user_backup(u.id, dec_key)
-                    print(f"✅ Auto per-user backup created for {u.email}")
-                except Exception as ex:
-                    print(f"❌ Failed auto per-user backup for {u.email}: {ex}")
-
-            return success_count == total
+            sys_ok = all(summary["system"].values())
+            users_ok = summary["users"]["failed"] == 0
+            
+            return sys_ok and users_ok
 
     except Exception as e:
         print(f"❌ Backup failed: {str(e)}")

@@ -48,12 +48,23 @@ def debug_push_status(current_user):
     return jsonify(get_push_service_diagnostics()), 200
 
 
-def trigger_backup(current_user):
+def manual_backup(current_user):
+    """POST /api/system/backup — trigger an immediate system backup."""
+    if not current_user.email == os.getenv("BANK_EMAIL_ACCOUNT"):
+        return jsonify({"message": "Forbidden. Admin access required."}), 403
+
     try:
-        from backup_manager import BackupManager
-        bm      = BackupManager(current_app._get_current_object())
-        results = bm.perform_backup()
-        return jsonify({"message": "Backup completed", "results": results}), 200
+        from services.backup.backup_manager import BackupOrchestrator
+        from flask import current_app
+
+        orchestrator = BackupOrchestrator(current_app)
+        # We can run it asynchronously or synchronously; here we run it synchronously.
+        results = orchestrator.perform_full_backup()
+
+        return jsonify({
+            "message": "Backup executed successfully.",
+            "results": results
+        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

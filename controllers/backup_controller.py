@@ -1,8 +1,9 @@
 # controllers/backup_controller.py
 
 from flask import jsonify, request
-import services.backup_service as svc
+from services.backup.backup_service import BackupService
 
+svc = BackupService()
 
 def create_backup(current_user):
     """POST /api/backup/create — create an encrypted backup for the authenticated user."""
@@ -12,9 +13,15 @@ def create_backup(current_user):
             return jsonify({"error": "X-Decryption-Key header is required."}), 400
 
         backup = svc.create_user_backup(current_user.id, dec_key)
+        
+        # Determine how to return it based on whether it skipped or created
+        if backup is None:
+             return jsonify({"message": "No data or no changes to backup.", "backup": None}), 200
+
+        # It returns a metadata dict, not a SQLAlchemy object anymore
         return jsonify({
             "message": "Backup created successfully.",
-            "backup":  backup.to_dict(),
+            "backup":  backup,
         }), 201
 
     except Exception as e:

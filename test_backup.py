@@ -1,14 +1,10 @@
 import sys
 from app import app
-from backup_manager import BackupManager
+from services.backup.backup_manager import BackupOrchestrator
 
-def test_backup():
-    print("Testing backup manager...")
-    bm = BackupManager()
-    bm.init_app(app)
-    with app.app_context():
-        results = bm.perform_backup()
-        print("Backup results:", results)
+with app.app_context():
+    orchestrator = BackupOrchestrator(app)
+    orchestrator.perform_full_backup()
 
 if __name__ == '__main__':
     test_backup()
