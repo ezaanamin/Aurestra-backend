@@ -739,3 +739,46 @@ class StatementAnalysis(db.Model):
             "read_status": "read" if self.reviewed_at else "unread",  # NEW: Show if statement has been viewed
             "account_balance_source": self.account_balance_source,
         }
+
+
+class UserBackup(db.Model):
+    """
+    Tracks metadata for each per-user encrypted backup file.
+    File paths are stored server-side only and never exposed via the API.
+    Encryption: AES-256-GCM keyed from the user's decryption key via PBKDF2.
+    """
+    __tablename__ = "user_backups"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    filename    = db.Column(db.String(255), nullable=False)
+    file_path   = db.Column(db.String(512), nullable=False)  # server-side only
+    size_bytes  = db.Column(db.Integer, nullable=False, default=0)
+    app_version = db.Column(db.String(20), nullable=False, default='1.0.0')
+    db_version  = db.Column(db.Integer, nullable=False, default=1)
+    enc_version = db.Column(db.String(30), nullable=False, default='AES256GCM-v1')
+    status      = db.Column(db.String(20), nullable=False, default='completed')  # completed | failed
+    table_counts = db.Column(db.Text, nullable=True)  # JSON: {"transactions": 42, ...}
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        import json as _json
+        counts = {}
+        if self.table_counts:
+            try:
+                counts = _json.loads(self.table_counts)
+            except Exception:
+                pass
+        return {
+            "id":           self.id,
+            "filename":     self.filename,          # safe — just the basename
+            "size_bytes":   self.size_bytes,
+            "size_mb":      round(self.size_bytes / 1024 / 1024, 2),
+            "app_version":  self.app_version,
+            "db_version":   self.db_version,
+            "enc_version":  self.enc_version,
+            "status":       self.status,
+            "table_counts": counts,
+            "created_at":   self.created_at.isoformat() if self.created_at else None,
+        }
+

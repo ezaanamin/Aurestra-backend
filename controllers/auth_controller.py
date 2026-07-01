@@ -297,18 +297,20 @@ def update_profile(current_user):
             return jsonify({"error": "Key must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters."}), 400
             
         # 2. Check if a hash already exists
+        # 2. Check if a hash already exists
         if current_user.decryption_key_hash and not is_reset:
             # Verify existing key
             if not verify_decryption_key(key_val, current_user.decryption_key_hash):
                 return jsonify({"error": "Incorrect decryption key. Please try again."}), 400
+            current_user.decryption_key = key_val
         else:
             # First time setup OR forced reset
             salt = generate_crypto_salt()
             hashed_key = hash_decryption_key(key_val)
             current_user.decryption_key_salt = salt
             current_user.decryption_key_hash = hashed_key
-            # Deprecate/clear plaintext decryption_key column
-            current_user.decryption_key = None
+            current_user.decryption_key = key_val
             
     db.session.commit()
+
     return jsonify(current_user.to_dict())

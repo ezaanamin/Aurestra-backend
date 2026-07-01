@@ -69,7 +69,24 @@ def run_migrations():
             db.session.execute(text("SELECT 1"))
             print("✅ [Migrations] Database connected.")
 
+            # Create history table if not exists
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS migration_history (
+                    filename TEXT PRIMARY KEY,
+                    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+            db.session.commit()
+
+            # Retrieve applied migrations
+            applied = {
+                r[0] for r in db.session.execute(text("SELECT filename FROM migration_history")).fetchall()
+            }
+
             for filename in files:
+                if filename in applied:
+                    continue
+
                 file_path = os.path.join(migrations_dir, filename)
                 print(f"🔄 [Migrations] Running {filename}...")
 
@@ -92,6 +109,11 @@ def run_migrations():
                         else:
                             print(f"   ❌ Error: {e}")
 
+                # Log applied migration
+                db.session.execute(
+                    text("INSERT OR IGNORE INTO migration_history (filename) VALUES (:filename)"),
+                    {"filename": filename}
+                )
                 db.session.commit()
                 print(f"   ✅ Done.")
 
@@ -103,3 +125,4 @@ def run_migrations():
 
 if __name__ == "__main__":
     run_migrations()
+

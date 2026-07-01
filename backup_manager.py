@@ -31,8 +31,14 @@ class BackupManager:
     # ─────────────────────────────────────────────
     def init_app(self, app):
         self.backup_password = os.getenv("BACKUP_PASSWORD", "default_secure_password")
-        # SECURITY: Do not log the password in production
-        # print(f"🔑 [Backup] Password: {self.backup_password}")
+        try:
+            from model import User
+            user = User.query.filter(User.decryption_key.isnot(None)).first()
+            if user and user.decryption_key:
+                self.backup_password = user.decryption_key
+        except Exception:
+            pass
+
         self.local_backup_path = (
             os.getenv("LOCAL_BACKUP_PATH")
             or os.getenv("BACKUP_EXTERNAL_PATH")
@@ -40,6 +46,7 @@ class BackupManager:
         )
         self.gdrive_local_path = os.getenv("BACKUP_GDRIVE_PATH")
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
+
 
     # ─────────────────────────────────────────────
     #  AES-256 helpers

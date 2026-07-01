@@ -29,6 +29,7 @@ from routes.live_state_routes import live_state_bp
 from routes.financial_insight_routes import financial_insight_bp
 from ai_agent_api import ai_agent_bp
 from financial_api import financial_api_bp
+from routes.backup_routes import backup_bp
 
 blueprints = [
     auth_bp,
@@ -45,6 +46,7 @@ blueprints = [
     financial_api_bp,
     live_state_bp,
     financial_insight_bp,
+    backup_bp,
 ]
 
 for bp in blueprints:
@@ -66,9 +68,9 @@ def _run_backup(label: str) -> bool:
         from backup_manager import BackupManager
 
         with app.app_context():
+            # 1. Run system-wide backup (using primary user key as password)
             bm = BackupManager()
             bm.init_app(app)
-
             results = bm.perform_backup()
 
             success_count = sum(
@@ -77,14 +79,28 @@ def _run_backup(label: str) -> bool:
             total = len(results)
 
             print(
-                f"✅ Backup complete: "
+                f"✅ System backup complete: "
                 f"{success_count}/{total} destinations succeeded."
             )
+
+            # 2. Run per-user backups
+            from model import User
+            from services.backup_service import create_user_backup
+            users = User.query.filter(User.decryption_key.isnot(None)).all()
+            print(f"⏰ Generating per-user encrypted backups for {len(users)} users...")
+            for u in users:
+                try:
+                    create_user_backup(u.id, u.decryption_key)
+                    print(f"✅ Auto per-user backup created for {u.email}")
+                except Exception as ex:
+                    print(f"❌ Failed auto per-user backup for {u.email}: {ex}")
+
             return success_count == total
 
     except Exception as e:
         print(f"❌ Backup failed: {str(e)}")
         return False
+
 
 
 @scheduler.task(
