@@ -1,4 +1,4 @@
-# services/transaction_service.py  —  Transaction business logic
+# services/transaction_service.py  —  Transaction business logic (Phase 3: user-scoped)
 
 from datetime import datetime, timedelta, date
 from sqlalchemy import func, extract, case, desc
@@ -16,40 +16,47 @@ from services.receipt_parser import parse_receipt_text
 
 # ── Read ──────────────────────────────────────────────────────────────────────
 
-def get_latest_transactions(limit: int = 4):
+def get_latest_transactions(user_id: int, limit: int = 4):
     return (
         Transaction.query
-        .filter(Transaction.is_deleted != True, Transaction.is_spam != True)
+        .filter(
+            Transaction.user_id   == user_id,
+            Transaction.is_deleted != True,
+            Transaction.is_spam   != True,
+        )
         .order_by(desc(Transaction.date))
         .limit(limit)
         .all()
     )
 
 
-def get_uncategorized():
+def get_uncategorized(user_id: int):
     return Transaction.query.filter(
+        Transaction.user_id              == user_id,
         Transaction.categorization_status == 'pending',
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted           != True,
+        Transaction.is_spam              != True,
     ).order_by(desc(Transaction.date)).all()
 
 
-def get_spam():
+def get_spam(user_id: int):
     return Transaction.query.filter(
+        Transaction.user_id    == user_id,
         Transaction.is_spam    == True,
         Transaction.is_deleted != True,
     ).order_by(desc(Transaction.date)).all()
 
 
-def get_categorized():
+def get_categorized(user_id: int):
     return Transaction.query.filter(
+        Transaction.user_id              == user_id,
         Transaction.categorization_status != 'pending',
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted           != True,
+        Transaction.is_spam              != True,
     ).order_by(desc(Transaction.date)).all()
 
 
-def get_top_categories(period: str = 'month'):
+def get_top_categories(user_id: int, period: str = 'month'):
     _EXCLUDED_PURPOSES = {'Self transfer', 'self transfer', 'Self Transfer'}
 
     query = db.session.query(
@@ -57,19 +64,16 @@ def get_top_categories(period: str = 'month'):
         Transaction.purpose.label("category"),
         func.sum(Transaction.amount).label("total_spent"),
     ).filter(
+        Transaction.user_id == user_id,
         Transaction.type == 'debit',
         Transaction.purpose.isnot(None),
         Transaction.purpose != 'Uncategorized',
         Transaction.purpose.notin_(_EXCLUDED_PURPOSES),
-        # Explicit spam/deleted guards — != True misses NaN category_id rows
         Transaction.is_deleted == False,
         Transaction.is_spam    == False,
         Transaction.categorization_status != 'pending',
         Transaction.categorization_status != 'spam',
         Transaction.categorization_status != 'deleted',
-        # Exclude NaN category_id: cast to text and reject non-numeric-looking values,
-        # handled cleanly by requiring the integer FK to be a real integer via IS NOT NULL
-        # PLUS an explicit spam status guard above (NaN rows always have is_spam=true or status=spam)
         exclude_own_account_transfer_sql(),
     )
     if period == 'week':
@@ -94,7 +98,7 @@ def get_top_categories(period: str = 'month'):
     return [{"category": r.category, "total_spent": r.total_spent} for r in rows]
 
 
-def get_analytics_trend(period: str = 'month'):
+def get_analytics_trend(user_id: int, period: str = 'month'):
     data_points = []
     expense_expr = func.sum(case(
         (Transaction.type == 'debit',  Transaction.amount),
@@ -102,6 +106,7 @@ def get_analytics_trend(period: str = 'month'):
         else_=0,
     ))
     base_filters = [
+        Transaction.user_id    == user_id,
         Transaction.is_deleted != True,
         Transaction.is_spam    != True,
         Transaction.categorization_status != 'pending',
@@ -147,7 +152,7 @@ def get_analytics_trend(period: str = 'month'):
     return data_points
 
 
-def get_monthly_category_totals(month_str: str):
+def get_monthly_category_totals(user_id: int, month_str: str):
     _EXCLUDED_PURPOSES = {'Self transfer', 'self transfer', 'Self Transfer'}
 
     start_date = datetime.strptime(f"{month_str}-01", "%Y-%m-%d")
@@ -161,10 +166,10 @@ def get_monthly_category_totals(month_str: str):
         Transaction.purpose.label('category'),
         func.sum(Transaction.amount).label('total'),
     ).filter(
-        Transaction.date >= start_date,
-        Transaction.date <  end_date,
-        # Only debit transactions — credits are income, not spending
-        Transaction.type == 'debit',
+        Transaction.user_id    == user_id,
+        Transaction.date       >= start_date,
+        Transaction.date       <  end_date,
+        Transaction.type       == 'debit',
         Transaction.is_deleted == False,
         Transaction.is_spam    == False,
         Transaction.categorization_status != 'pending',
@@ -189,7 +194,7 @@ def get_monthly_category_totals(month_str: str):
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 
-def create_manual_transaction(data: dict) -> tuple:
+def create_manual_transaction(user_id: int, data: dict) -> tuple:
     """Returns (Transaction, accounts_list)."""
     amount = float(data.get("amount", 0))
     if amount <= 0:
@@ -220,6 +225,7 @@ def create_manual_transaction(data: dict) -> tuple:
             pass
 
     new_tx = Transaction(
+        user_id=user_id,
         source="manual", date=tx_date, amount=amount, type=t_type,
         purpose=data.get("category", "Uncategorized"),
         sender=data.get("sender") or "Manual Entry",
@@ -250,13 +256,15 @@ def create_manual_transaction(data: dict) -> tuple:
 
     accounts = [
         acc.to_dict()
-        for acc in AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+        for acc in AccountBalance.query
+        .filter_by(user_id=user_id)
+        .order_by(AccountBalance.sort_order, AccountBalance.id).all()
     ]
     return new_tx, accounts
 
 
-def soft_delete_transaction(txn_id: int):
-    tx = Transaction.query.get(txn_id)
+def soft_delete_transaction(user_id: int, txn_id: int):
+    tx = Transaction.query.filter_by(id=txn_id, user_id=user_id).first()
     if not tx:
         raise LookupError("Transaction not found")
     tx.is_deleted = True
@@ -264,8 +272,8 @@ def soft_delete_transaction(txn_id: int):
     db.session.commit()
 
 
-def mark_spam(txn_id: int):
-    tx = Transaction.query.get(txn_id)
+def mark_spam(user_id: int, txn_id: int):
+    tx = Transaction.query.filter_by(id=txn_id, user_id=user_id).first()
     if not tx:
         raise LookupError("Transaction not found")
     tx.is_spam = True
@@ -273,8 +281,8 @@ def mark_spam(txn_id: int):
     db.session.commit()
 
 
-def update_transaction_category(txn_id: int, data: dict):
-    txn = Transaction.query.get(txn_id)
+def update_transaction_category(user_id: int, txn_id: int, data: dict):
+    txn = Transaction.query.filter_by(id=txn_id, user_id=user_id).first()
     if not txn:
         raise LookupError("Transaction not found")
 
@@ -309,13 +317,13 @@ def update_transaction_category(txn_id: int, data: dict):
     return txn
 
 
-def bulk_categorize(transaction_ids: list, category_id: int, slug_hint: str = ""):
+def bulk_categorize(user_id: int, transaction_ids: list, category_id: int, slug_hint: str = ""):
     cat = Category.query.get(category_id)
     if not cat:
         raise LookupError("Category not found")
     updated = 0
     for tx_id in transaction_ids:
-        tx = Transaction.query.get(tx_id)
+        tx = Transaction.query.filter_by(id=tx_id, user_id=user_id).first()
         if tx:
             if tx.categorization_status == 'pending' and not getattr(tx, "balance_applied", False):
                 apply_pending_transaction_ledger(tx, balance_slug_override=slug_hint or None)
@@ -327,10 +335,10 @@ def bulk_categorize(transaction_ids: list, category_id: int, slug_hint: str = ""
     return updated
 
 
-def bulk_delete(transaction_ids: list) -> int:
+def bulk_delete(user_id: int, transaction_ids: list) -> int:
     updated = 0
     for tx_id in transaction_ids:
-        tx = Transaction.query.get(tx_id)
+        tx = Transaction.query.filter_by(id=tx_id, user_id=user_id).first()
         if tx:
             tx.is_deleted = True
             updated += 1
@@ -338,10 +346,10 @@ def bulk_delete(transaction_ids: list) -> int:
     return updated
 
 
-def bulk_spam(transaction_ids: list) -> int:
+def bulk_spam(user_id: int, transaction_ids: list) -> int:
     updated = 0
     for tx_id in transaction_ids:
-        tx = Transaction.query.get(tx_id)
+        tx = Transaction.query.filter_by(id=tx_id, user_id=user_id).first()
         if tx:
             tx.is_spam = True
             updated += 1
@@ -349,42 +357,44 @@ def bulk_spam(transaction_ids: list) -> int:
     return updated
 
 
-def get_total_expenses_for_current_month():
+def get_total_expenses_for_current_month(user_id: int):
     dt = datetime.now()
     year, month = dt.year, dt.month
     month_str = dt.strftime("%Y-%m")
 
-    total_expenses = calculate_month_expenses(year, month)
+    total_expenses = calculate_month_expenses(year, month, user_id=user_id)
 
     total_debits = db.session.query(func.sum(Transaction.amount)).filter(
+        Transaction.user_id    == user_id,
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
-        Transaction.type == 'debit',
+        Transaction.type       == 'debit',
         Transaction.is_deleted != True,
         Transaction.is_spam    != True,
         exclude_own_account_transfer_sql(),
     ).scalar() or 0.0
 
     total_credits = db.session.query(func.sum(Transaction.amount)).filter(
+        Transaction.user_id    == user_id,
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
-        Transaction.type == 'credit',
+        Transaction.type       == 'credit',
         Transaction.is_deleted != True,
         Transaction.is_spam    != True,
         exclude_own_account_transfer_sql(),
     ).scalar() or 0.0
 
-    # Persist to Budget
-    budget_entry = Budget.query.filter_by(month=month_str).first()
+    # Persist to user's Budget
+    budget_entry = Budget.query.filter_by(user_id=user_id, month=month_str).first()
     if budget_entry:
         budget_entry.total_expenses = total_expenses
         try:
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
 
     return {
-        "month": month_str,
+        "month":          month_str,
         "total_expense":  total_expenses,
         "total_debits":   total_debits,
         "total_credits":  total_credits,
@@ -398,19 +408,18 @@ def process_receipt_upload(file, current_user):
 
     if not file or not file.filename:
         raise ValueError("No file provided")
-        
+
     if not allowed_file(file.filename):
         raise ValueError("File type not allowed")
-        
-    # Ensure dir exists
+
     upload_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'attachments', 'receipts')
     os.makedirs(upload_folder, exist_ok=True)
-    
+
     timestamp_str = str(datetime.utcnow().timestamp()).replace('.', '')
-    filename = secure_filename(f"{timestamp_str}_{current_user.id}_{file.filename}")
+    filename  = secure_filename(f"{timestamp_str}_{current_user.id}_{file.filename}")
     file_path = os.path.join(upload_folder, filename)
     file.save(file_path)
-    
+
     receipt = UploadedReceipt(
         user_id=current_user.id,
         filename=filename,
@@ -420,29 +429,29 @@ def process_receipt_upload(file, current_user):
     )
     db.session.add(receipt)
     db.session.commit()
-    
+
     try:
         raw_text = perform_ocr(file_path)
         print("====== RAW TEXT FROM OCR ======")
         print(repr(raw_text))
         print("===============================")
         receipt.ocr_raw_text = raw_text
-        receipt.ocr_status = 'completed'
-        extracted_data = parse_receipt_text(raw_text)
+        receipt.ocr_status   = 'completed'
+        extracted_data       = parse_receipt_text(raw_text)
     except Exception as e:
         import traceback
         print("====== OCR / PARSER PIPELINE FAILED ======")
         print(traceback.format_exc())
         print("==========================================")
-        receipt.ocr_status = 'failed'
-        receipt.ocr_raw_text = None
-        extracted_data = {}
-        
+        receipt.ocr_status    = 'failed'
+        receipt.ocr_raw_text  = None
+        extracted_data        = {}
+
     db.session.commit()
-    
+
     return {
-        "success": True,
-        "receipt_id": receipt.id,
-        "ocr_status": receipt.ocr_status,
-        "extracted_data": extracted_data
+        "success":        True,
+        "receipt_id":     receipt.id,
+        "ocr_status":     receipt.ocr_status,
+        "extracted_data": extracted_data,
     }

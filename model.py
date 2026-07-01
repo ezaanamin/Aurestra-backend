@@ -1,5 +1,6 @@
 from database import db
 from datetime import datetime
+from sqlalchemy.orm import validates
 
 class MonthlyBalance(db.Model):
     """
@@ -10,8 +11,12 @@ class MonthlyBalance(db.Model):
     __tablename__ = "monthly_balances"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     source = db.Column(db.String(20), nullable=False)  # e.g., "combined"
-    month = db.Column(db.String(7), nullable=False, unique=True)    # Format: "YYYY-MM"
+    month = db.Column(db.String(7), nullable=False)    # Format: "YYYY-MM"
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'month', name='uq_monthly_balance_user_month'),)
     
     # Balance Information
     opening_balance = db.Column(db.Float, nullable=False)
@@ -42,7 +47,9 @@ class Transaction(db.Model):
     __tablename__ = "transactions"
 
     id = db.Column(db.Integer, primary_key=True)
-    
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
     source = db.Column(db.String(20), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
 
@@ -59,13 +66,18 @@ class Transaction(db.Model):
     receiver = db.Column(db.String(255), nullable=True)
 
     # NEW — unique easypaisa transaction ID for duplicate protection
-    transaction_id = db.Column(db.String(50), unique=True, nullable=True)
+    transaction_id = db.Column(db.String(50), nullable=True)
     
     # NEW — robust hash for deduplication
-    transaction_hash = db.Column(db.String(64), unique=True, nullable=True)
+    transaction_hash = db.Column(db.String(64), nullable=True)
     
     # NEW — SMS hash for deduplication (added via migration)
     sms_hash = db.Column(db.String(64), nullable=True, index=True)
+    
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'transaction_id', name='uq_transaction_user_id'),
+        db.UniqueConstraint('user_id', 'transaction_hash', name='uq_transaction_user_hash'),
+    )
 
     # Optional extra details (store name, bank name etc.)
     notes = db.Column(db.String(255), nullable=True)
@@ -142,15 +154,19 @@ class Transaction(db.Model):
 
 class SMSHistory(db.Model):
     __tablename__ = 'sms_history'
-    
+
     id = db.Column(db.Integer, primary_key=True)
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     device_sms_id = db.Column(db.String(100))  # Unique SMS ID from device
     sender = db.Column(db.String(50))
     body = db.Column(db.Text)
     device_timestamp = db.Column(db.DateTime)
-    sms_hash = db.Column(db.String(64), unique=True, nullable=False)  # Deterministic hash
+    sms_hash = db.Column(db.String(64), nullable=False)  # Deterministic hash
     status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'sms_hash', name='uq_sms_history_user_hash'),)
 
     def to_dict(self):
         return {
@@ -246,12 +262,16 @@ class DeviceNotification(db.Model):
 
 
 class Budget(db.Model):
-   
+
     __tablename__ = "budgets"
 
     id = db.Column(db.Integer, primary_key=True)
-    month = db.Column(db.String(7), nullable=False, unique=True)  # Format: "YYYY-MM"
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    month = db.Column(db.String(7), nullable=False)  # Format: "YYYY-MM"
     total_budget = db.Column(db.Float, nullable=False)
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'month', name='uq_budget_user_month'),)
 
     # Spending breakdown
     needs = db.Column(db.Float, nullable=False, default=0.0)
@@ -275,11 +295,15 @@ class AccountBalance(db.Model):
     __tablename__ = "account_balances"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
     # Stable machine id / slug (matches Transaction.source), e.g. bank, jazzcash, hbl_main
-    source = db.Column(db.String(64), nullable=False, unique=True)
+    source = db.Column(db.String(64), nullable=False)
 
     display_name = db.Column(db.String(120), nullable=False, default="")
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'source', name='uq_account_balance_user_source'),)
     # Legal / preferred account-holder name as printed by the bank (not the institution label).
     holder_name = db.Column(db.String(160), nullable=False, default="")
     # bank | mobile_wallet | cash | digital_bank
@@ -291,6 +315,11 @@ class AccountBalance(db.Model):
 
     current_balance = db.Column(db.Float, nullable=False, default=0.0)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @validates('current_balance')
+    def _clamp_balance(self, key, value):
+        """Never allow a negative balance to be stored — floor at 0.0."""
+        return max(0.0, float(value or 0.0))
     is_manual = db.Column(db.Boolean, default=False)
     # JSON array of digit strings (full or partial account numbers) to match e-statement PDF text
     statement_account_numbers = db.Column(db.Text, nullable=True)
@@ -358,6 +387,8 @@ class SavingsGoal(db.Model):
     __tablename__ = "savings_goals"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     name = db.Column(db.String(100), nullable=False)
     target_amount = db.Column(db.Float, nullable=False)
     current_amount = db.Column(db.Float, default=0.0)
@@ -390,8 +421,13 @@ class Category(db.Model):
     __tablename__ = "categories"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    # Phase 2: user ownership (nullable for safe migration)
+    # NOTE: unique=True on 'name' intentionally kept until Phase 3 constraint update
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    name = db.Column(db.String(100), nullable=False)
     icon = db.Column(db.String(50), nullable=False, default="cash")
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'name', name='uq_category_user_name'),)
     color = db.Column(db.String(20), nullable=False, default="#64748B")
     cat_type = db.Column(db.String(20), nullable=False, default="spending") # 'spending', 'income', 'both'
     is_default = db.Column(db.Boolean, default=False)
@@ -445,29 +481,47 @@ class CategorizationRule(db.Model):
 class User(db.Model):
     """
     Stores user authentication and profile details.
+    Supports both email/password and Google OAuth sign-in.
     """
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    
-    # Aurestra specific
+
+    # ── Profile ───────────────────────────────────────────────
     full_name = db.Column(db.String(100), nullable=True)
     avatar_url = db.Column(db.String(512), nullable=True)
-    
-    # Central Auth API specific
+
+    # Central Auth API specific (kept for backward-compat)
     name = db.Column(db.String(100), nullable=True)
     profile_picture = db.Column(db.String(512), nullable=True)
-    
-    # Google Auth Fields
+
+    # ── Email / Password Auth ─────────────────────────────────
+    # Null for Google-only accounts
+    password_hash = db.Column(db.String(255), nullable=True)
+
+    # ── Email Verification ────────────────────────────────────
+    # Google users are pre-verified; email/password users must verify once.
+    is_email_verified = db.Column(db.Boolean, default=False)
+    email_verification_token = db.Column(db.String(64), nullable=True, unique=True)
+    email_verification_sent_at = db.Column(db.DateTime, nullable=True)
+
+    # ── Password Reset ────────────────────────────────────────
+    password_reset_token = db.Column(db.String(64), nullable=True, unique=True)
+    password_reset_expires_at = db.Column(db.DateTime, nullable=True)
+
+    # ── Auth Method ───────────────────────────────────────────
+    # 'email' | 'google' | 'both'
+    auth_method = db.Column(db.String(20), default='google')
+
+    # ── Google OAuth Fields ───────────────────────────────────
     google_id = db.Column(db.String(50), nullable=True)
     google_email = db.Column(db.String(120), nullable=True)
     google_refresh_token = db.Column(db.String(255), nullable=True)
-    
-    # OTP fields removed
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Notifications Preference
+
+    # ── Preferences ───────────────────────────────────────────
     notifications_enabled = db.Column(db.Boolean, default=True)
 
     def to_dict(self):
@@ -476,7 +530,9 @@ class User(db.Model):
             "email": self.email,
             "full_name": self.full_name,
             "avatar_url": self.avatar_url,
-            "notifications_enabled": self.notifications_enabled
+            "notifications_enabled": self.notifications_enabled,
+            "is_email_verified": bool(self.is_email_verified),
+            "auth_method": self.auth_method or "google",
         }
 
 
@@ -511,6 +567,8 @@ class FinancialInsight(db.Model):
     __tablename__ = "financial_insights"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     month = db.Column(db.String(7), nullable=False) # "YYYY-MM"
     
     # Natural Language Content (The 'Story')
@@ -552,7 +610,11 @@ class StatementAnalysis(db.Model):
     __tablename__ = "statement_analysis"
 
     id = db.Column(db.Integer, primary_key=True)
-    month = db.Column(db.String(7), nullable=False, unique=True)  # "YYYY-MM"
+    # Phase 2: user ownership (nullable for safe migration)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    month = db.Column(db.String(7), nullable=False)  # "YYYY-MM"
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'month', name='uq_statement_analysis_user_month'),)
     
     opening_balance = db.Column(db.Float, default=0.0)
     closing_balance = db.Column(db.Float, default=0.0)

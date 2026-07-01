@@ -1,4 +1,4 @@
-# controllers/budget_controller.py
+# controllers/budget_controller.py  (Phase 3: pass current_user.id to all services)
 
 from flask import request, jsonify
 import services.budget_service as svc
@@ -6,14 +6,14 @@ import services.budget_service as svc
 
 def get_budget(current_user):
     try:
-        return jsonify(svc.get_current_budget()), 200
+        return jsonify(svc.get_current_budget(current_user.id)), 200
     except LookupError as e:
         return jsonify({"message": str(e)}), 404
 
 
 def save_budget(current_user):
     try:
-        data, created = svc.save_budget(request.get_json() or {})
+        data, created = svc.save_budget(current_user.id, request.get_json() or {})
         code = 201 if created else 200
         return jsonify({"message": f"Budget {'created' if created else 'updated'} successfully.", **data}), code
     except ValueError as e:
@@ -27,11 +27,11 @@ def set_salary(current_user):
         data   = request.get_json() or {}
         amount = float(data.get("amount", 0))
         month  = data.get("month")
-        budget = svc.set_salary(amount, month)
+        budget = svc.set_salary(current_user.id, amount, month)
         return jsonify({
-            "message":  "Salary updated successfully.",
-            "salary":   amount,
-            "month":    budget.month,
+            "message": "Salary updated successfully.",
+            "salary":  amount,
+            "month":   budget.month,
             "breakdown": {
                 "needs":          budget.needs,
                 "wants":          budget.wants,
@@ -43,12 +43,12 @@ def set_salary(current_user):
         return jsonify({"error": str(e)}), 500
 
 
-def get_budget_history():
-    return jsonify(svc.get_budget_history()), 200
+def get_budget_history(current_user):
+    return jsonify(svc.get_budget_history(current_user.id)), 200
 
 
 def get_monthly_summary(current_user):
     try:
-        return jsonify(svc.get_monthly_summary()), 200
+        return jsonify(svc.get_monthly_summary(current_user.id)), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -1,4 +1,4 @@
-# controllers/savings_controller.py
+# controllers/savings_controller.py  (Phase 3: pass current_user.id to all queries)
 
 from datetime import datetime
 from flask import request, jsonify
@@ -7,7 +7,8 @@ from model import SavingsGoal, AccountBalance, Transaction
 
 
 def list_goals(current_user):
-    return jsonify([g.to_dict() for g in SavingsGoal.query.all()]), 200
+    goals = SavingsGoal.query.filter_by(user_id=current_user.id).all()
+    return jsonify([g.to_dict() for g in goals]), 200
 
 
 def create_goal(current_user):
@@ -24,8 +25,11 @@ def create_goal(current_user):
         except Exception:
             pass
 
-    goal = SavingsGoal(name=name, target_amount=target, current_amount=current,
-                       emoji=emoji, deadline=deadline)
+    goal = SavingsGoal(
+        user_id=current_user.id,
+        name=name, target_amount=target,
+        current_amount=current, emoji=emoji, deadline=deadline,
+    )
     db.session.add(goal)
     db.session.commit()
     return jsonify(goal.to_dict()), 201
@@ -33,15 +37,15 @@ def create_goal(current_user):
 
 def update_goal(current_user, id):
     try:
-        goal = SavingsGoal.query.get(id)
+        goal = SavingsGoal.query.filter_by(id=id, user_id=current_user.id).first()
         if not goal:
             return jsonify({"error": "Goal not found"}), 404
         data = request.get_json() or {}
-        if "name"          in data: goal.name          = data["name"]
-        if "target_amount" in data: goal.target_amount = float(data["target_amount"])
+        if "name"           in data: goal.name          = data["name"]
+        if "target_amount"  in data: goal.target_amount = float(data["target_amount"])
         if "current_amount" in data: goal.current_amount = float(data["current_amount"])
-        if "emoji"         in data: goal.emoji         = data["emoji"]
-        if "deadline"      in data:
+        if "emoji"          in data: goal.emoji          = data["emoji"]
+        if "deadline"       in data:
             try:
                 goal.deadline = datetime.strptime(data["deadline"], "%Y-%m-%d").date()
             except Exception:
@@ -55,17 +59,21 @@ def update_goal(current_user, id):
 
 def delete_goal(current_user, id):
     try:
-        goal = SavingsGoal.query.get(id)
+        goal = SavingsGoal.query.filter_by(id=id, user_id=current_user.id).first()
         if not goal:
             return jsonify({"error": "Goal not found"}), 404
 
         if goal.current_amount > 0:
             refund = goal.current_amount
-            bank   = AccountBalance.query.filter_by(source='bank').first() or AccountBalance.query.first()
+            bank   = (
+                AccountBalance.query.filter_by(user_id=current_user.id, source='bank').first()
+                or AccountBalance.query.filter_by(user_id=current_user.id).first()
+            )
             if bank:
-                bank.current_balance  += refund
-                bank.last_updated      = datetime.utcnow()
+                bank.current_balance += refund
+                bank.last_updated     = datetime.utcnow()
                 db.session.add(Transaction(
+                    user_id=current_user.id,
                     source='bank', date=datetime.utcnow(), amount=refund, type='credit',
                     purpose='Savings Refund', sender='Savings Goal', receiver='Me',
                     notes=f"Refund from deleted goal: {goal.name}",
@@ -81,20 +89,24 @@ def delete_goal(current_user, id):
 
 def contribute(current_user, id):
     try:
-        goal   = SavingsGoal.query.get(id)
+        goal = SavingsGoal.query.filter_by(id=id, user_id=current_user.id).first()
         if not goal:
             return jsonify({"error": "Goal not found"}), 404
         amount = float((request.get_json() or {}).get("amount", 0))
         if amount <= 0:
             return jsonify({"error": "Amount must be greater than zero"}), 400
 
-        bank = AccountBalance.query.filter_by(source='bank').first() or AccountBalance.query.first()
+        bank = (
+            AccountBalance.query.filter_by(user_id=current_user.id, source='bank').first()
+            or AccountBalance.query.filter_by(user_id=current_user.id).first()
+        )
         if not bank:
             return jsonify({"error": "No account found to fund savings."}), 400
 
         bank.current_balance -= amount
         bank.last_updated     = datetime.utcnow()
         db.session.add(Transaction(
+            user_id=current_user.id,
             source='bank', date=datetime.utcnow(), amount=amount, type='debit',
             purpose='Savings', sender='Me', receiver='Savings Goal',
             notes=f"Contribution to: {goal.name}",

@@ -1,4 +1,4 @@
-# services/account_service.py  —  Account / wallet business logic
+# services/account_service.py  —  Account / wallet business logic (Phase 3: user-scoped)
 
 import json
 import re
@@ -9,11 +9,12 @@ from database import db
 from model import AccountBalance
 
 
-def ensure_default_cash_wallet():
-    """Ensure the reserved physical-cash wallet exists (source=cash). Idempotent."""
-    if AccountBalance.query.filter_by(source="cash").first():
+def ensure_default_cash_wallet(user_id: int):
+    """Ensure the reserved physical-cash wallet exists for this user. Idempotent."""
+    if AccountBalance.query.filter_by(user_id=user_id, source="cash").first():
         return
     acc = AccountBalance(
+        user_id=user_id,
         source="cash",
         display_name="Cash",
         holder_name="",
@@ -32,20 +33,25 @@ def ensure_default_cash_wallet():
         db.session.rollback()
 
 
-def get_all_accounts():
-    ensure_default_cash_wallet()
-    accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+def get_all_accounts(user_id: int):
+    ensure_default_cash_wallet(user_id)
+    accounts = (
+        AccountBalance.query
+        .filter_by(user_id=user_id)
+        .order_by(AccountBalance.sort_order, AccountBalance.id)
+        .all()
+    )
     result = []
     for acc in accounts:
         d = acc.to_dict()
-        d["statement_base"] = acc.current_balance
-        d["live_adjustment"] = 0.0
+        d["statement_base"]   = acc.current_balance
+        d["live_adjustment"]  = 0.0
         d["savings_reduction"] = 0.0
         result.append(d)
     return result
 
 
-def create_account(data: dict) -> AccountBalance:
+def create_account(user_id: int, data: dict) -> AccountBalance:
     display_name = (data.get("display_name") or "").strip()
     if not display_name:
         raise ValueError("display_name is required")
@@ -60,7 +66,8 @@ def create_account(data: dict) -> AccountBalance:
     raw_slug = (data.get("slug") or "").strip().lower()
     base = raw_slug or re.sub(r"[^a-z0-9]+", "_", display_name.lower()).strip("_")[:48] or "wallet"
     slug, n = base, 2
-    while AccountBalance.query.filter_by(source=slug).first():
+    # Slug uniqueness scoped to this user
+    while AccountBalance.query.filter_by(user_id=user_id, source=slug).first():
         slug = f"{base}_{n}"; n += 1
     if slug == "cash":
         raise ValueError("That name is reserved for built-in Cash.")
@@ -80,11 +87,12 @@ def create_account(data: dict) -> AccountBalance:
     elif isinstance(nums, str) and nums.strip():
         stmt_nums = nums.strip()
 
-    max_ord = db.session.query(func.max(AccountBalance.sort_order)).scalar()
+    max_ord = db.session.query(func.max(AccountBalance.sort_order)).filter_by(user_id=user_id).scalar()
     max_ord = int(max_ord) if max_ord is not None else 0
     initial = float(data.get("initial_balance", 0) or 0)
 
     acc = AccountBalance(
+        user_id=user_id,
         source=slug,
         display_name=display_name,
         holder_name=holder_name,
@@ -102,20 +110,20 @@ def create_account(data: dict) -> AccountBalance:
     return acc
 
 
-def set_manual_balance(account_id: int = None, source: str = None, amount: float = 0.0):
+def set_manual_balance(user_id: int, account_id: int = None, source: str = None, amount: float = 0.0):
     if account_id is not None:
-        balance = AccountBalance.query.get(int(account_id))
+        balance = AccountBalance.query.filter_by(id=int(account_id), user_id=user_id).first()
         if not balance:
             raise LookupError("Account not found")
         source = balance.source
     else:
-        balance = AccountBalance.query.filter_by(source=source).first()
+        balance = AccountBalance.query.filter_by(user_id=user_id, source=source).first()
 
     if not balance:
-        dn = (source or "bank").replace("_", " ").title()
-        max_ord = db.session.query(func.max(AccountBalance.sort_order)).scalar() or 0
+        dn      = (source or "bank").replace("_", " ").title()
+        max_ord = db.session.query(func.max(AccountBalance.sort_order)).filter_by(user_id=user_id).scalar() or 0
         balance = AccountBalance(
-            source=source or "bank", display_name=dn, holder_name="",
+            user_id=user_id, source=source or "bank", display_name=dn, holder_name="",
             account_kind="bank", match_keywords=json.dumps([source or "bank"]),
             accent_color="#6366F1", sort_order=int(max_ord) + 1,
             current_balance=amount,
@@ -129,7 +137,9 @@ def set_manual_balance(account_id: int = None, source: str = None, amount: float
     return balance
 
 
-def update_account(acc: AccountBalance, data: dict) -> AccountBalance:
+def update_account(user_id: int, acc: AccountBalance, data: dict) -> AccountBalance:
+    if acc.user_id != user_id:
+        raise PermissionError("Access denied")
     if "display_name" in data:
         acc.display_name = (data["display_name"] or acc.display_name).strip()
     if "holder_name" in data or "account_holder_name" in data:
@@ -164,7 +174,9 @@ def update_account(acc: AccountBalance, data: dict) -> AccountBalance:
     return acc
 
 
-def delete_account(acc: AccountBalance):
+def delete_account(user_id: int, acc: AccountBalance):
+    if acc.user_id != user_id:
+        raise PermissionError("Access denied")
     if acc.source == "cash":
         raise ValueError("The Cash wallet cannot be deleted.")
     db.session.delete(acc)

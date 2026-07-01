@@ -5,18 +5,157 @@ from datetime import datetime
 from flask import request, jsonify, current_app
 import jwt as pyjwt
 import requests as http_requests
+
 from services.auth_service import (
     verify_google_id_token,
     check_centralized_auth,
     get_or_create_user,
     issue_jwt,
     check_auth_api_status,
+    register_email_user,
+    login_email_user,
+    verify_email_token,
+    resend_verification_email,
+    generate_password_reset,
+    reset_password,
 )
 from model import User
 from database import db
 
 AUTH_API_URL = os.getenv('AUTH_API_URL', '').rstrip('/')
 
+
+# ─────────────────────────────────────────────────────────────
+# Email / Password Auth
+# ─────────────────────────────────────────────────────────────
+
+def email_register():
+    """POST /api/auth/register — Create account with email+password."""
+    data      = request.get_json() or {}
+    email     = (data.get('email') or '').strip().lower()
+    password  = data.get('password') or ''
+    full_name = (data.get('full_name') or data.get('name') or '').strip()
+
+    if not email or not password:
+        return jsonify({'message': 'Email and password are required.'}), 400
+
+    try:
+        user = register_email_user(email, password, full_name)
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 400
+
+    return jsonify({
+        'message':            'Account created. Please check your email to verify your account.',
+        'user':               user.to_dict(),
+        'requires_verification': True,
+    }), 201
+
+
+def email_login():
+    """POST /api/auth/login — Authenticate with email+password."""
+    data     = request.get_json() or {}
+    email    = (data.get('email') or '').strip().lower()
+    password = data.get('password') or ''
+
+    if not email or not password:
+        return jsonify({'message': 'Email and password are required.'}), 400
+
+    try:
+        user = login_email_user(email, password)
+    except PermissionError as e:
+        return jsonify({
+            'message':            str(e),
+            'code':               'EMAIL_NOT_VERIFIED',
+            'requires_verification': True,
+        }), 403
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 401
+
+    token = issue_jwt(user, current_app.config['SECRET_KEY'])
+    return jsonify({
+        'message': 'Login successful.',
+        'token':   token,
+        'user':    user.to_dict(),
+    }), 200
+
+
+def verify_email():
+    """POST /api/auth/verify-email — Confirm email with verification token."""
+    data  = request.get_json() or {}
+    token = (data.get('token') or '').strip()
+
+    if not token:
+        return jsonify({'message': 'Verification token is required.'}), 400
+
+    try:
+        user = verify_email_token(token)
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 400
+
+    jwt_token = issue_jwt(user, current_app.config['SECRET_KEY'])
+    return jsonify({
+        'message': 'Email verified successfully.',
+        'token':   jwt_token,
+        'user':    user.to_dict(),
+    }), 200
+
+
+def resend_verification():
+    """POST /api/auth/resend-verification — Resend verification email."""
+    data  = request.get_json() or {}
+    email = (data.get('email') or '').strip().lower()
+
+    if not email:
+        return jsonify({'message': 'Email is required.'}), 400
+
+    try:
+        resend_verification_email(email)
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 400
+
+    return jsonify({'message': 'Verification email sent. Please check your inbox.'}), 200
+
+
+def forgot_password():
+    """POST /api/auth/forgot-password — Request password reset email."""
+    data  = request.get_json() or {}
+    email = (data.get('email') or '').strip().lower()
+
+    if not email:
+        return jsonify({'message': 'Email is required.'}), 400
+
+    # Always return 200 — do not reveal whether account exists
+    generate_password_reset(email)
+    return jsonify({
+        'message': 'If an account exists with that email, a reset link has been sent.'
+    }), 200
+
+
+def do_reset_password():
+    """POST /api/auth/reset-password — Set new password using reset token."""
+    data         = request.get_json() or {}
+    token        = (data.get('token') or '').strip()
+    new_password = data.get('password') or ''
+
+    if not token or not new_password:
+        return jsonify({'message': 'Token and new password are required.'}), 400
+
+    try:
+        user = reset_password(token, new_password)
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 400
+
+    jwt_token = issue_jwt(user, current_app.config['SECRET_KEY'])
+    return jsonify({
+        'message': 'Password reset successfully. You are now logged in.',
+        'token':   jwt_token,
+        'user':    user.to_dict(),
+    }), 200
+
+
+# ─────────────────────────────────────────────────────────────
+# Google OAuth (existing — unchanged)
+# ─────────────────────────────────────────────────────────────
 
 def google_login():
     data = request.get_json() or {}
@@ -61,15 +200,16 @@ def auth_status(current_user):
 
 
 def auth_verify():
+    """POST /api/auth/verify — legacy Google email-based verify (kept for backward-compat)."""
     data  = request.get_json() or {}
     email = (data.get('email') or '').strip().lower()
     if not email:
         return jsonify({'message': 'Email is required'}), 400
 
     try:
-        res       = http_requests.get(f"{AUTH_API_URL}/auth/check", params={"email": email}, timeout=10)
+        res        = http_requests.get(f"{AUTH_API_URL}/auth/check", params={"email": email}, timeout=10)
         check_data = res.json()
-    except Exception as e:
+    except Exception:
         return jsonify({'message': 'Auth service unreachable. Please try again.'}), 503
 
     if not check_data.get("authenticated"):
@@ -82,15 +222,16 @@ def auth_verify():
 
     user = User.query.filter_by(email=email).first()
     if not user:
-        user = User(email=email, google_email=email)
+        user = User(email=email, google_email=email, is_email_verified=True, auth_method='google')
         db.session.add(user)
         db.session.commit()
     elif not user.google_email:
-        user.google_email = email
+        user.google_email      = email
+        user.is_email_verified = True
         db.session.commit()
 
     from datetime import timedelta
-    exp_date = datetime.utcnow() + timedelta(hours=2)
+    exp_date     = datetime.utcnow() + timedelta(hours=2)
     id_token_str = data.get('idToken')
     if id_token_str:
         try:
@@ -105,6 +246,10 @@ def auth_verify():
     return jsonify({'message': 'Login successful', 'token': token,
                     'user': user.to_dict(), 'email': email}), 200
 
+
+# ─────────────────────────────────────────────────────────────
+# Profile (token_required routes)
+# ─────────────────────────────────────────────────────────────
 
 def get_profile(current_user):
     from model import Transaction, SavingsGoal, Category
@@ -122,9 +267,9 @@ def get_profile(current_user):
 
 def update_profile(current_user):
     data = request.get_json() or {}
-    if 'full_name'              in data: current_user.full_name = data['full_name']
-    if 'email'                  in data: current_user.email     = data['email']
-    if 'avatar_url'             in data: current_user.avatar_url = data['avatar_url']
-    if 'notifications_enabled'  in data: current_user.notifications_enabled = bool(data['notifications_enabled'])
+    if 'full_name'             in data: current_user.full_name            = data['full_name']
+    if 'email'                 in data: current_user.email                = data['email']
+    if 'avatar_url'            in data: current_user.avatar_url           = data['avatar_url']
+    if 'notifications_enabled' in data: current_user.notifications_enabled = bool(data['notifications_enabled'])
     db.session.commit()
     return jsonify(current_user.to_dict())

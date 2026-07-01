@@ -1,4 +1,4 @@
-# services/budget_service.py  —  Budget business logic
+# services/budget_service.py  —  Budget business logic (Phase 3: user-scoped)
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -8,24 +8,24 @@ from model import Budget, MonthlyBalance, Transaction, AccountBalance
 from transfer_matching import exclude_own_account_transfer_sql
 
 
-def get_current_budget():
-    month = datetime.now().strftime("%Y-%m")
-    budget = Budget.query.filter_by(month=month).first()
+def get_current_budget(user_id: int):
+    month  = datetime.now().strftime("%Y-%m")
+    budget = Budget.query.filter_by(user_id=user_id, month=month).first()
     if not budget:
         raise LookupError(f"No budget found for {month}.")
     spending_limit = (budget.needs or 0) + (budget.wants or 0)
     return {
-        "month": budget.month,
-        "total_budget":    budget.total_budget,
-        "needs":           budget.needs,
-        "wants":           budget.wants,
-        "saving":          budget.saving,
-        "spending_limit":  spending_limit,
-        "created_at":      budget.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "month":          budget.month,
+        "total_budget":   budget.total_budget,
+        "needs":          budget.needs,
+        "wants":          budget.wants,
+        "saving":         budget.saving,
+        "spending_limit": spending_limit,
+        "created_at":     budget.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
 
 
-def save_budget(data: dict):
+def save_budget(user_id: int, data: dict):
     month = datetime.now().strftime("%Y-%m")
     for field in ('income', 'needs', 'wants', 'saving'):
         if field not in data:
@@ -36,16 +36,20 @@ def save_budget(data: dict):
     wants  = float(data['wants'])
     saving = float(data['saving'])
 
-    existing = Budget.query.filter_by(month=month).first()
+    existing = Budget.query.filter_by(user_id=user_id, month=month).first()
     if existing:
         existing.total_budget = total
-        existing.needs   = needs
-        existing.wants   = wants
-        existing.saving  = saving
+        existing.needs  = needs
+        existing.wants  = wants
+        existing.saving = saving
         db.session.commit()
         created = False
     else:
-        db.session.add(Budget(month=month, total_budget=total, needs=needs, wants=wants, saving=saving))
+        db.session.add(Budget(
+            user_id=user_id,
+            month=month, total_budget=total,
+            needs=needs, wants=wants, saving=saving,
+        ))
         db.session.commit()
         created = True
 
@@ -55,41 +59,45 @@ def save_budget(data: dict):
     }, created
 
 
-def set_salary(amount: float, month_str: str = None):
+def set_salary(user_id: int, amount: float, month_str: str = None):
     if not month_str:
         month_str = datetime.now().strftime("%Y-%m")
-    needs   = amount * 0.50
-    wants   = amount * 0.30
-    savings = amount * 0.20
+    needs          = amount * 0.50
+    wants          = amount * 0.30
+    savings        = amount * 0.20
     spending_limit = needs + wants
 
-    budget = Budget.query.filter_by(month=month_str).first()
+    budget = Budget.query.filter_by(user_id=user_id, month=month_str).first()
     if not budget:
-        budget = Budget(month=month_str, total_budget=spending_limit)
+        budget = Budget(user_id=user_id, month=month_str, total_budget=spending_limit)
         db.session.add(budget)
     else:
         budget.total_budget = spending_limit
-    budget.needs   = needs
-    budget.wants   = wants
-    budget.saving  = savings
+    budget.needs  = needs
+    budget.wants  = wants
+    budget.saving = savings
     db.session.commit()
     return budget
 
 
-def get_budget_history(months_to_fetch: int = 4):
+def get_budget_history(user_id: int, months_to_fetch: int = 4):
     today = datetime.now()
     months_list = [
         (today - relativedelta(months=i)).strftime("%Y-%m")
         for i in range(months_to_fetch)
     ]
 
-    budget_map  = {b.month: b for b in Budget.query.filter(Budget.month.in_(months_list)).all()}
-    balance_map = {m.month: m for m in MonthlyBalance.query.filter(MonthlyBalance.month.in_(months_list)).all()}
+    budget_map  = {b.month: b for b in Budget.query.filter(
+        Budget.user_id == user_id, Budget.month.in_(months_list)
+    ).all()}
+    balance_map = {m.month: m for m in MonthlyBalance.query.filter(
+        MonthlyBalance.user_id == user_id, MonthlyBalance.month.in_(months_list)
+    ).all()}
 
     history = []
     for month_str in months_list:
-        dt = datetime.strptime(month_str, "%Y-%m")
-        budget_rec  = budget_map.get(month_str)
+        dt         = datetime.strptime(month_str, "%Y-%m")
+        budget_rec = budget_map.get(month_str)
         balance_rec = balance_map.get(month_str)
 
         fresh_expense = db.session.query(
@@ -99,6 +107,7 @@ def get_budget_history(months_to_fetch: int = 4):
                 else_=0,
             ))
         ).filter(
+            Transaction.user_id == user_id,
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             Transaction.is_deleted != True,
@@ -108,9 +117,10 @@ def get_budget_history(months_to_fetch: int = 4):
         ).scalar() or 0.0
 
         fresh_income = db.session.query(func.sum(Transaction.amount)).filter(
+            Transaction.user_id == user_id,
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
-            Transaction.type == 'credit',
+            Transaction.type   == 'credit',
             Transaction.is_deleted != True,
             Transaction.is_spam    != True,
             Transaction.categorization_status != 'pending',
@@ -138,9 +148,9 @@ def get_budget_history(months_to_fetch: int = 4):
     return history
 
 
-def get_monthly_summary():
+def get_monthly_summary(user_id: int):
     current_month = datetime.now().strftime("%Y-%m")
-    dt = datetime.now()
+    dt            = datetime.now()
 
     dynamic_expense = db.session.query(
         func.sum(case(
@@ -149,6 +159,7 @@ def get_monthly_summary():
             else_=0,
         ))
     ).filter(
+        Transaction.user_id == user_id,
         extract('year',  Transaction.date) == dt.year,
         extract('month', Transaction.date) == dt.month,
         Transaction.is_deleted != True,
@@ -158,27 +169,29 @@ def get_monthly_summary():
     ).scalar() or 0.0
 
     dynamic_income = db.session.query(func.sum(Transaction.amount)).filter(
+        Transaction.user_id == user_id,
         extract('year',  Transaction.date) == dt.year,
         extract('month', Transaction.date) == dt.month,
-        Transaction.type == 'credit',
+        Transaction.type   == 'credit',
         Transaction.is_deleted != True,
         Transaction.is_spam    != True,
         Transaction.categorization_status != 'pending',
         exclude_own_account_transfer_sql(),
     ).scalar() or 0.0
 
-    budget_entry = Budget.query.filter_by(month=current_month).first()
+    budget_entry  = Budget.query.filter_by(user_id=user_id, month=current_month).first()
     final_income  = budget_entry.total_budget if (budget_entry and budget_entry.total_budget > 0) else dynamic_income
     final_savings = final_income - dynamic_expense
 
     total_current_balance = sum(
-        acc.current_balance for acc in AccountBalance.query.all()
+        acc.current_balance
+        for acc in AccountBalance.query.filter_by(user_id=user_id).all()
     )
 
-    summary = MonthlyBalance.query.filter_by(month=current_month).first()
+    summary = MonthlyBalance.query.filter_by(user_id=user_id, month=current_month).first()
     if not summary:
         summary = MonthlyBalance(
-            source="auto-dynamic", month=current_month,
+            user_id=user_id, source="auto-dynamic", month=current_month,
             opening_balance=0, closing_balance=total_current_balance,
             expense=dynamic_expense, savings=final_savings, fetched_at=dt,
         )
@@ -191,11 +204,11 @@ def get_monthly_summary():
 
     try:
         db.session.commit()
-    except Exception as e:
+    except Exception:
         db.session.rollback()
 
     return {
-        "month":          current_month,
+        "month":           current_month,
         "opening_balance": summary.opening_balance,
         "closing_balance": summary.closing_balance,
         "total_expense":   dynamic_expense,
