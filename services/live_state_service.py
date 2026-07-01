@@ -21,8 +21,8 @@ def _safe_balance(raw: float) -> float:
 def _active_txns():
     """Base query: exclude deleted, spam, and internal transfers."""
     return Transaction.query.filter(
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         exclude_own_account_transfer_sql(),
     )
 
@@ -106,8 +106,8 @@ def get_available_balance() -> dict:
     pending_debits = (
         Transaction.query
         .filter(
-            Transaction.is_deleted             != True,
-            Transaction.is_spam                != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.type                   == "debit",
             Transaction.categorization_status  == "pending",
         )
@@ -160,8 +160,8 @@ def get_pending_transactions() -> dict:
     pending = (
         Transaction.query
         .filter(
-            Transaction.is_deleted            != True,
-            Transaction.is_spam               != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.categorization_status == "pending",
         )
         .order_by(desc(Transaction.date))
@@ -271,8 +271,8 @@ def get_todays_spending_total() -> dict:
     total = (
         db.session.query(func.sum(Transaction.amount))
         .filter(
-            Transaction.is_deleted != True,
-            Transaction.is_spam    != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.type       == "debit",
             Transaction.date       >= start,
             Transaction.date       <= end,

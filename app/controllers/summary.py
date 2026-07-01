@@ -71,8 +71,8 @@ def get_monthly_summary_from_db(current_user):
         ).filter(
             extract('year', Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
-            Transaction.is_deleted != True,
-            Transaction.is_spam != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.categorization_status != 'pending',
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
@@ -82,8 +82,8 @@ def get_monthly_summary_from_db(current_user):
             extract('year', Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             Transaction.type == 'credit',
-            Transaction.is_deleted != True,
-            Transaction.is_spam != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.categorization_status != 'pending',
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0

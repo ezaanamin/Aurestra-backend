@@ -38,8 +38,8 @@ class FinancialAgent:
         return Transaction.query.filter(
             extract('year', Transaction.date) == year,
             extract('month', Transaction.date) == month,
-            Transaction.is_deleted != True,
-            Transaction.is_spam != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.categorization_status != 'pending',
             exclude_own_account_transfer_sql(),
         ).all()

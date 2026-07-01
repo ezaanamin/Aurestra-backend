@@ -110,8 +110,8 @@ def get_budget_history(user_id: int, months_to_fetch: int = 4):
             Transaction.user_id == user_id,
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
-            Transaction.is_deleted != True,
-            Transaction.is_spam    != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.categorization_status != 'pending',
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
@@ -121,8 +121,8 @@ def get_budget_history(user_id: int, months_to_fetch: int = 4):
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             Transaction.type   == 'credit',
-            Transaction.is_deleted != True,
-            Transaction.is_spam    != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             Transaction.categorization_status != 'pending',
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
@@ -162,8 +162,8 @@ def get_monthly_summary(user_id: int):
         Transaction.user_id == user_id,
         extract('year',  Transaction.date) == dt.year,
         extract('month', Transaction.date) == dt.month,
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         Transaction.categorization_status != 'pending',
         exclude_own_account_transfer_sql(),
     ).scalar() or 0.0
@@ -173,8 +173,8 @@ def get_monthly_summary(user_id: int):
         extract('year',  Transaction.date) == dt.year,
         extract('month', Transaction.date) == dt.month,
         Transaction.type   == 'credit',
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         Transaction.categorization_status != 'pending',
         exclude_own_account_transfer_sql(),
     ).scalar() or 0.0

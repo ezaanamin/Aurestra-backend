@@ -19,8 +19,8 @@ def calculate_month_expenses(year: int, month: int, user_id: int = None) -> floa
     q = Transaction.query.filter(
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
     )
     if user_id is not None:
         q = q.filter(Transaction.user_id == user_id)

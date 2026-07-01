@@ -70,8 +70,8 @@ def get_analytics_trend():
                 )))
                 .filter(
                     func.date(Transaction.date) == target_date,
-                    Transaction.is_deleted != True,
-                    Transaction.is_spam != True,
+                    Transaction.is_deleted.isnot(True),
+                    Transaction.is_spam.isnot(True),
                     Transaction.categorization_status != 'pending',
                     exclude_own_account_transfer_sql(),
                 )
@@ -97,8 +97,8 @@ def get_analytics_trend():
                 .filter(
                     extract('year', Transaction.date) == target_date.year,
                     extract('month', Transaction.date) == target_date.month,
-                    Transaction.is_deleted != True,
-                    Transaction.is_spam != True,
+                    Transaction.is_deleted.isnot(True),
+                    Transaction.is_spam.isnot(True),
                     Transaction.categorization_status != 'pending',
                     exclude_own_account_transfer_sql(),
                 )
@@ -122,8 +122,8 @@ def get_analytics_trend():
                 .filter(
                     extract('year', Transaction.date) == year,
                     extract('month', Transaction.date) == i,
-                    Transaction.is_deleted != True,
-                    Transaction.is_spam != True,
+                    Transaction.is_deleted.isnot(True),
+                    Transaction.is_spam.isnot(True),
                     Transaction.categorization_status != 'pending',
                     exclude_own_account_transfer_sql(),
                 )
@@ -146,8 +146,8 @@ def get_analytics_trend():
                 )))
                 .filter(
                     extract('year', Transaction.date) == year,
-                    Transaction.is_deleted != True,
-                    Transaction.is_spam != True,
+                    Transaction.is_deleted.isnot(True),
+                    Transaction.is_spam.isnot(True),
                     Transaction.categorization_status != 'pending',
                     exclude_own_account_transfer_sql(),
                 )
@@ -167,8 +167,8 @@ def latest_transactions():
         transactions = (
             db.session.query(Transaction)
             .filter(
-                Transaction.is_deleted != True,
-                Transaction.is_spam != True
+                Transaction.is_deleted.isnot(True),
+                Transaction.is_spam.isnot(True)
             )
             .order_by(desc(Transaction.date))
             .limit(limit)
@@ -193,8 +193,8 @@ def top_spending_categories():
         Transaction.type == 'debit',  # ONLY debits, never credits
         Transaction.purpose.isnot(None),
         Transaction.purpose != 'Uncategorized',
-        Transaction.is_deleted != True,
-        Transaction.is_spam != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         Transaction.categorization_status != 'pending',
         exclude_own_account_transfer_sql(),
     )

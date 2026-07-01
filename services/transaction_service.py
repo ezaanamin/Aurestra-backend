@@ -17,12 +17,14 @@ from services.receipt_parser import parse_receipt_text
 # ── Read ──────────────────────────────────────────────────────────────────────
 
 def get_latest_transactions(user_id: int, limit: int = 4):
+    _SELF_TRANSFER_PURPOSES = ('Self-transfer', 'Self transfer', 'self transfer', 'Self Transfer')
     return (
         Transaction.query
         .filter(
             Transaction.user_id   == user_id,
-            Transaction.is_deleted != True,
-            Transaction.is_spam   != True,
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
+            Transaction.purpose.notin_(_SELF_TRANSFER_PURPOSES),
         )
         .order_by(desc(Transaction.date))
         .limit(limit)
@@ -34,8 +36,8 @@ def get_uncategorized(user_id: int):
     return Transaction.query.filter(
         Transaction.user_id              == user_id,
         Transaction.categorization_status == 'pending',
-        Transaction.is_deleted           != True,
-        Transaction.is_spam              != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
     ).order_by(desc(Transaction.date)).all()
 
 
@@ -43,7 +45,7 @@ def get_spam(user_id: int):
     return Transaction.query.filter(
         Transaction.user_id    == user_id,
         Transaction.is_spam    == True,
-        Transaction.is_deleted != True,
+        Transaction.is_deleted.isnot(True),
     ).order_by(desc(Transaction.date)).all()
 
 
@@ -51,8 +53,8 @@ def get_categorized(user_id: int):
     return Transaction.query.filter(
         Transaction.user_id              == user_id,
         Transaction.categorization_status != 'pending',
-        Transaction.is_deleted           != True,
-        Transaction.is_spam              != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
     ).order_by(desc(Transaction.date)).all()
 
 
@@ -107,8 +109,8 @@ def get_analytics_trend(user_id: int, period: str = 'month'):
     ))
     base_filters = [
         Transaction.user_id    == user_id,
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         Transaction.categorization_status != 'pending',
         exclude_own_account_transfer_sql(),
     ]
@@ -369,8 +371,8 @@ def get_total_expenses_for_current_month(user_id: int):
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
         Transaction.type       == 'debit',
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         exclude_own_account_transfer_sql(),
     ).scalar() or 0.0
 
@@ -379,8 +381,8 @@ def get_total_expenses_for_current_month(user_id: int):
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
         Transaction.type       == 'credit',
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         exclude_own_account_transfer_sql(),
     ).scalar() or 0.0
 

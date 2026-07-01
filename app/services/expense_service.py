@@ -37,8 +37,8 @@ def calculate_month_expenses(year, month):
     transactions = Transaction.query.filter(
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
-        Transaction.is_deleted != True,
-        Transaction.is_spam    != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
     ).order_by(Transaction.date.asc()).all()   # ← chronological order is key
 
     running = 0.0

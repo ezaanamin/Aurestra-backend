@@ -99,8 +99,8 @@ def get_uncategorized_transactions(current_user):
     try:
         transactions = Transaction.query.filter(
             Transaction.categorization_status == 'pending',
-            Transaction.is_deleted != True,
-            Transaction.is_spam != True
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True)
         ).order_by(desc(Transaction.date)).all()
         
         return jsonify({
@@ -117,7 +117,7 @@ def get_spam_transactions(current_user):
     try:
         transactions = Transaction.query.filter(
             Transaction.is_spam == True,
-            Transaction.is_deleted != True
+            Transaction.is_deleted.isnot(True)
         ).order_by(desc(Transaction.date)).all()
         
         return jsonify([txn.to_dict() for txn in transactions]), 200
@@ -132,8 +132,8 @@ def get_categorized_transactions(current_user):
         # Categorized means categorization_status is NOT pending
         transactions = Transaction.query.filter(
             Transaction.categorization_status != 'pending',
-            Transaction.is_deleted != True,
-            Transaction.is_spam != True
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True)
         ).order_by(desc(Transaction.date)).all()
         
         return jsonify([txn.to_dict() for txn in transactions]), 200
