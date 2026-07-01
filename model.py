@@ -523,6 +523,7 @@ class User(db.Model):
 
     # ── Preferences ───────────────────────────────────────────
     notifications_enabled = db.Column(db.Boolean, default=True)
+    decryption_key = db.Column(db.String(255), nullable=True)
 
     def to_dict(self):
         return {
@@ -533,6 +534,7 @@ class User(db.Model):
             "notifications_enabled": self.notifications_enabled,
             "is_email_verified": bool(self.is_email_verified),
             "auth_method": self.auth_method or "google",
+            "decryption_key": self.decryption_key,
         }
 
 

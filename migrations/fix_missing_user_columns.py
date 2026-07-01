@@ -40,7 +40,8 @@ def migrate():
         "google_email": "VARCHAR(120)",
         "google_refresh_token": "VARCHAR(255)",
         "created_at": "DATETIME",
-        "notifications_enabled": "BOOLEAN DEFAULT 1"
+        "notifications_enabled": "BOOLEAN DEFAULT 1",
+        "decryption_key": "VARCHAR(255) DEFAULT NULL"
     }
     
     added = []
