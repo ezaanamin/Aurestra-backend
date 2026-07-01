@@ -86,11 +86,27 @@ def _run_backup(label: str) -> bool:
             # 2. Run per-user backups
             from model import User
             from services.backup_service import create_user_backup
-            users = User.query.filter(User.decryption_key.isnot(None)).all()
+            from utils.crypto_helpers import verify_decryption_key
+
+            # Query all users who have configured a decryption key
+            users = User.query.filter(User.decryption_key_hash.isnot(None)).all()
             print(f"⏰ Generating per-user encrypted backups for {len(users)} users...")
             for u in users:
                 try:
-                    create_user_backup(u.id, u.decryption_key)
+                    dec_key = u.decryption_key
+                    if not dec_key:
+                        # Dev fallback/self-healing: check if system BACKUP_PASSWORD matches the user's decryption key hash
+                        sys_pass = os.getenv("BACKUP_PASSWORD", "default_secure_password")
+                        if sys_pass and verify_decryption_key(sys_pass, u.decryption_key_hash):
+                            u.decryption_key = sys_pass
+                            db.session.commit()
+                            dec_key = sys_pass
+                            print(f"✅ [Backup] Self-healed missing decryption key for {u.email} using BACKUP_PASSWORD")
+                    
+                    if not dec_key:
+                        raise ValueError("Plaintext decryption key is missing in DB (user has not logged in since update).")
+
+                    create_user_backup(u.id, dec_key)
                     print(f"✅ Auto per-user backup created for {u.email}")
                 except Exception as ex:
                     print(f"❌ Failed auto per-user backup for {u.email}: {ex}")

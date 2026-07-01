@@ -40,6 +40,17 @@ def token_required(f):
                     print(f"DEBUG [token_required]: Invalid decryption key for user {current_user.email}!")
                     return jsonify({'message': 'Invalid decryption key provided.'}), 401
 
+                # Self-healing: if decryption_key is NULL or mismatched in DB but hash verifies, populate it
+                if current_user.decryption_key != dec_key:
+                    from database import db
+                    current_user.decryption_key = dec_key
+                    try:
+                        db.session.commit()
+                        print(f"✅ [Auth] Self-healed decryption_key column for {current_user.email}")
+                    except Exception as e:
+                        db.session.rollback()
+                        print(f"⚠️ [Auth] Failed to auto-save decryption_key for {current_user.email}: {e}")
+
                 # Derive symmetric key and bind to request-scoped g
                 g.encryption_key = derive_encryption_key(dec_key, current_user.decryption_key_salt)
             # If dec_key header present but no hash yet → first-time setup, allow through
@@ -88,6 +99,16 @@ def decryption_key_required(f):
                 'message': 'Invalid decryption key.',
                 'code': 'KEY_INVALID'
             }), 401
+
+        # Self-healing: if decryption_key is NULL or mismatched in DB but hash verifies, populate it
+        if current_user.decryption_key != dec_key:
+            from database import db
+            current_user.decryption_key = dec_key
+            try:
+                db.session.commit()
+                print(f"✅ [Auth] Self-healed decryption_key column for {current_user.email} (required decorator)")
+            except Exception as e:
+                db.session.rollback()
 
         g.encryption_key = derive_encryption_key(dec_key, current_user.decryption_key_salt)
         return f(current_user, *args, **kwargs)

@@ -759,6 +759,7 @@ class UserBackup(db.Model):
     enc_version = db.Column(db.String(30), nullable=False, default='AES256GCM-v1')
     status      = db.Column(db.String(20), nullable=False, default='completed')  # completed | failed
     table_counts = db.Column(db.Text, nullable=True)  # JSON: {"transactions": 42, ...}
+    checksum    = db.Column(db.String(64), nullable=True)  # SHA-256 of the backup file payload
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -779,6 +780,7 @@ class UserBackup(db.Model):
             "enc_version":  self.enc_version,
             "status":       self.status,
             "table_counts": counts,
+            "checksum":     self.checksum,
             "created_at":   self.created_at.isoformat() if self.created_at else None,
         }
 

@@ -25,6 +25,8 @@ from database import db
 from model import (
     UserBackup, Transaction, Category, AccountBalance,
     Budget, MonthlyBalance, FinancialInsight, StatementAnalysis,
+    SMSHistory, UploadedReceipt, DeviceNotification, SavingsGoal,
+    CategorizationRule, User,
 )
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -113,20 +115,31 @@ def _export_user_data(user_id: int) -> dict:
             print(f"[Backup] Warning: skipping table '{name}' export: {e}")
             return []
 
+    u = User.query.get(user_id)
+    prefs = {
+        "notifications_enabled": u.notifications_enabled if u else True
+    }
+
     return {
         "version":     APP_VERSION,
         "user_id":     user_id,
         "exported_at": datetime.datetime.utcnow().isoformat(),
         "app_version": APP_VERSION,
         "db_version":  DB_VERSION,
+        "preferences": prefs,
         "tables": {
-            "transactions":      _safe("transactions",      lambda: _rows_dict(Transaction.query.filter_by(user_id=user_id, is_deleted=False).all())),
-            "categories":        _safe("categories",        lambda: _rows_dict(Category.query.filter_by(user_id=user_id).all())),
-            "account_balances":  _safe("account_balances",  lambda: _rows_dict(AccountBalance.query.filter_by(user_id=user_id).all())),
-            "budgets":           _safe("budgets",           lambda: _rows_raw(Budget.query.filter_by(user_id=user_id).all())),
-            "monthly_balances":  _safe("monthly_balances",  lambda: _rows_raw(MonthlyBalance.query.filter_by(user_id=user_id).all())),
-            "financial_insights":_safe("financial_insights",lambda: _rows_dict(FinancialInsight.query.filter_by(user_id=user_id).all())),
-            "statement_analysis":_safe("statement_analysis",lambda: _rows_dict(StatementAnalysis.query.filter_by(user_id=user_id).all())),
+            "transactions":         _safe("transactions",         lambda: _rows_raw(Transaction.query.filter_by(user_id=user_id).all())),
+            "categories":           _safe("categories",           lambda: _rows_raw(Category.query.filter_by(user_id=user_id).all())),
+            "account_balances":     _safe("account_balances",     lambda: _rows_raw(AccountBalance.query.filter_by(user_id=user_id).all())),
+            "budgets":              _safe("budgets",              lambda: _rows_raw(Budget.query.filter_by(user_id=user_id).all())),
+            "monthly_balances":     _safe("monthly_balances",     lambda: _rows_raw(MonthlyBalance.query.filter_by(user_id=user_id).all())),
+            "financial_insights":   _safe("financial_insights",   lambda: _rows_raw(FinancialInsight.query.filter_by(user_id=user_id).all())),
+            "statement_analysis":   _safe("statement_analysis",   lambda: _rows_raw(StatementAnalysis.query.filter_by(user_id=user_id).all())),
+            "sms_history":          _safe("sms_history",          lambda: _rows_raw(SMSHistory.query.filter_by(user_id=user_id).all())),
+            "uploaded_receipts":    _safe("uploaded_receipts",    lambda: _rows_raw(UploadedReceipt.query.filter_by(user_id=user_id).all())),
+            "device_notifications": _safe("device_notifications", lambda: _rows_raw(DeviceNotification.query.filter_by(user_id=user_id).all())),
+            "savings_goals":        _safe("savings_goals",        lambda: _rows_raw(SavingsGoal.query.filter_by(user_id=user_id).all())),
+            "categorization_rules": _safe("categorization_rules", lambda: _rows_raw(CategorizationRule.query.filter_by(user_id=user_id).all())),
         }
     }
 
@@ -145,17 +158,86 @@ def _user_backup_dir(user_id: int) -> str:
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
-def create_user_backup(user_id: int, decryption_key: str) -> UserBackup:
-    """
-    Export user data → gzip → AES-256-GCM encrypt → save to disk → DB record.
-    Returns the new UserBackup ORM object.
-    """
-    data        = _export_user_data(user_id)
-    counts      = _count_tables(data)
-    json_bytes  = json.dumps(data, default=str).encode("utf-8")
-    compressed  = gzip.compress(json_bytes, compresslevel=9)
-    encrypted   = _encrypt_payload(compressed, decryption_key)
+# ── Public API ────────────────────────────────────────────────────────────────
+def _enforce_retention_policy(user_id: int, limit: int = 30) -> None:
+    """Keep only the most recent completed backups, automatically deleting older ones."""
+    backups = (
+        UserBackup.query
+        .filter_by(user_id=user_id, status='completed')
+        .order_by(UserBackup.created_at.desc())
+        .all()
+    )
+    if len(backups) > limit:
+        to_delete = backups[limit:]
+        for b in to_delete:
+            try:
+                if os.path.exists(b.file_path):
+                    os.remove(b.file_path)
+            except OSError as e:
+                print(f"[Backup] Warning: could not delete old backup file {b.file_path}: {e}")
+            db.session.delete(b)
+        db.session.commit()
 
+
+def create_user_backup(user_id: int, decryption_key: str) -> UserBackup | None:
+    """
+    Export user data → gzip → AES-256-GCM encrypt → verify integrity → save to disk → DB record.
+    Returns the new UserBackup ORM object, or None if skipped (no data/no changes).
+    """
+    data   = _export_user_data(user_id)
+    counts = _count_tables(data)
+    
+    # 1. Skip if user has absolutely no data
+    if sum(counts.values()) == 0:
+        print(f"[Backup] User {user_id} has no data. Skipping backup.")
+        return None
+
+    # 2. Skip if nothing has changed since the last backup
+    data_str = json.dumps(data, default=str, sort_keys=True)
+    new_checksum = hashlib.sha256(data_str.encode("utf-8")).hexdigest()
+
+    latest_backup = (
+        UserBackup.query
+        .filter_by(user_id=user_id, status='completed')
+        .order_by(UserBackup.created_at.desc())
+        .first()
+    )
+    if latest_backup and latest_backup.checksum == new_checksum:
+        print(f"[Backup] No changes detected for user {user_id}. Skipping backup.")
+        return latest_backup
+
+    # 3. Encrypt and verify integrity before saving to disk
+    try:
+        json_bytes = json.dumps(data, default=str).encode("utf-8")
+        compressed = gzip.compress(json_bytes, compresslevel=9)
+        encrypted  = _encrypt_payload(compressed, decryption_key)
+        
+        # Test decryption immediately
+        decrypted_compressed = _decrypt_payload(encrypted, decryption_key)
+        decrypted_json_bytes = gzip.decompress(decrypted_compressed)
+        verified_data = json.loads(decrypted_json_bytes.decode("utf-8"))
+        if verified_data.get("user_id") != user_id:
+            raise ValueError("Decrypted user_id mismatch during verification.")
+    except Exception as e:
+        print(f"[Backup] Integrity verification failed for user {user_id}: {e}")
+        # Log failure record in DB
+        failed_backup = UserBackup(
+            user_id     = user_id,
+            filename    = f"backup_failed_{datetime.datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S')}.enc",
+            file_path   = "",
+            size_bytes  = 0,
+            app_version = APP_VERSION,
+            db_version  = DB_VERSION,
+            enc_version = ENC_VERSION,
+            status      = "failed",
+            table_counts = json.dumps(counts),
+            checksum    = None
+        )
+        db.session.add(failed_backup)
+        db.session.commit()
+        raise ValueError(f"Backup verification failed: {e}")
+
+    # 4. Save to disk
     timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
     filename  = f"backup_{timestamp}.enc"
     dir_path  = _user_backup_dir(user_id)
@@ -174,9 +256,14 @@ def create_user_backup(user_id: int, decryption_key: str) -> UserBackup:
         enc_version = ENC_VERSION,
         status      = "completed",
         table_counts = json.dumps(counts),
+        checksum    = new_checksum,
     )
     db.session.add(backup)
     db.session.commit()
+
+    # Enforce retention policy (keep latest 30)
+    _enforce_retention_policy(user_id, limit=30)
+
     return backup
 
 
@@ -195,7 +282,7 @@ def get_latest_backup(user_id: int) -> dict | None:
     """Return the most recent backup metadata, or None if no backups exist."""
     backup = (
         UserBackup.query
-        .filter_by(user_id=user_id)
+        .filter_by(user_id=user_id, status='completed')
         .order_by(UserBackup.created_at.desc())
         .first()
     )
@@ -214,11 +301,6 @@ def restore_user_backup(user_id: int, backup_id: int, decryption_key: str) -> di
     """
     Decrypt backup → validate → restore rows into DB.
     Returns a summary of restored row counts.
-
-    Strategy:
-    - For each table, UPSERT rows (insert or update by primary key).
-    - Never wipe existing data — only merge/overwrite matching rows.
-    - Transactions with is_deleted=True are skipped on restore.
     """
     backup = get_backup_or_404(user_id, backup_id)
 
@@ -238,20 +320,27 @@ def restore_user_backup(user_id: int, backup_id: int, decryption_key: str) -> di
 
     restored = {}
 
-    # ── Transactions ──────────────────────────────────────────────────────────
+    # Restore preferences
+    prefs = data.get("preferences", {})
+    u = User.query.get(user_id)
+    if u and "notifications_enabled" in prefs:
+        u.notifications_enabled = bool(prefs["notifications_enabled"])
+
+    # ── Table Restore Actions ─────────────────────────────────────────────────
     restored["transactions"] = _restore_transactions(user_id, data["tables"].get("transactions", []))
-
-    # ── Categories ────────────────────────────────────────────────────────────
     restored["categories"] = _restore_categories(user_id, data["tables"].get("categories", []))
-
-    # ── Account Balances ──────────────────────────────────────────────────────
     restored["account_balances"] = _restore_account_balances(user_id, data["tables"].get("account_balances", []))
-
-    # ── Budgets ───────────────────────────────────────────────────────────────
     restored["budgets"] = _restore_budgets(user_id, data["tables"].get("budgets", []))
-
-    # ── Financial Insights ────────────────────────────────────────────────────
     restored["financial_insights"] = _restore_insights(user_id, data["tables"].get("financial_insights", []))
+    
+    # Generic table restore helpers
+    restored["monthly_balances"] = _restore_table_generic(MonthlyBalance, user_id, data["tables"].get("monthly_balances", []))
+    restored["statement_analysis"] = _restore_table_generic(StatementAnalysis, user_id, data["tables"].get("statement_analysis", []))
+    restored["sms_history"] = _restore_table_generic(SMSHistory, user_id, data["tables"].get("sms_history", []))
+    restored["uploaded_receipts"] = _restore_table_generic(UploadedReceipt, user_id, data["tables"].get("uploaded_receipts", []))
+    restored["device_notifications"] = _restore_table_generic(DeviceNotification, user_id, data["tables"].get("device_notifications", []))
+    restored["savings_goals"] = _restore_table_generic(SavingsGoal, user_id, data["tables"].get("savings_goals", []))
+    restored["categorization_rules"] = _restore_table_generic(CategorizationRule, user_id, data["tables"].get("categorization_rules", []))
 
     db.session.commit()
     return {
@@ -281,6 +370,23 @@ def _parse_dt(val):
         return datetime.datetime.fromisoformat(str(val))
     except Exception:
         return None
+
+
+def _restore_table_generic(model_class, user_id: int, rows: list) -> int:
+    count = 0
+    for r in rows:
+        if r.get("user_id") != user_id:
+            continue
+        obj_data = {}
+        for col in model_class.__table__.columns:
+            val = r.get(col.name)
+            if val is not None and (col.name == "date" or col.name.endswith("_date") or col.name.endswith("_at")):
+                val = _parse_dt(val)
+            obj_data[col.name] = val
+        obj = model_class(**obj_data)
+        db.session.merge(obj)
+        count += 1
+    return count
 
 
 def _restore_transactions(user_id: int, rows: list) -> int:
