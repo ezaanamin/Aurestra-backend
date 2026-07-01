@@ -17,6 +17,7 @@ def token_required(f):
             token = auth_header.split(" ")[1]
 
         if not token:
+            print("DEBUG [token_required]: Token is missing!")
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
@@ -27,6 +28,7 @@ def token_required(f):
             current_user = User.query.get(user_id)
 
             if not current_user:
+                print(f"DEBUG [token_required]: User {user_id} invalid (DB Record Missing)!")
                 return jsonify({'message': 'User invalid! (DB Record Missing)'}), 401
 
             # Check for decryption key header and derive encryption key
@@ -34,6 +36,7 @@ def token_required(f):
             if dec_key and current_user.decryption_key_hash:
                 # Hash is registered — verify the key
                 if not verify_decryption_key(dec_key, current_user.decryption_key_hash):
+                    print(f"DEBUG [token_required]: Invalid decryption key for user {current_user.email}!")
                     return jsonify({'message': 'Invalid decryption key provided.'}), 401
 
                 # Derive symmetric key and bind to request-scoped g
@@ -41,10 +44,13 @@ def token_required(f):
             # If dec_key header present but no hash yet → first-time setup, allow through
 
         except jwt.ExpiredSignatureError:
+            print("DEBUG [token_required]: Token expired!")
             return jsonify({'message': 'Token expired!'}), 401
         except jwt.InvalidTokenError as e:
+            print(f"DEBUG [token_required]: Token invalid: {e}")
             return jsonify({'message': f'Token is invalid: {e}'}), 401
         except Exception as e:
+            print(f"DEBUG [token_required]: Token error: {e}")
             return jsonify({'message': f'Token error: {e}'}), 401
 
         return f(current_user, *args, **kwargs)
