@@ -80,7 +80,19 @@ def email_login():
 
 
 def verify_email():
-    """POST /api/auth/verify-email — Confirm email with verification token."""
+    """GET/POST /api/auth/verify-email — Confirm email with verification token."""
+    if request.method == 'GET':
+        token = request.args.get('token', '').strip()
+        if not token:
+            return "<h1>Missing Token</h1><p>No verification token provided.</p>", 400
+        
+        try:
+            verify_email_token(token)
+            return "<h1>Email Verified!</h1><p>Your Aurestra account has been successfully verified. You can now close this window and log in to the app.</p>", 200
+        except ValueError as e:
+            return f"<h1>Verification Failed</h1><p>{str(e)}</p>", 400
+
+    # POST logic
     data  = request.get_json() or {}
     token = (data.get('token') or '').strip()
 

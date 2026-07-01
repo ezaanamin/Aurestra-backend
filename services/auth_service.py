@@ -29,7 +29,7 @@ SMTP_PORT    = int(os.getenv('SMTP_PORT', '587'))
 
 APP_NAME     = "Aurestra"
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://aurestra.app')
-
+BACKEND_URL  = os.getenv('BACKEND_URL', 'https://vernon-msie-store-convenient.trycloudflare.com').rstrip('/')
 
 # ─────────────────────────────────────────────────────────────
 # Helpers
@@ -91,8 +91,9 @@ def send_verification_email(user: User) -> bool:
     user.email_verification_sent_at = datetime.utcnow()
     db.session.commit()
 
-    # Deep-link that the app intercepts, or a web URL as fallback
-    verify_url = f"{FRONTEND_URL}/verify-email?token={token}"
+    # Use the actual backend tunnel URL
+    base_url = BACKEND_URL
+    verify_url = f"{base_url}/api/auth/verify-email?token={token}"
 
     html = f"""
     <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#050D1A;color:#EAF2FF;border-radius:16px;padding:40px;">
@@ -124,7 +125,8 @@ def send_password_reset_email(user: User) -> bool:
     user.password_reset_expires_at = datetime.utcnow() + timedelta(hours=1)
     db.session.commit()
 
-    reset_url = f"{FRONTEND_URL}/reset-password?token={token}"
+    base_url = BACKEND_URL
+    reset_url = f"{base_url}/api/auth/reset-password?token={token}"
 
     html = f"""
     <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#050D1A;color:#EAF2FF;border-radius:16px;padding:40px;">
