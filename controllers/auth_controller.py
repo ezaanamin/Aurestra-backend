@@ -185,9 +185,9 @@ def google_login():
         centralized_auth = check_centralized_auth(email)
         user = get_or_create_user(email, google_id, name, picture)
 
-        exp_ts   = id_info.get('exp')
-        exp_date = datetime.utcfromtimestamp(exp_ts) if exp_ts else None
-        token    = issue_jwt(user, current_app.config['SECRET_KEY'], exp_date)
+        # Do not use Google ID token exp as Flask JWT exp to prevent instant/short expiration.
+        # This defaults to a standard 30-day session in issue_jwt.
+        token    = issue_jwt(user, current_app.config['SECRET_KEY'])
 
         auth_url = os.getenv("AUTH_SERVICE_URL")
         return jsonify({
@@ -242,19 +242,9 @@ def auth_verify():
         user.is_email_verified = True
         db.session.commit()
 
-    from datetime import timedelta
-    exp_date     = datetime.utcnow() + timedelta(hours=2)
-    id_token_str = data.get('idToken')
-    if id_token_str:
-        try:
-            decoded = pyjwt.decode(id_token_str, options={"verify_signature": False})
-            exp_ts  = decoded.get('exp')
-            if exp_ts:
-                exp_date = datetime.utcfromtimestamp(exp_ts)
-        except Exception:
-            pass
-
-    token = issue_jwt(user, current_app.config['SECRET_KEY'], exp_date)
+    # Do not use Google ID token exp as Flask JWT exp to prevent instant/short expiration.
+    # This defaults to a standard 30-day session in issue_jwt.
+    token = issue_jwt(user, current_app.config['SECRET_KEY'])
     return jsonify({'message': 'Login successful', 'token': token,
                     'user': user.to_dict(), 'email': email}), 200
 
