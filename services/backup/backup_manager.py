@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 import datetime
+import subprocess
 
 from services.backup.local_storage import BackupLocalStorage
 from services.backup.drive_storage import BackupDriveStorage
@@ -84,9 +85,35 @@ class BackupOrchestrator:
                 dst_conn.close()
                 src_conn.close()
 
+                pg_dump_path = None
+                pg_dump_name = None
+                try:
+                    from database import DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
+                    if DB_USER and DB_HOST:
+                        pg_dump_name = f"postgres_{timestamp}.dump"
+                        pg_dump_path = os.path.join(temp_dir, pg_dump_name)
+                        cmd = [
+                            "pg_dump",
+                            "-h", DB_HOST,
+                            "-p", str(DB_PORT),
+                            "-U", DB_USER,
+                            "-d", DB_NAME,
+                            "-Fc",
+                            "-f", pg_dump_path,
+                        ]
+                        env = os.environ.copy()
+                        env["PGPASSWORD"] = DB_PASSWORD or ""
+                        subprocess.run(cmd, check=True, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                except Exception as pg_err:
+                    print(f"⚠️ [Backup] PostgreSQL dump skipped: {pg_err}")
+
                 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
                     zf.write(consistent_db_path, arcname="aurestra.db")
+                    if pg_dump_path and os.path.exists(pg_dump_path):
+                        zf.write(pg_dump_path, arcname=pg_dump_name)
                 os.remove(consistent_db_path)
+                if pg_dump_path and os.path.exists(pg_dump_path):
+                    os.remove(pg_dump_path)
 
                 BackupEncryption.encrypt_system_file(zip_path, encrypted_path, self.backup_password)
                 os.remove(zip_path)
