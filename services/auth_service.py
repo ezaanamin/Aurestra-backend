@@ -56,25 +56,29 @@ def verify_password(plain: str, hashed: str) -> bool:
 # Email Sending
 # ─────────────────────────────────────────────────────────────
 
-def _send_email(to_addr: str, subject: str, html_body: str) -> bool:
-    """Send an HTML email via Gmail SMTP. Returns True on success."""
-    if not SMTP_EMAIL or not SMTP_PASS:
-        print(f"⚠️ [Auth] SMTP not configured — skipping email to {to_addr}")
-        return False
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From']    = f"{APP_NAME} <{SMTP_EMAIL}>"
-        msg['To']      = to_addr
-        msg.attach(MIMEText(html_body, 'html'))
+from drive_utils import get_gmail_service, create_message, send_gmail_message
+import re
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(SMTP_EMAIL, SMTP_PASS)
-            server.sendmail(SMTP_EMAIL, to_addr, msg.as_string())
-        print(f"✅ [Auth] Email sent to {to_addr}: {subject}")
-        return True
+def _send_email(to_addr: str, subject: str, html_body: str) -> bool:
+    """Send an HTML email via Gmail API instead of SMTP. Returns True on success."""
+    try:
+        service = get_gmail_service()
+        if not service:
+            print("⚠️ [Auth] Gmail API service could not be initialized.")
+            return False
+
+        sender = "me"
+        plain_text = re.sub('<[^<]+?>', '', html_body)
+        
+        message = create_message(sender, to_addr, subject, plain_text, html_body)
+        result = send_gmail_message(service, "me", message)
+        
+        if result:
+            print(f"✅ [Auth] Email sent to {to_addr}: {subject} via Gmail API")
+            return True
+        else:
+            print(f"❌ [Auth] Email send failed to {to_addr} via Gmail API")
+            return False
     except Exception as e:
         print(f"❌ [Auth] Email send failed to {to_addr}: {e}")
         return False
