@@ -1,5 +1,6 @@
 # controllers/system_controller.py
 
+import os
 import re
 from datetime import datetime
 from flask import jsonify, current_app
@@ -55,7 +56,6 @@ def manual_backup(current_user):
 
     try:
         from services.backup.backup_manager import BackupOrchestrator
-        from flask import current_app
 
         orchestrator = BackupOrchestrator(current_app)
         # We can run it asynchronously or synchronously; here we run it synchronously.
@@ -67,6 +67,11 @@ def manual_backup(current_user):
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+def trigger_backup(current_user):
+    """POST /api/backup/trigger — compatibility entrypoint for backup triggering."""
+    return manual_backup(current_user)
 
 
 def list_api_insights(current_user):
