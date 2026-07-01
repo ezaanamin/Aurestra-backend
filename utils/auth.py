@@ -32,8 +32,9 @@ def token_required(f):
                 return jsonify({'message': 'User invalid! (DB Record Missing)'}), 401
 
             # Check for decryption key header and derive encryption key
+            # Skip key verification on /api/profile since that endpoint handles its own key verification/setup
             dec_key = request.headers.get("X-Decryption-Key")
-            if dec_key and current_user.decryption_key_hash:
+            if dec_key and current_user.decryption_key_hash and request.path != '/api/profile':
                 # Hash is registered — verify the key
                 if not verify_decryption_key(dec_key, current_user.decryption_key_hash):
                     print(f"DEBUG [token_required]: Invalid decryption key for user {current_user.email}!")
