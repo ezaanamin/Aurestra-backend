@@ -44,7 +44,6 @@ DEFAULT_CATEGORIES = [
     {"name": "Food & Snacks",          "icon": "food",        "color": "#FF6B6B", "type": "spending"},
     {"name": "Movies",                  "icon": "movie",       "color": "#EC4899", "type": "spending"},
     {"name": "Tea",                     "icon": "coffee",      "color": "#F59E0B", "type": "spending"},
-    {"name": "Therapy",                 "icon": "brain",       "color": "#8B5CF6", "type": "spending"},
     {"name": "Uber",                    "icon": "car",         "color": "#4ECDC4", "type": "spending"},
     {"name": "Audible Subscription",    "icon": "headphones",  "color": "#A78BFA", "type": "spending"},
     {"name": "Google One Subscription", "icon": "google",      "color": "#3B82F6", "type": "spending"},
