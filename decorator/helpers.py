@@ -57,6 +57,11 @@ DEFAULT_CATEGORIES = [
     {"name": "Personal Care",           "icon": "sparkles",    "color": "#8B5CF6", "type": "spending"},
     {"name": "Online Services",         "icon": "web",         "color": "#3B82F6", "type": "spending"},
     {"name": "Gym & Fitness",           "icon": "dumbbell",    "color": "#FF6B6B", "type": "spending"},
+    {"name": "Rent / Housing",          "icon": "home",        "color": "#EC4899", "type": "spending"},
+    {"name": "Fuel / Gas",              "icon": "gas-station", "color": "#F59E0B", "type": "spending"},
+    {"name": "Cash Withdrawal",         "icon": "cash-minus",  "color": "#10B981", "type": "spending"},
+    {"name": "Travel & Vacation",       "icon": "airplane",    "color": "#3B82F6", "type": "spending"},
+    {"name": "Gifts & Donations",       "icon": "gift",        "color": "#EC4899", "type": "spending"},
     {"name": "Income",                  "icon": "cash",        "color": "#10B981", "type": "income"},
     {"name": "Bonus",                   "icon": "gift",        "color": "#F59E0B", "type": "income"},
     {"name": "Investment",              "icon": "trending-up", "color": "#3B82F6", "type": "income"},
@@ -68,7 +73,7 @@ def seed_categories():
     """Seed the database with global default categories (idempotent, backward-compat)."""
     with app.app_context():
         for cat_data in DEFAULT_CATEGORIES:
-            cat = Category.query.filter_by(name=cat_data["name"]).first()
+            cat = Category.query.filter_by(name=cat_data["name"], user_id=None).first()
             if not cat:
                 cat = Category(
                     name=cat_data["name"],
@@ -76,6 +81,7 @@ def seed_categories():
                     color=cat_data["color"],
                     cat_type=cat_data["type"],
                     is_default=True,
+                    user_id=None,
                 )
                 db.session.add(cat)
             else:

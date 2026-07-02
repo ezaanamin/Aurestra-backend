@@ -34,6 +34,9 @@ def token_required(f):
             # Check for decryption key header and derive encryption key
             # Skip key verification on /api/profile since that endpoint handles its own key verification/setup
             dec_key = request.headers.get("X-Decryption-Key")
+            if not dec_key and current_user.decryption_key:
+                dec_key = current_user.decryption_key
+
             if dec_key and current_user.decryption_key_hash and request.path != '/api/profile':
                 # Hash is registered — verify the key
                 if not verify_decryption_key(dec_key, current_user.decryption_key_hash):
@@ -88,6 +91,9 @@ def decryption_key_required(f):
 
         # Key configured on account but header missing from this request
         dec_key = request.headers.get("X-Decryption-Key")
+        if not dec_key and current_user.decryption_key:
+            dec_key = current_user.decryption_key
+
         if not dec_key:
             return jsonify({
                 'message': 'X-Decryption-Key header is required for this operation.',

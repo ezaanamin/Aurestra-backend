@@ -254,6 +254,9 @@ def auth_verify():
 # ─────────────────────────────────────────────────────────────
 
 def get_profile(current_user):
+    from services.auth_service import ensure_user_has_decryption_key
+    ensure_user_has_decryption_key(current_user)
+
     from model import Transaction, SavingsGoal, Category
     tx_count         = Transaction.query.filter_by(is_deleted=False).count()
     goals_count      = SavingsGoal.query.count()
@@ -265,6 +268,7 @@ def get_profile(current_user):
         'categories':   categories_count,
     }
     return jsonify(user_data)
+
 
 
 def update_profile(current_user):
