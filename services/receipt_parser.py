@@ -50,7 +50,7 @@ Receipt text:
             "prompt": prompt,
             "format": "json",
             "stream": False
-        }, timeout=20)
+        }, timeout=320)
         
         if response.status_code == 200:
             data = response.json()
