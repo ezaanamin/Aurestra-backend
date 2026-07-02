@@ -184,6 +184,9 @@ class BackupOrchestrator:
                     if not dec_key:
                         raise ValueError("Plaintext decryption key is missing in DB (user has not logged in since update).")
 
+                    # Print the backup password for this user
+                    print(f"  └─ Backup Password: {dec_key}")
+
                     # Set g.encryption_key so SQLAlchemy can decrypt fields during export
                     from flask import g
                     from utils.crypto_helpers import derive_encryption_key
