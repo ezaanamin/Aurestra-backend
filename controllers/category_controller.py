@@ -5,35 +5,56 @@ from database import db
 from model import Category
 
 
-def list_categories():
-    return jsonify([c.to_dict() for c in Category.query.all()]), 200
+def list_categories(current_user):
+    from sqlalchemy import or_, and_
+    categories = Category.query.filter(
+        or_(
+            Category.user_id == current_user.id, 
+            and_(Category.is_default == True, Category.user_id == None)
+        )
+    ).all()
+    return jsonify([c.to_dict() for c in categories]), 200
 
 
-def add_category():
+def add_category(current_user):
     data = request.json or {}
     name = data.get('name')
     if not name:
         return jsonify({"error": "Name is required"}), 400
-    if Category.query.filter_by(name=name).first():
+    
+    from sqlalchemy import or_, and_
+    existing = Category.query.filter(
+        Category.name == name,
+        or_(
+            Category.user_id == current_user.id, 
+            and_(Category.is_default == True, Category.user_id == None)
+        )
+    ).first()
+    if existing:
         return jsonify({"error": "Category already exists"}), 400
+        
     cat = Category(
         name=name,
         icon=data.get('icon', 'cash'),
         color=data.get('color', '#64748B'),
         cat_type=data.get('cat_type', 'spending'),
         is_default=False,
+        user_id=current_user.id
     )
     db.session.add(cat)
     db.session.commit()
     return jsonify(cat.to_dict()), 201
 
 
-def update_category(id):
+def update_category(current_user, id):
     try:
         data = request.json or {}
-        cat  = Category.query.get(id)
+        cat = Category.query.get(id)
         if not cat:
             return jsonify({"error": "Category not found"}), 404
+        if cat.user_id != current_user.id:
+            return jsonify({"error": "Cannot update default or other user's categories"}), 403
+            
         if "name"     in data: cat.name     = data["name"]
         if "icon"     in data: cat.icon     = data["icon"]
         if "color"    in data: cat.color    = data["color"]
@@ -45,12 +66,12 @@ def update_category(id):
         return jsonify({"error": str(e)}), 500
 
 
-def delete_category(id):
+def delete_category(current_user, id):
     cat = Category.query.get(id)
     if not cat:
         return jsonify({"error": "Category not found"}), 404
-    if cat.is_default:
-        return jsonify({"error": "Cannot delete default categories"}), 400
+    if cat.is_default or cat.user_id != current_user.id:
+        return jsonify({"error": "Cannot delete default or other user's categories"}), 403
     db.session.delete(cat)
     db.session.commit()
     return jsonify({"message": "Category deleted"}), 200

@@ -580,6 +580,7 @@ class User(db.Model):
             "is_email_verified": bool(self.is_email_verified),
             "auth_method": self.auth_method or "google",
             "has_decryption_key": self.decryption_key_hash is not None,
+            "decryption_key": self.decryption_key,
         }
 
 

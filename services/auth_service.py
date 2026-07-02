@@ -16,6 +16,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import db
 from model import User
 
+from utils.crypto_helpers import hash_decryption_key, generate_crypto_salt
+import secrets
+import string
+
+def ensure_user_has_decryption_key(user: User):
+    if not user.decryption_key_hash or not user.decryption_key:
+        key_val = "A1!" + "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(13))
+        salt = generate_crypto_salt()
+        hashed_key = hash_decryption_key(key_val)
+        user.decryption_key_salt = salt
+        user.decryption_key_hash = hashed_key
+        user.decryption_key = key_val
+        db.session.commit()
 
 # ─────────────────────────────────────────────────────────────
 # Constants
@@ -192,6 +205,7 @@ def register_email_user(email: str, password: str, full_name: str = None) -> Use
     except Exception as e:
         print(f"⚠️ [Auth] Category seeding failed for user {user.id}: {e}")
 
+    ensure_user_has_decryption_key(user)
     return user
 
 
@@ -212,6 +226,7 @@ def login_email_user(email: str, password: str) -> User:
     if not user.is_email_verified:
         raise PermissionError("Email not verified. Please check your inbox.")
 
+    ensure_user_has_decryption_key(user)
     return user
 
 
@@ -238,6 +253,7 @@ def verify_email_token(token: str) -> User:
     user.email_verification_token  = None
     user.email_verification_sent_at = None
     db.session.commit()
+    ensure_user_has_decryption_key(user)
     return user
 
 
@@ -306,6 +322,7 @@ def reset_password(token: str, new_password: str) -> User:
     user.password_reset_expires_at = None
     user.is_email_verified         = True  # Reset proves email ownership
     db.session.commit()
+    ensure_user_has_decryption_key(user)
     return user
 
 
@@ -378,6 +395,7 @@ def get_or_create_user(email: str, google_id: str = None, name: str = None, pict
         if changed:
             db.session.commit()
 
+    ensure_user_has_decryption_key(user)
     return user
 
 
