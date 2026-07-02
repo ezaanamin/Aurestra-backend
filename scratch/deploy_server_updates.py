@@ -13,55 +13,74 @@ print("1. Seeding new default categories...")
 seed_categories()
 print("✅ Categories seeded successfully.")
 
-print("\n2. Migrating Therapy category to User 1...")
+print("\n2. Cleaning up Therapy category...")
 db_path = os.path.join(backend_dir, 'aurestra.db')
 conn = sqlite3.connect(db_path)
 conn.row_factory = sqlite3.Row
 cursor = conn.cursor()
 
 try:
-    # Find global Therapy category
-    cursor.execute("SELECT id FROM categories WHERE name = 'Therapy' AND user_id IS NULL")
-    global_therapy = cursor.fetchone()
-    
-    # Find user 1 Therapy category
+    # 2a. Update User 1's Therapy category to be is_default = 0
     cursor.execute("SELECT id FROM categories WHERE name = 'Therapy' AND user_id = 1")
-    user_therapy = cursor.fetchone()
+    user1_therapy = cursor.fetchone()
     
-    if global_therapy:
-        global_id = global_therapy['id']
-        print(f"   -> Found global Therapy category: id={global_id}")
-        
-        if user_therapy:
-            user_id_therapy = user_therapy['id']
-            print(f"   -> Found user 1 Therapy category: id={user_id_therapy}")
-            
-            # Re-associate any transactions using the global category
-            cursor.execute("UPDATE transactions SET category_id = ? WHERE category_id = ?", (user_id_therapy, global_id))
-            print(f"   -> Re-associated transactions to user 1 category {user_id_therapy}")
-            
-            # Re-associate categorization rules
-            cursor.execute("UPDATE categorization_rules SET category_id = ? WHERE category_id = ?", (user_id_therapy, global_id))
-            print(f"   -> Re-associated categorization rules to user 1 category {user_id_therapy}")
-            
-            # Delete global category
-            cursor.execute("DELETE FROM categories WHERE id = ?", (global_id,))
-            print(f"   -> Deleted global Therapy category {global_id}")
-        else:
-            # Just assign the global one to user 1
-            cursor.execute("UPDATE categories SET user_id = 1, is_default = 0 WHERE id = ?", (global_id,))
-            print(f"   -> Reassigned global Therapy category {global_id} directly to user 1")
+    if user1_therapy:
+        user1_therapy_id = user1_therapy['id']
+        cursor.execute("UPDATE categories SET is_default = 0 WHERE id = ?", (user1_therapy_id,))
+        print(f"   -> Set User 1 Therapy category (ID {user1_therapy_id}) is_default = 0")
     else:
-        print("   -> No global Therapy category remaining.")
-        if user_therapy:
-            cursor.execute("UPDATE categories SET is_default = 0 WHERE id = ?", (user_therapy['id'],))
-            print(f"   -> Ensured user 1 Therapy category {user_therapy['id']} is non-default")
+        # Create it as a custom category for User 1 if it doesn't exist
+        cursor.execute(
+            "INSERT INTO categories (name, icon, color, cat_type, is_default, user_id) VALUES (?, ?, ?, ?, ?, ?)",
+            ('Therapy', 'brain', '#8B5CF6', 'spending', 0, 1)
+        )
+        user1_therapy_id = cursor.lastrowid
+        print(f"   -> Created new custom Therapy category (ID {user1_therapy_id}) for User 1")
+
+    # 2b. Find any global Therapy category (user_id IS NULL)
+    cursor.execute("SELECT id FROM categories WHERE name = 'Therapy' AND user_id IS NULL")
+    global_therapies = cursor.fetchall()
+    for row in global_therapies:
+        global_id = row['id']
+        # Point transactions to User 1's category
+        cursor.execute("UPDATE transactions SET category_id = ? WHERE category_id = ?", (user1_therapy_id, global_id))
+        cursor.execute("UPDATE categorization_rules SET category_id = ? WHERE category_id = ?", (user1_therapy_id, global_id))
+        cursor.execute("DELETE FROM categories WHERE id = ?", (global_id,))
+        print(f"   -> Migrated and deleted global Therapy category (ID {global_id})")
+
+    # 2c. Clean up Therapy categories for users other than User 1
+    cursor.execute("SELECT id, user_id FROM categories WHERE name = 'Therapy' AND user_id != 1")
+    other_therapies = cursor.fetchall()
+    
+    for row in other_therapies:
+        other_cat_id = row['id']
+        other_user_id = row['user_id']
+        
+        # Find this user's Uncategorized category
+        cursor.execute("SELECT id FROM categories WHERE name = 'Uncategorized' AND user_id = ?", (other_user_id,))
+        uncat = cursor.fetchone()
+        
+        # Fallback to global Uncategorized if no user-specific one
+        if not uncat:
+            cursor.execute("SELECT id FROM categories WHERE name = 'Uncategorized' AND user_id IS NULL")
+            uncat = cursor.fetchone()
             
+        uncat_id = uncat['id'] if uncat else None
+        
+        if uncat_id:
+            # Re-associate their transactions/rules to Uncategorized
+            cursor.execute("UPDATE transactions SET category_id = ? WHERE category_id = ?", (uncat_id, other_cat_id))
+            cursor.execute("UPDATE categorization_rules SET category_id = ? WHERE category_id = ?", (uncat_id, other_cat_id))
+            print(f"   -> Moved transactions/rules for User {other_user_id} from Therapy to Uncategorized")
+            
+        cursor.execute("DELETE FROM categories WHERE id = ?", (other_cat_id,))
+        print(f"   -> Deleted Therapy category for User {other_user_id}")
+
     conn.commit()
-    print("✅ Therapy category successfully migrated.")
+    print("✅ Therapy category successfully cleaned up.")
 except Exception as e:
     conn.rollback()
-    print(f"❌ Error migrating Therapy category: {e}")
+    print(f"❌ Error during Therapy category cleanup: {e}")
 finally:
     conn.close()
 
