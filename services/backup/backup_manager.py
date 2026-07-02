@@ -46,7 +46,8 @@ class BackupOrchestrator:
     def _init_password(self):
         try:
             from model import User
-            user = User.query.filter(User.decryption_key.isnot(None)).first()
+            # Select the primary admin user to use their decryption key for system backup
+            user = User.query.get(1)
             if user and user.decryption_key:
                 self.backup_password = user.decryption_key
         except Exception:
@@ -182,6 +183,12 @@ class BackupOrchestrator:
 
                     if not dec_key:
                         raise ValueError("Plaintext decryption key is missing in DB (user has not logged in since update).")
+
+                    # Set g.encryption_key so SQLAlchemy can decrypt fields during export
+                    from flask import g
+                    from utils.crypto_helpers import derive_encryption_key
+                    g.encryption_key = derive_encryption_key(dec_key, u.decryption_key_salt)
+                    db.session.expire_all() # Ensure cached objects don't use old/missing encryption_key
 
                     meta = self.backup_service.create_user_backup(u.id, dec_key)
                     if meta:

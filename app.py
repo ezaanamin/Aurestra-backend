@@ -99,14 +99,18 @@ def do_midnight_backup_job():
 @scheduler.task(
     "cron",
     id="do_8am_retry_backup",
-    hour=9,
-    minute=40,
+    hour=8,
+    minute=0,
     misfire_grace_time=300,
     max_instances=1,
     timezone="Asia/Karachi",
 )
 def do_8am_retry_backup_job():
-    print("⏰ [8AM] Running scheduled backup...")
+    global _midnight_backup_succeeded
+    if _midnight_backup_succeeded:
+        print("⏰ [8AM] Midnight backup succeeded, skipping retry.")
+        return
+    print("⏰ [8AM] Running scheduled retry backup...")
     _run_backup("8AM")
 
 
