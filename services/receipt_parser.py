@@ -1,5 +1,6 @@
 import json
 import requests
+import os
 
 def parse_receipt_text(text: str) -> dict:
     extracted = {
@@ -43,8 +44,8 @@ Receipt text:
     print("========================")
 
     try:
-       
-        response = requests.post('http://nascar-biography-greater-musical.trycloudflare.com/api/generate', json={
+        llm_base_url = os.getenv('LLM_BASE_URL', 'https://depending-nsw-participating-thoughts.trycloudflare.com')
+        response = requests.post(f'{llm_base_url.rstrip("/")}/api/generate', json={
             "model": "qwen2.5:3b",
             "prompt": prompt,
             "format": "json",
