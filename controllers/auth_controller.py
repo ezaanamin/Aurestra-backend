@@ -258,9 +258,17 @@ def get_profile(current_user):
     ensure_user_has_decryption_key(current_user)
 
     from model import Transaction, SavingsGoal, Category
-    tx_count         = Transaction.query.filter_by(is_deleted=False).count()
-    goals_count      = SavingsGoal.query.count()
-    categories_count = Category.query.count()
+    from sqlalchemy import or_, and_
+    
+    tx_count         = Transaction.query.filter_by(user_id=current_user.id, is_deleted=False).count()
+    goals_count      = SavingsGoal.query.filter_by(user_id=current_user.id).count()
+    categories_count = Category.query.filter(
+        or_(
+            Category.user_id == current_user.id, 
+            and_(Category.is_default == True, Category.user_id == None)
+        )
+    ).count()
+    
     user_data        = current_user.to_dict()
     user_data['stats'] = {
         'transactions': tx_count,
