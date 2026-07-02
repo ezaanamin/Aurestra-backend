@@ -103,8 +103,8 @@ def _active_transactions(query=None):
     """Base query: not deleted/spam; own-account transfers excluded from aggregates."""
     q = query if query is not None else Transaction.query
     return q.filter(
-        Transaction.is_deleted != True,
-        Transaction.is_spam != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
         exclude_own_account_transfer_sql(),
     )
 
@@ -1415,9 +1415,9 @@ def transaction_search():
     q = Transaction.query
 
     if not include_deleted:
-        q = q.filter(Transaction.is_deleted != True)
+        q = q.filter(Transaction.is_deleted.isnot(True))
     if not include_spam:
-        q = q.filter(Transaction.is_spam != True)
+        q = q.filter(Transaction.is_spam.isnot(True))
 
     if month_param:
         try:

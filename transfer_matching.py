@@ -70,8 +70,8 @@ def opposite_internal_transfer_leg_exists(
         Transaction.type == opp_type,
         Transaction.date >= start,
         Transaction.date <= end + timedelta(days=1),
-        Transaction.is_deleted != True,
-        Transaction.is_spam != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
     ).all()
 
     for otx in candidates:
@@ -99,8 +99,8 @@ def undo_own_account_transfer_mirror_if_second_leg(tx: Any, origin_balance: Any)
         Transaction.type == opp_type,
         Transaction.date >= start,
         Transaction.date <= end + timedelta(days=1),
-        Transaction.is_deleted != True,
-        Transaction.is_spam != True,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
     ).all()
 
     for otx in candidates:
