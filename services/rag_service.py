@@ -71,6 +71,10 @@ def generate_monthly_rag_summary(user_id: int, month_str: str = None):
     if not month_str:
         month_str = datetime.utcnow().strftime('%Y-%m')
 
+    from model import User
+    user = User.query.get(user_id)
+    user_name = user.full_name.split()[0] if user and user.full_name else "there"
+
     current  = _get_month_totals(user_id, month_str)
 
     year, month    = map(int, month_str.split('-'))
@@ -89,11 +93,11 @@ def generate_monthly_rag_summary(user_id: int, month_str: str = None):
             f"- Total Expenses recorded in budget: PKR {budget.total_expenses}\n"
         )
 
-    prompt = f"""You are a helpful financial AI assistant. Write a short, conversational paragraph summarizing the user's financial performance for {month_str}.
+    prompt = f"""You are a helpful financial AI assistant. Write a short, conversational paragraph summarizing the financial performance for {month_str}. Start by warmly greeting the user by their name ("{user_name}").
 Use short, natural sentences. Mention the total income, total expense, savings, and biggest expense category.
 All amounts are in Pakistani Rupees — write "PKR" directly before every number, every time. Never use the dollar sign.
 
-Here is the data you must summarize:
+Here is {user_name}'s data you must summarize:
 - Total Income: PKR {current['total_income']}
 - Total Expense: PKR {current['total_expense']}
 - Net Savings: PKR {current['savings']}
@@ -107,7 +111,7 @@ Comparison to last month ({prev_month_str}):
 - Income Change: {f"{income_change_pct}%" if income_change_pct is not None else "N/A"}
 - Expense Change: {f"{expense_change_pct}%" if expense_change_pct is not None else "N/A"}
 
-Now, write exactly 3 to 4 natural sentences summarizing this month's performance. Do NOT just copy the list. Write it like a story:
+Now, write exactly 3 to 4 natural sentences summarizing {user_name}'s performance. Do NOT just copy the list. Write it like a story:
 """
 
     try:
