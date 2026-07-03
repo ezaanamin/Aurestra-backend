@@ -21,14 +21,9 @@ import secrets
 import string
 
 def ensure_user_has_decryption_key(user: User):
-    if not user.decryption_key_hash or not user.decryption_key:
-        key_val = "A1!" + "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(13))
-        salt = generate_crypto_salt()
-        hashed_key = hash_decryption_key(key_val)
-        user.decryption_key_salt = salt
-        user.decryption_key_hash = hashed_key
-        user.decryption_key = key_val
-        db.session.commit()
+    # Do not auto-generate decryption keys. Users must manually set them up via the frontend.
+    pass
+
 
 # ─────────────────────────────────────────────────────────────
 # Constants
