@@ -30,6 +30,7 @@ from routes.financial_insight_routes import financial_insight_bp
 from ai_agent_api import ai_agent_bp
 from financial_api import financial_api_bp
 from routes.backup_routes import backup_bp
+from routes.chat_routes import chat_bp
 
 blueprints = [
     auth_bp,
@@ -47,6 +48,7 @@ blueprints = [
     live_state_bp,
     financial_insight_bp,
     backup_bp,
+    chat_bp,
 ]
 
 for bp in blueprints:
