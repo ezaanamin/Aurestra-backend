@@ -59,6 +59,8 @@ class BackupMetadataManager:
         enc_version: str, 
         checksum: str, 
         status: str, 
+        table_counts: dict = None,
+        latest_dates: dict = None,
         backup_type: str = "encrypted_json"
     ) -> Dict:
         """Helper to build a standardized metadata entry."""
@@ -74,5 +76,7 @@ class BackupMetadataManager:
             "Encryption Version": enc_version,
             "Checksum": checksum,
             "Status": status,
+            "Table Counts": table_counts or {},
+            "Latest Dates": latest_dates or {},
             "Backup Type": backup_type
         }

@@ -62,6 +62,40 @@ def count_tables(data: dict) -> dict:
     return {k: len(v) for k, v in data.get("tables", {}).items()}
 
 
+def get_latest_dates(data: dict) -> dict:
+    """Computes the latest (max) date for each table in the exported data."""
+    latest_dates = {}
+    tables = data.get("tables", {})
+    date_fields = {
+        "transactions": "date",
+        "account_balances": "last_updated",
+        "budgets": "created_at",
+        "monthly_balances": "fetched_at",
+        "financial_insights": "created_at",
+        "statement_analysis": "analysis_date",
+        "sms_history": "created_at",
+        "uploaded_receipts": "created_at",
+        "device_notifications": "created_at",
+        "savings_goals": "created_at",
+        "categorization_rules": "created_at",
+    }
+    for table_name, rows in tables.items():
+        if not rows:
+            continue
+        field = date_fields.get(table_name)
+        if not field:
+            continue
+        vals = []
+        for r in rows:
+            val = r.get(field)
+            if val:
+                vals.append(val)
+        if vals:
+            latest_dates[table_name] = max(vals)
+    return latest_dates
+
+
+
 # ── Data import (restore) ────────────────────────────────────────────────────
 def _parse_dt(val):
     if not val:
@@ -72,6 +106,7 @@ def _parse_dt(val):
         return None
 
 def _restore_table_generic(model_class, user_id: int, rows: list) -> int:
+    from sqlalchemy.types import DateTime, Date
     count = 0
     for r in rows:
         if r.get("user_id") != user_id:
@@ -79,8 +114,12 @@ def _restore_table_generic(model_class, user_id: int, rows: list) -> int:
         obj_data = {}
         for col in model_class.__table__.columns:
             val = r.get(col.name)
-            if val is not None and (col.name == "date" or col.name.endswith("_date") or col.name.endswith("_at")):
-                val = _parse_dt(val)
+            if val is not None and isinstance(col.type, (DateTime, Date)):
+                parsed = _parse_dt(val)
+                if parsed and isinstance(col.type, Date):
+                    val = parsed.date()
+                else:
+                    val = parsed
             obj_data[col.name] = val
         obj = model_class(**obj_data)
         db.session.merge(obj)

@@ -49,14 +49,15 @@ class BackupDriveStorage:
             return False
 
     def upload_user_backup(self, user_id: int, filepath: str) -> bool:
-        """Uploads a user backup to 'Elyestra Backups/user_{user_id}/'."""
+        """Uploads a user backup to 'aurestra_user_backup/user_{user_id}/{date}/'."""
         service = self._get_admin_service()
         if not service:
             print("⚠️  [Drive] No Google-linked user found. Skipping user backup upload.")
             return False
 
         try:
-            folder_id = self.ensure_folder_path(service, ["Elyestra Backups", f"user_{user_id}"])
+            date_folder = datetime.datetime.now().strftime("%Y-%m-%d")
+            folder_id = self.ensure_folder_path(service, ["aurestra_user_backup", f"user_{user_id}", date_folder])
             if not folder_id:
                 print("❌ [Drive] Could not create/find Drive folder for user.")
                 return False

@@ -25,6 +25,7 @@ class BackupLocalStorage:
         """Save a user backup file and return its path."""
         user_dir = self.get_user_backup_dir(user_id)
         file_path = os.path.join(user_dir, filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "wb") as f:
             f.write(file_bytes)
         return file_path
@@ -46,9 +47,9 @@ class BackupLocalStorage:
 
     # ── Retention Policy ─────────────────────────────────────────────────────
     def rotate_user_backups(self, user_id: int, keep: int = 30) -> None:
-        """Delete oldest encrypted backups for a user, retaining the latest `keep`."""
-        user_dir = self.get_user_backup_dir(user_id)
-        self._rotate_directory(user_dir, keep, ext=".enc")
+        """Skip rotation/deletion to keep all records as requested by user."""
+        print(f"ℹ️  [Storage] Keeping all records for user {user_id}. Rotation skipped.")
+        return
 
     def rotate_system_backups(self, keep: int = 14) -> None:
         """Delete oldest system backups, retaining the latest `keep`."""

@@ -11,7 +11,26 @@ from services.backup.backup_encryption import BackupEncryption, APP_VERSION, DB_
 from services.backup.metadata import BackupMetadataManager
 from services.backup.local_storage import BackupLocalStorage
 from services.backup.drive_storage import BackupDriveStorage
-from services.backup.user_data import export_user_data, count_tables, restore_user_data
+from services.backup.user_data import export_user_data, count_tables, restore_user_data, get_latest_dates
+
+def _map_metadata_to_frontend(m: dict) -> dict | None:
+    if not m:
+        return None
+    size_bytes = m.get("Backup Size", 0)
+    return {
+        "id": m.get("Backup ID", -1),
+        "filename": m.get("Filename", ""),
+        "size_bytes": size_bytes,
+        "size_mb": round(size_bytes / 1024 / 1024, 2),
+        "app_version": m.get("Application Version", "1.0.0"),
+        "db_version": m.get("Database Version", 1),
+        "enc_version": m.get("Encryption Version", "AES256GCM-v1"),
+        "status": m.get("Status", "completed"),
+        "table_counts": m.get("Table Counts", {}),
+        "latest_dates": m.get("Latest Dates", {}),
+        "checksum": m.get("Checksum", ""),
+        "created_at": m.get("Created At"),
+    }
 
 class BackupService:
     """Core Service API for managing user backups and restorations."""
@@ -41,7 +60,7 @@ class BackupService:
         existing_meta = BackupMetadataManager.load_metadata(user_dir)
         
         if existing_meta and existing_meta[0].get("Checksum") == new_checksum and existing_meta[0].get("Status") == "completed":
-            return existing_meta[0]
+            return _map_metadata_to_frontend(existing_meta[0])
 
         # 3. Encrypt and verify integrity
         try:
@@ -60,14 +79,15 @@ class BackupService:
             meta_fail = BackupMetadataManager.build_metadata_entry(
                 backup_id=-1, user_id=user_id, filename=f"backup_failed_{datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.enc",
                 size_bytes=0, app_version=APP_VERSION, db_version=DB_VERSION, enc_version=ENC_VERSION,
-                checksum=new_checksum, status=f"failed: {e}"
+                checksum=new_checksum, status=f"failed: {e}", table_counts={}, latest_dates={}
             )
             BackupMetadataManager.add_backup_metadata(user_dir, meta_fail)
             raise ValueError(f"Backup verification failed: {e}")
 
         # 4. Save to Disk
         timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"backup_{timestamp}.enc"
+        date_str = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+        filename = f"{date_str}/backup_{timestamp}.enc"
         
         file_path = self.local_storage.save_user_backup(user_id, filename, encrypted)
 
@@ -88,10 +108,11 @@ class BackupService:
         db.session.commit()
 
         # 6. Save Metadata and Enforce Retention
+        latest_dates = get_latest_dates(data)
         meta_success = BackupMetadataManager.build_metadata_entry(
             backup_id=backup_record.id, user_id=user_id, filename=filename,
             size_bytes=len(encrypted), app_version=APP_VERSION, db_version=DB_VERSION, enc_version=ENC_VERSION,
-            checksum=new_checksum, status="completed"
+            checksum=new_checksum, status="completed", table_counts=counts, latest_dates=latest_dates
         )
         BackupMetadataManager.add_backup_metadata(user_dir, meta_success)
         self.local_storage.rotate_user_backups(user_id, keep=30)
@@ -99,18 +120,19 @@ class BackupService:
         # 7. Upload to Google Drive (if enabled)
         self.drive_storage.upload_user_backup(user_id, file_path)
 
-        return meta_success
+        return _map_metadata_to_frontend(meta_success)
 
     def list_user_backups(self, user_id: int) -> list:
         """Returns metadata for all backups of a user."""
         user_dir = self.local_storage.get_user_backup_dir(user_id)
-        return BackupMetadataManager.load_metadata(user_dir)
+        raw_meta = BackupMetadataManager.load_metadata(user_dir)
+        return [_map_metadata_to_frontend(m) for m in raw_meta]
 
     def get_latest_backup(self, user_id: int) -> dict | None:
         """Returns the most recent backup metadata."""
         meta_list = self.list_user_backups(user_id)
         for m in meta_list:
-            if m.get("Status") == "completed":
+            if m.get("status") == "completed":
                 return m
         return None
 
