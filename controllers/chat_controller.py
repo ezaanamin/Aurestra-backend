@@ -86,7 +86,8 @@ class ClassifierManager:
         if cls._intent_model is None:
             import torch
             from transformers import AutoTokenizer, AutoModelForSequenceClassification
-            path = "/home/ezaan-amin/Projects/Aurestra/backend/ai_models/financial_intent_classifier"
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            path = os.path.join(base_dir, "ai_models", "financial_intent_classifier")
             cls._intent_tokenizer = AutoTokenizer.from_pretrained(path)
             cls._intent_model = AutoModelForSequenceClassification.from_pretrained(path)
             cls._intent_model.eval()
@@ -97,7 +98,8 @@ class ClassifierManager:
         if cls._route_model is None:
             import torch
             from transformers import AutoTokenizer, AutoModelForSequenceClassification
-            path = "/home/ezaan-amin/Projects/Aurestra/backend/ai_models/financial_api_route_classifier"
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            path = os.path.join(base_dir, "ai_models", "financial_api_route_classifier")
             cls._route_tokenizer = AutoTokenizer.from_pretrained(path)
             cls._route_model = AutoModelForSequenceClassification.from_pretrained(path)
             cls._route_model.eval()
