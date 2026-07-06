@@ -334,10 +334,14 @@ def chat_session(current_user):
         # 4. Fetch user accounts and balances
         try:
             accounts = AccountBalance.query.filter_by(user_id=current_user.id).all()
-            accounts_info = "\n".join([
-                f"- {a.display_name} ({a.account_kind}): PKR {a.current_balance:,.2f}"
-                for a in accounts
-            ]) if accounts else "No accounts linked."
+            if accounts:
+                total_balance = sum(a.current_balance for a in accounts)
+                accounts_info = f"- Total Combined Balance: PKR {total_balance:,.2f}\n" + "\n".join([
+                    f"- {a.display_name} ({a.account_kind}): PKR {a.current_balance:,.2f}"
+                    for a in accounts
+                ])
+            else:
+                accounts_info = "No accounts linked."
         except Exception as e:
             accounts_info = "Could not load account balances."
 
@@ -469,7 +473,10 @@ def chat_session(current_user):
                 "model": LLM_MODEL,
                 "system": system_prompt,
                 "prompt": prompt_content,
-                "stream": False
+                "stream": False,
+                "options": {
+                    "temperature": 0.0
+                }
             }, timeout=300)
 
             if response.status_code == 200:
