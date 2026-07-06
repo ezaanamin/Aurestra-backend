@@ -785,3 +785,32 @@ class UserBackup(db.Model):
             "created_at":   self.created_at.isoformat() if self.created_at else None,
         }
 
+
+class ChatMessage(db.Model):
+    """
+    Stores chatbot conversation history securely.
+    Uses EncryptedText to protect sensitive financial queries and replies.
+    """
+    __tablename__ = "chat_messages"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    role = db.Column(db.String(20), nullable=False)  # 'user' or 'assistant'
+    content = db.Column(EncryptedText, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Classification metadata
+    intent = db.Column(db.String(50), nullable=True)
+    api_route = db.Column(db.String(100), nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "role": self.role,
+            "content": self.content,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "intent": self.intent,
+            "api_route": self.api_route
+        }
+
+
