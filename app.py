@@ -119,19 +119,28 @@ def do_8am_retry_backup_job():
 @scheduler.task(
     "cron",
     id="generate_monthly_summary",
-    day="last",
+    day="*",
     hour=23,
     minute=50,
     misfire_grace_time=3600,
     timezone="Asia/Karachi",
 )
 def scheduled_monthly_summary():
+    import datetime
+    from calendar import monthrange
+    
+    # Check if today is the last day of the month in Asia/Karachi (UTC+5)
+    tz = datetime.timezone(datetime.timedelta(hours=5))
+    now = datetime.datetime.now(tz)
+    _, last_day = monthrange(now.year, now.month)
+    
+    if now.day != last_day:
+        return
+
     print("⏰ [CRON] Running end-of-month RAG summary for all users...")
     from services.rag_service import generate_monthly_rag_summary
     from model import User
     with app.app_context():
-        import datetime
-        now = datetime.datetime.now(datetime.timezone.utc)
         month_str = now.strftime('%Y-%m')
         users = User.query.all()
         for u in users:

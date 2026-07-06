@@ -6,9 +6,9 @@ from database import db
 from model import Transaction, Budget, FinancialInsight, Category
 import os
 
-LLM_BASE_URL = os.getenv('LLM_BASE_URL', 'https://depending-nsw-participating-thoughts.trycloudflare.com')
+LLM_BASE_URL = os.getenv('LLM_BASE_URL', 'https://contributor-local-into-identify.trycloudflare.com')
 LLM_URL   = f'{LLM_BASE_URL.rstrip("/")}/api/generate'
-LLM_MODEL = 'qwen2.5:3b'
+LLM_MODEL = os.getenv('LLM_MODEL', 'qwen2.5:3b')
 
 
 def _get_month_bounds(month_str):
