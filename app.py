@@ -31,6 +31,7 @@ from ai_agent_api import ai_agent_bp
 from financial_api import financial_api_bp
 from routes.backup_routes import backup_bp
 from routes.chat_routes import chat_bp
+from routes.subscription_routes import subscription_bp
 
 blueprints = [
     auth_bp,
@@ -49,6 +50,7 @@ blueprints = [
     financial_insight_bp,
     backup_bp,
     chat_bp,
+    subscription_bp,
 ]
 
 for bp in blueprints:
@@ -194,8 +196,10 @@ with app.app_context():
 if __name__ == "__main__":
     with app.app_context():
         from decorator.helpers import seed_categories
+        from services.subscription_service import seed_plans
 
         seed_categories()
+        seed_plans()
 
     app.run(
         host="0.0.0.0",
