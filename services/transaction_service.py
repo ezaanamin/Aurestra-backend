@@ -61,22 +61,16 @@ def get_categorized(user_id: int):
 def get_top_categories(user_id: int, period: str = 'month'):
     _EXCLUDED_PURPOSES = {'Self transfer', 'self transfer', 'Self Transfer'}
 
-    query = db.session.query(
-        Transaction.category_id.label("category_id"),
-        Transaction.purpose.label("category"),
-        func.sum(Transaction.amount).label("total_spent"),
-    ).filter(
+    query = Transaction.query.filter(
         Transaction.user_id == user_id,
         Transaction.type == 'debit',
         Transaction.purpose.isnot(None),
         Transaction.purpose != 'Uncategorized',
-        Transaction.purpose.notin_(_EXCLUDED_PURPOSES),
         Transaction.is_deleted == False,
         Transaction.is_spam    == False,
         Transaction.categorization_status != 'pending',
         Transaction.categorization_status != 'spam',
         Transaction.categorization_status != 'deleted',
-        exclude_own_account_transfer_sql(),
     )
     if period == 'week':
         query = query.filter(Transaction.date >= datetime.now() - timedelta(days=7))
@@ -89,15 +83,24 @@ def get_top_categories(user_id: int, period: str = 'month'):
     elif period == 'year':
         query = query.filter(extract('year', Transaction.date) == datetime.now().year)
 
-    rows = (
-        query
-        .group_by(Transaction.category_id, Transaction.purpose)
-        .having(func.sum(Transaction.amount) > 0)
-        .order_by(func.sum(Transaction.amount).desc())
-        .limit(10)
-        .all()
+    txns = query.all()
+
+    category_totals = {}
+    for t in txns:
+        if t.purpose in _EXCLUDED_PURPOSES:
+            continue
+        if is_own_account_transfer_row(t):
+            continue
+        
+        cat_name = t.purpose
+        category_totals[cat_name] = category_totals.get(cat_name, 0.0) + t.amount
+
+    sorted_categories = sorted(
+        [{"category": cat, "total_spent": float(total)} for cat, total in category_totals.items() if total > 0],
+        key=lambda x: x["total_spent"],
+        reverse=True
     )
-    return [{"category": r.category, "total_spent": r.total_spent} for r in rows]
+    return sorted_categories[:10]
 
 
 def get_analytics_trend(user_id: int, period: str = 'month'):
@@ -163,11 +166,7 @@ def get_monthly_category_totals(user_id: int, month_str: str):
         if start_date.month == 12
         else start_date.replace(month=start_date.month + 1)
     )
-    rows = db.session.query(
-        Transaction.category_id.label('category_id'),
-        Transaction.purpose.label('category'),
-        func.sum(Transaction.amount).label('total'),
-    ).filter(
+    txns = Transaction.query.filter(
         Transaction.user_id    == user_id,
         Transaction.date       >= start_date,
         Transaction.date       <  end_date,
@@ -178,16 +177,25 @@ def get_monthly_category_totals(user_id: int, month_str: str):
         Transaction.categorization_status != 'spam',
         Transaction.categorization_status != 'deleted',
         Transaction.purpose.isnot(None),
-        Transaction.purpose.notin_(_EXCLUDED_PURPOSES),
-        Transaction.purpose.ilike('Uncategorized') == False,
-        exclude_own_account_transfer_sql(),
-    ).group_by(Transaction.category_id, Transaction.purpose).all()
+    ).all()
+
+    category_totals = {}
+    for t in txns:
+        if t.purpose in _EXCLUDED_PURPOSES:
+            continue
+        if t.purpose.lower() == 'uncategorized':
+            continue
+        if is_own_account_transfer_row(t):
+            continue
+            
+        cat_name = t.purpose
+        category_totals[cat_name] = category_totals.get(cat_name, 0.0) + t.amount
 
     return sorted(
         [
-            {"category": r.category, "total": float(r.total or 0)}
-            for r in rows
-            if (r.total or 0) > 0
+            {"category": cat, "total": float(total)}
+            for cat, total in category_totals.items()
+            if total > 0
         ],
         key=lambda x: x["total"],
         reverse=True,
