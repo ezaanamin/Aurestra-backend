@@ -180,12 +180,16 @@ def register_email_user(email: str, password: str, full_name: str = None) -> Use
     if existing:
         raise ValueError("An account with this email already exists.")
 
+    name_lower = ((full_name or '').strip()).lower()
+    is_vip = name_lower in ["ezaan amin", "kashif raza", "eezaan amin"]
+    
     user = User(
         email=email,
         full_name=(full_name or '').strip() or None,
         password_hash=hash_password(password),
         auth_method='email',
         is_email_verified=False,
+        current_plan_id='developer' if is_vip else 'free'
     )
     db.session.add(user)
     db.session.commit()
@@ -220,6 +224,12 @@ def login_email_user(email: str, password: str) -> User:
 
     if not user.is_email_verified:
         raise PermissionError("Email not verified. Please check your inbox.")
+
+    # Automatically grant developer plan for founders
+    if user.full_name and user.full_name.lower() in ["ezaan amin", "kashif raza", "eezaan amin"]:
+        if getattr(user, 'current_plan_id', None) != 'developer':
+            user.current_plan_id = 'developer'
+            db.session.commit()
 
     ensure_user_has_decryption_key(user)
     return user
@@ -350,6 +360,9 @@ def check_centralized_auth(email: str) -> bool:
 def get_or_create_user(email: str, google_id: str = None, name: str = None, picture: str = None) -> User:
     """Get or create a user from Google OAuth data. Google users are auto-verified."""
     user = User.query.filter_by(email=email).first()
+    
+    is_vip = name and name.lower() in ["ezaan amin", "kashif raza", "eezaan amin"]
+    
     if not user:
         user = User(
             email=email,
@@ -359,6 +372,7 @@ def get_or_create_user(email: str, google_id: str = None, name: str = None, pict
             avatar_url=picture,
             auth_method='google',
             is_email_verified=True,   # Google pre-verifies emails
+            current_plan_id='developer' if is_vip else 'free'
         )
         db.session.add(user)
         db.session.commit()
@@ -387,6 +401,13 @@ def get_or_create_user(email: str, google_id: str = None, name: str = None, pict
         if not user.is_email_verified:
             user.is_email_verified = True
             changed = True
+        
+        # Grant VIP access if their name matches
+        if user.full_name and user.full_name.lower() in ["ezaan amin", "kashif raza", "eezaan amin"]:
+            if getattr(user, 'current_plan_id', None) != 'developer':
+                user.current_plan_id = 'developer'
+                changed = True
+                
         if changed:
             db.session.commit()
 
