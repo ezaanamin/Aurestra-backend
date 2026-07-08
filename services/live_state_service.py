@@ -3,12 +3,22 @@
 # Answers "what is happening RIGHT NOW" questions.
 # Every function queries only current/today/this-pay-cycle data.
 # Gracefully returns zero/empty instead of raising when no data exists.
+# All queries are scoped to AGENT_USER_ID (primary user only).
 
+import os
 from datetime import datetime, timedelta, date
 from sqlalchemy import func, desc
 from database import db
 from model import Transaction, AccountBalance
 from transfer_matching import exclude_own_account_transfer_sql
+
+
+# ── Agent user scope ──────────────────────────────────────────────────────────
+
+def _agent_user_id() -> int:
+    """Return the user ID to scope queries to — delegates to ai_agent_api.get_agent_user_id()."""
+    from ai_agent_api import get_agent_user_id
+    return get_agent_user_id()
 
 
 # ── Shared base filter ────────────────────────────────────────────────────────
@@ -19,8 +29,9 @@ def _safe_balance(raw: float) -> float:
 
 
 def _active_txns():
-    """Base query: exclude deleted, spam, and internal transfers."""
+    """Base query: scoped to agent user, excluding deleted/spam/internal transfers."""
     return Transaction.query.filter(
+        Transaction.user_id == _agent_user_id(),
         Transaction.is_deleted.isnot(True),
         Transaction.is_spam.isnot(True),
         exclude_own_account_transfer_sql(),
@@ -64,7 +75,8 @@ def get_current_balance() -> dict:
     LIVE_STATE: What is my current balance?
     Returns the live balance for every account plus a combined total.
     """
-    accounts = AccountBalance.query.order_by(
+    uid = _agent_user_id()
+    accounts = AccountBalance.query.filter_by(user_id=uid).order_by(
         AccountBalance.sort_order, AccountBalance.id
     ).all()
 
@@ -99,7 +111,8 @@ def get_available_balance() -> dict:
     Deducts any pending (not yet settled) debit transactions from the
     current balance so the user sees cleared + uncleared exposure.
     """
-    accounts  = AccountBalance.query.all()
+    uid = _agent_user_id()
+    accounts  = AccountBalance.query.filter_by(user_id=uid).all()
     total_bal = round(sum(_safe_balance(a.current_balance) for a in accounts), 2)
 
     # Pending debits that haven't cleared yet (categorization_status = 'pending', type = debit)
@@ -399,7 +412,8 @@ def get_overdraft_or_credit_status() -> dict:
     Identifies accounts with a negative current_balance (overdraft) and
     accounts typed as 'credit' so the caller knows live credit exposure.
     """
-    accounts = AccountBalance.query.all()
+    uid = _agent_user_id()
+    accounts = AccountBalance.query.filter_by(user_id=uid).all()
 
     overdrawn = [
         {
@@ -435,7 +449,8 @@ def get_overdraft_or_credit_status() -> dict:
     }
 
 def get_total_balance():
-    accounts = AccountBalance.query.all()
+    uid = _agent_user_id()
+    accounts = AccountBalance.query.filter_by(user_id=uid).all()
 
     total = round(
         sum(_safe_balance(a.current_balance) for a in accounts),

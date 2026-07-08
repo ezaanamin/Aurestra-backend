@@ -40,6 +40,37 @@ AGENT_JWT_ALGORITHM = "HS256"
 # The agent stores this token permanently.
 FIXED_AGENT_TOKEN = os.getenv("AGENT_FIXED_TOKEN", None)
 
+# Default user ID when no per-request user is specified (env fallback)
+_DEFAULT_AGENT_USER_ID = int(os.getenv("AGENT_USER_ID", "1"))
+
+# Keep AGENT_USER_ID as an alias for backward-compat imports (e.g. financial_api.py)
+AGENT_USER_ID = _DEFAULT_AGENT_USER_ID
+
+
+def get_agent_user_id() -> int:
+    """
+    Returns the user ID to scope all agent/live-state queries to.
+
+    Priority order:
+      1. g.agent_user_id  — set by the chatbot (current_user.id) before calling
+                            any live API function directly.
+      2. X-User-ID header — sent by external callers (mobile app, curl, etc.).
+      3. AGENT_USER_ID env — static fallback for single-user deployments.
+    """
+    from flask import g, has_request_context
+    if has_request_context():
+        # Priority 1: chatbot sets this on g before calling live functions
+        uid = getattr(g, 'agent_user_id', None)
+        if uid is not None:
+            return int(uid)
+        # Priority 2: external caller passes X-User-ID header
+        from flask import request
+        header_uid = request.headers.get('X-User-ID')
+        if header_uid and header_uid.isdigit():
+            return int(header_uid)
+    # Priority 3: env fallback
+    return _DEFAULT_AGENT_USER_ID
+
 
 def _generate_agent_token():
     """
@@ -100,9 +131,10 @@ def _parse_date(s):
 
 
 def _active_transactions(query=None):
-    """Base query: not deleted/spam; own-account transfers excluded from aggregates."""
+    """Base query: scoped to AGENT_USER_ID, not deleted/spam, own-account transfers excluded."""
     q = query if query is not None else Transaction.query
     return q.filter(
+        Transaction.user_id == get_agent_user_id(),
         Transaction.is_deleted.isnot(True),
         Transaction.is_spam.isnot(True),
         exclude_own_account_transfer_sql(),
@@ -172,12 +204,12 @@ def financial_overview():
         return jsonify({"error": "Invalid month format. Use YYYY-MM."}), 400
 
     # Current account balances
-    balances = AccountBalance.query.all()
+    balances = AccountBalance.query.filter_by(user_id=get_agent_user_id()).all()
     balance_list = [b.to_dict() for b in balances]
     total_balance = sum(b.current_balance for b in balances)
 
     # Monthly balance record
-    mb = MonthlyBalance.query.filter_by(month=month_param).first()
+    mb = MonthlyBalance.query.filter_by(user_id=get_agent_user_id(), month=month_param).first()
 
     # Transactions this month (active only)
     txns = _active_transactions().filter(
@@ -191,15 +223,15 @@ def financial_overview():
     tx_count = len(txns)
 
     # Budget
-    budget = Budget.query.filter_by(month=month_param).first()
+    budget = Budget.query.filter_by(user_id=get_agent_user_id(), month=month_param).first()
 
     # Savings goals
-    goals = SavingsGoal.query.all()
+    goals = SavingsGoal.query.filter_by(user_id=get_agent_user_id()).all()
 
     # Previous month comparison
     prev_dt = date(year, mon, 1) - timedelta(days=1)
     prev_month_str = _month_str(prev_dt)
-    prev_mb = MonthlyBalance.query.filter_by(month=prev_month_str).first()
+    prev_mb = MonthlyBalance.query.filter_by(user_id=get_agent_user_id(), month=prev_month_str).first()
 
     mom_change_pct = None
     insight_text = None
@@ -343,6 +375,7 @@ def monthly_balance_trends():
 
     records = (
         MonthlyBalance.query
+        .filter_by(user_id=get_agent_user_id())
         .order_by(MonthlyBalance.month.desc())
         .limit(limit)
         .all()
@@ -353,7 +386,7 @@ def monthly_balance_trends():
     month_strings = [r.month for r in records]
 
     # Per-account balances for each month
-    all_balances = AccountBalance.query.all()
+    all_balances = AccountBalance.query.filter_by(user_id=get_agent_user_id()).all()
     account_sources = [b.source for b in all_balances]
 
     # Transaction-level income/expense per month
@@ -612,7 +645,7 @@ def month_over_month():
         cumulative_expense += exp
 
         # Look up MonthlyBalance for this month
-        mb = MonthlyBalance.query.filter_by(month=m_str).first()
+        mb = MonthlyBalance.query.filter_by(user_id=get_agent_user_id(), month=m_str).first()
 
         # Per-account breakdown
         acct_breakdown = defaultdict(lambda: {"income": 0.0, "expense": 0.0})
@@ -796,10 +829,10 @@ def net_worth():
     Locked assets = savings goals' current saved amounts.
     Liquid = total balances minus locked.
     """
-    balances = AccountBalance.query.all()
+    balances = AccountBalance.query.filter_by(user_id=get_agent_user_id()).all()
     total_balance = sum(b.current_balance for b in balances)
 
-    goals = SavingsGoal.query.all()
+    goals = SavingsGoal.query.filter_by(user_id=get_agent_user_id()).all()
     locked_in_goals = sum(g.current_amount for g in goals)
 
     liquid = total_balance - locked_in_goals
@@ -845,7 +878,7 @@ def budget_adherence():
     except (ValueError, IndexError):
         return jsonify({"error": "Invalid month."}), 400
 
-    budget = Budget.query.filter_by(month=month_param).first()
+    budget = Budget.query.filter_by(user_id=get_agent_user_id(), month=month_param).first()
     if not budget:
         return jsonify({
             "month": month_param,
@@ -1110,7 +1143,7 @@ def savings_analytics():
     """
     Savings velocity, goal progress, and projected goal completion dates.
     """
-    goals = SavingsGoal.query.all()
+    goals = SavingsGoal.query.filter_by(user_id=get_agent_user_id()).all()
     if not goals:
         return jsonify({
             "goals": [],
@@ -1204,7 +1237,7 @@ def projected_balances():
     scenario_mode = request.args.get("scenario", "all")
 
     # Current balance
-    balances = AccountBalance.query.all()
+    balances = AccountBalance.query.filter_by(user_id=get_agent_user_id()).all()
     current_total = sum(b.current_balance for b in balances)
 
     # Historical data for trend calculation
@@ -1741,7 +1774,7 @@ def comprehensive_dashboard():
     # =====================================================================
     # 1. ACCOUNT BALANCES
     # =====================================================================
-    balances = AccountBalance.query.all()
+    balances = AccountBalance.query.filter_by(user_id=get_agent_user_id()).all()
     total_balance = sum(b.current_balance for b in balances)
 
     # =====================================================================
@@ -1760,7 +1793,7 @@ def comprehensive_dashboard():
     # =====================================================================
     # 3. BUDGET ADHERENCE
     # =====================================================================
-    budget = Budget.query.filter_by(month=month_param).first()
+    budget = Budget.query.filter_by(user_id=get_agent_user_id(), month=month_param).first()
     budget_remaining = (budget.total_budget - total_expense) if budget else None
     budget_usage_pct = round(_safe_div(total_expense, budget.total_budget) * 100, 1) if budget else None
 
@@ -1807,7 +1840,7 @@ def comprehensive_dashboard():
     # =====================================================================
     # 6. SAVINGS GOALS
     # =====================================================================
-    goals = SavingsGoal.query.all()
+    goals = SavingsGoal.query.filter_by(user_id=get_agent_user_id()).all()
     goals_data = []
     for g in goals:
         pct = round(_safe_div(g.current_amount, g.target_amount) * 100, 1)
@@ -1831,7 +1864,7 @@ def comprehensive_dashboard():
         h_y, h_m = h_dt.year, h_dt.month
         h_str = f"{h_y}-{h_m:02d}"
 
-        mb = MonthlyBalance.query.filter_by(month=h_str).first()
+        mb = MonthlyBalance.query.filter_by(user_id=get_agent_user_id(), month=h_str).first()
 
         h_txns = _active_transactions().filter(
             extract("year", Transaction.date) == h_y,

@@ -213,13 +213,49 @@ def chat_session(current_user):
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
 
+    # Check subscription feature and message limits
+    from services.subscription_service import can_access, has_remaining_limit
+    
+    if not can_access(current_user, "ai_chat"):
+        return jsonify({
+            "error": "FEATURE_LOCKED",
+            "message": "Upgrade to Aurestra Plus to unlock AI financial chat.",
+            "required_plan": "PLUS"
+        }), 403
+        
+    if not has_remaining_limit(current_user, "ai_chat"):
+        return jsonify({
+            "error": "LIMIT_EXCEEDED",
+            "message": "Monthly AI assistant limit reached. Upgrade to Aurestra Plus for unlimited access.",
+            "required_plan": "PLUS"
+        }), 403
+
     # Enable multi-tenant SQL query restriction to protect current user's data
     enable_user_restriction(current_user.id)
+    # Scope all live-state / agent API functions called within this request to this user
+    g.agent_user_id = current_user.id
     
     try:
         # 1. Classify intent and route using local DistilBERT models
         intent, intent_conf, route, route_conf = classify_intent_and_route(user_message)
         print(f"DEBUG [Chatbot]: Intent={intent} ({intent_conf:.2f}), Route={route} ({route_conf:.2f})")
+
+        # Check feature-specific subscription access
+        if intent in ["FINANCIAL_PLANNING", "HYBRID"] or route == "/api/agent/analytics/investments":
+            if not can_access(current_user, "investment_planning"):
+                return jsonify({
+                    "error": "FEATURE_LOCKED",
+                    "message": "Upgrade to Aurestra Pro to unlock AI investment planning and roadmaps.",
+                    "required_plan": "PRO"
+                }), 403
+                
+        if intent == "RAG_FINANCIAL_MEMORY":
+            if not can_access(current_user, "rag_memory"):
+                return jsonify({
+                    "error": "FEATURE_LOCKED",
+                    "message": "Upgrade to Aurestra Plus to unlock financial memory access.",
+                    "required_plan": "PLUS"
+                }), 403
 
         # 2. Save user message to database
         user_msg = None

@@ -15,7 +15,7 @@ from model import (
 
 from ai_agent_api import (
     _active_transactions, _month_str, _safe_div, _build_category_map,
-    _parse_date, _category_name
+    _parse_date, _category_name, AGENT_USER_ID, get_agent_user_id
 )
 
 from ai_agent_api import (
@@ -44,7 +44,10 @@ def token_required(f):
         if not token or token != expected:
             return jsonify({'message': 'Invalid or missing API key!'}), 401
 
-        current_user = User.query.order_by(User.id).first()
+        current_user = User.query.get(get_agent_user_id())
+        if not current_user:
+            # Fallback: first user by ID
+            current_user = User.query.order_by(User.id).first()
         if not current_user:
             return jsonify({'message': 'No user found in database!'}), 401
 
@@ -72,7 +75,7 @@ def executive_snapshot(current_user):
     now = datetime.utcnow()
     
     # 1. Balances
-    balances = AccountBalance.query.all()
+    balances = AccountBalance.query.filter_by(user_id=get_agent_user_id()).all()
     total_balance = sum(b.current_balance for b in balances)
     account_list = [{"source": b.source, "display_name": b.display_name, "balance": b.current_balance} for b in balances]
 
@@ -98,7 +101,7 @@ def executive_snapshot(current_user):
         days_elapsed = dim
 
     # 3. Budget
-    budget = Budget.query.filter_by(month=month_param).first()
+    budget = Budget.query.filter_by(user_id=get_agent_user_id(), month=month_param).first()
     budget_data = None
     budget_status = "unknown"
     if budget:
@@ -124,7 +127,7 @@ def executive_snapshot(current_user):
         }
 
     # 4. Savings Goals
-    goals = SavingsGoal.query.all()
+    goals = SavingsGoal.query.filter_by(user_id=get_agent_user_id()).all()
     total_target = sum(g.target_amount for g in goals)
     total_saved = sum(g.current_amount for g in goals)
     overall_pct = round(_safe_div(total_saved, total_target) * 100, 1) if total_target > 0 else 0.0
@@ -198,6 +201,7 @@ def get_months(current_user):
 
     records = (
         MonthlyBalance.query
+        .filter_by(user_id=get_agent_user_id())
         .order_by(MonthlyBalance.month.desc())
         .limit(limit)
         .all()
@@ -247,6 +251,7 @@ def get_transactions(current_user):
         transactions = (
             Transaction.query
             .filter(
+                Transaction.user_id == get_agent_user_id(),
                 Transaction.is_deleted == False,
                 Transaction.is_spam == False
             )
@@ -439,7 +444,7 @@ def get_accounts_analytics(current_user):
     months = request.args.get("months", 3, type=int)
     cutoff = datetime.utcnow() - timedelta(days=30 * months)
     
-    balances = AccountBalance.query.all()
+    balances = AccountBalance.query.filter_by(user_id=get_agent_user_id()).all()
     txns = _active_transactions().filter(Transaction.date >= cutoff).all()
     
     acc_data = {}
