@@ -11,16 +11,16 @@ class FinancialAgent:
     def __init__(self):
         pass
 
-    def analyze_month(self, year, month):
+    def analyze_month(self, year, month, user_id=1):
         """
         Main entry point to analyze a specific month.
         """
-        print(f"🤖 Financial Agent: Analyzing {year}-{month:02d}...")
+        print(f"🤖 Financial Agent: Analyzing {year}-{month:02d} for user {user_id}...")
         
         with app.app_context():
             # 1. Fetch Data
-            transactions = self.fetch_transactions(year, month)
-            budget = self.fetch_budget(year, month)
+            transactions = self.fetch_transactions(year, month, user_id)
+            budget = self.fetch_budget(year, month, user_id)
             
             # 2. Calculate Metrics
             metrics = self.calculate_metrics(transactions, budget, year, month)
@@ -30,12 +30,13 @@ class FinancialAgent:
             
             # 4. Decide & Persist
             if self.decide_storage(metrics):
-                self.persist_memory(year, month, narrative, metrics)
+                self.persist_memory(year, month, narrative, metrics, user_id)
             else:
                 print("ℹ️ Analysis complete. No high-signal insights to store.")
 
-    def fetch_transactions(self, year, month):
+    def fetch_transactions(self, year, month, user_id):
         return Transaction.query.filter(
+            Transaction.user_id == user_id,
             extract('year', Transaction.date) == year,
             extract('month', Transaction.date) == month,
             Transaction.is_deleted.isnot(True),
@@ -44,9 +45,9 @@ class FinancialAgent:
             exclude_own_account_transfer_sql(),
         ).all()
 
-    def fetch_budget(self, year, month):
+    def fetch_budget(self, year, month, user_id):
         month_str = f"{year}-{month:02d}"
-        return Budget.query.filter_by(month=month_str).first()
+        return Budget.query.filter_by(user_id=user_id, month=month_str).first()
 
     def calculate_metrics(self, transactions, budget, year, month):
         total_income = 0.0
@@ -134,7 +135,7 @@ class FinancialAgent:
             return False
         return True
 
-    def persist_memory(self, year, month, content, metrics):
+    def persist_memory(self, year, month, content, metrics, user_id):
         month_str = f"{year}-{month:02d}"
         
         tags = []
@@ -144,7 +145,7 @@ class FinancialAgent:
             tags.append("deficit")
         
         # Check if exists
-        existing = FinancialInsight.query.filter_by(month=month_str).first()
+        existing = FinancialInsight.query.filter_by(user_id=user_id, month=month_str).first()
         if existing:
             print(f"⚠️ Insight for {month_str} already exists. Updating...")
             existing.content = content
@@ -152,6 +153,7 @@ class FinancialAgent:
             existing.tags = ",".join(tags)
         else:
             new_insight = FinancialInsight(
+                user_id=user_id,
                 month=month_str,
                 content=content,
                 metrics_json=json.dumps(metrics),
@@ -160,7 +162,7 @@ class FinancialAgent:
             db.session.add(new_insight)
             
         db.session.commit()
-        print(f"✅ Saved Financial Insight for {month_str}.")
+        print(f"✅ Saved Financial Insight for {month_str} (user {user_id}).")
 
 
 if __name__ == "__main__":

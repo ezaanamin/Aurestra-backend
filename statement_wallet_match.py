@@ -67,6 +67,7 @@ def _row_matches_detected(ab: Any, detected: list[str]) -> bool:
 
 
 def resolve_account_balance_for_statement(
+    user_id: int,
     statement_detected: list[str] | None,
     statement_text: str | None,
     env_target: str | None,
@@ -89,7 +90,7 @@ def resolve_account_balance_for_statement(
         )
     )
     accounts = (
-        AccountBalance.query.order_by(
+        AccountBalance.query.filter_by(user_id=user_id).order_by(
             AccountBalance.sort_order.asc(), AccountBalance.id.asc()
         ).all()
     )
@@ -108,7 +109,7 @@ def resolve_account_balance_for_statement(
         if len(banks) == 1:
             ab = banks[0]
             return ab, "single_bank_env_target", f"TARGET_ACCOUNT_NUMBER found in PDF; only one bank row (`{ab.source}`)."
-        legacy = AccountBalance.query.filter_by(source="bank").first()
+        legacy = AccountBalance.query.filter_by(user_id=user_id, source="bank").first()
         if legacy:
             return legacy, "legacy_source_bank", "TARGET_ACCOUNT_NUMBER in PDF; using AccountBalance with source=`bank` (configure statement_account_numbers for multiple banks)."
 

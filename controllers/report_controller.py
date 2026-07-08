@@ -23,7 +23,7 @@ def get_statement(current_user):
     from model import StatementAnalysis
     data           = request.get_json() or {}
     month_str      = data.get("month") or datetime.now().strftime("%Y-%m")
-    analysis       = StatementAnalysis.query.filter_by(month=month_str).first()
+    analysis       = StatementAnalysis.query.filter_by(user_id=current_user.id, month=month_str).first()
 
     if not analysis:
         now_str = datetime.now().strftime("%Y-%m")
@@ -33,7 +33,7 @@ def get_statement(current_user):
 
     try:
         ids      = json.loads(analysis.transaction_ids) if analysis.transaction_ids else []
-        linked   = Transaction.query.filter(Transaction.id.in_(ids)).order_by(Transaction.date.desc()).all()
+        linked   = Transaction.query.filter(Transaction.user_id == current_user.id, Transaction.id.in_(ids)).order_by(Transaction.date.desc()).all()
     except Exception:
         linked = []
 
@@ -91,7 +91,7 @@ def calculate_statement(current_user):
 
         # Cache hit
         force    = request.args.get('force', 'false').lower() == 'true'
-        existing = StatementAnalysis.query.filter_by(month=month_str).first()
+        existing = StatementAnalysis.query.filter_by(user_id=current_user.id, month=month_str).first()
         if existing and existing.reviewed_at and not force:
             return _cached_response(existing, month_str)
 
@@ -118,14 +118,14 @@ def calculate_statement(current_user):
         if is_confirmed and user_bal is not None:
             balances["closing_balance"] = float(user_bal)
 
-        added, skipped, stmt_ids, tx_data = _import_transactions(extracted_txs)
+        added, skipped, stmt_ids, tx_data = _import_transactions(current_user.id, extracted_txs)
 
         open_bal  = balances.get("opening_balance", 0)
         close_bal = balances.get("closing_balance",  0)
-        _update_monthly_balance(month_str, open_bal, close_bal)
+        _update_monthly_balance(current_user.id, month_str, open_bal, close_bal)
 
         stmt_analysis = _update_statement_analysis(
-            month_str, open_bal, close_bal, extracted_txs, stmt_ids
+            current_user.id, month_str, open_bal, close_bal, extracted_txs, stmt_ids
         )
 
         balance_msg, wallet_info = _apply_balance(
@@ -165,18 +165,19 @@ def mark_read(current_user):
     if not month_str:
         return jsonify({"error": "Month is required"}), 400
 
-    stmt = StatementAnalysis.query.filter_by(month=month_str).first()
+    stmt = StatementAnalysis.query.filter_by(user_id=current_user.id, month=month_str).first()
     if not stmt:
         return jsonify({"error": "Statement not found"}), 404
 
     if not stmt.balance_applied:
         close_bal = stmt.closing_balance
         slug      = getattr(stmt, "account_balance_source", None)
-        acc       = (AccountBalance.query.filter_by(source=slug).first()
-                     if slug else AccountBalance.query.filter_by(source="bank").first())
+        acc       = (AccountBalance.query.filter_by(user_id=current_user.id, source=slug).first()
+                     if slug else AccountBalance.query.filter_by(user_id=current_user.id, source="bank").first())
 
         if not acc and not slug:
             acc = AccountBalance(
+                user_id=current_user.id,
                 source="bank", display_name="Bank Account", holder_name="",
                 account_kind="bank", match_keywords=json.dumps(["bank"]),
                 accent_color="#A855F7", sort_order=0,
@@ -205,6 +206,14 @@ def mark_read(current_user):
 # ── Insights ──────────────────────────────────────────────────────────────────
 
 def generate_insights(current_user):
+    from services.subscription_service import can_access
+    if not can_access(current_user, "ai_reports"):
+        return jsonify({
+            "error": "FEATURE_LOCKED",
+            "message": "Upgrade to Aurestra Plus to generate AI monthly reports.",
+            "required_plan": "PLUS"
+        }), 403
+
     try:
         from services.rag_service import generate_monthly_rag_summary
         from fetchers import fetch_latest_bank_email
@@ -230,7 +239,7 @@ def generate_insights(current_user):
 def list_insights(current_user):
     try:
         from model import FinancialInsight
-        insights = FinancialInsight.query.order_by(FinancialInsight.month.desc()).all()
+        insights = FinancialInsight.query.filter_by(user_id=current_user.id).order_by(FinancialInsight.month.desc()).all()
         return jsonify([i.to_dict() for i in insights]), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -239,13 +248,13 @@ def get_available_months(current_user):
     try:
         from model import Transaction, FinancialInsight
         
-        tx_dates = db.session.query(Transaction.date).all()
+        tx_dates = db.session.query(Transaction.date).filter(Transaction.user_id == current_user.id).all()
         months_with_data = set()
         for (d,) in tx_dates:
             if d:
                 months_with_data.add(d.strftime("%Y-%m"))
                 
-        existing_insights = db.session.query(FinancialInsight.month).all()
+        existing_insights = db.session.query(FinancialInsight.month).filter(FinancialInsight.user_id == current_user.id).all()
         existing_months = set(m[0] for m in existing_insights if m[0])
         
         all_months = sorted(list(months_with_data), reverse=True)
@@ -272,7 +281,9 @@ def calculate_summary():
         month_str = data.get("month", datetime.now().strftime("%Y-%m"))
         dt        = datetime.strptime(month_str, "%Y-%m")
 
+        user_id = 1
         total_income = db.session.query(func.sum(Transaction.amount)).filter(
+            Transaction.user_id == user_id,
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             Transaction.type == 'credit',
@@ -286,14 +297,15 @@ def calculate_summary():
                 else_=0,
             ))
         ).filter(
+            Transaction.user_id == user_id,
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
 
-        summary = MonthlyBalance.query.filter_by(month=month_str).first()
+        summary = MonthlyBalance.query.filter_by(user_id=user_id, month=month_str).first()
         if not summary:
-            summary = MonthlyBalance(month=month_str, opening_balance=0,
+            summary = MonthlyBalance(user_id=user_id, month=month_str, opening_balance=0,
                                      closing_balance=0, source="combined")
             db.session.add(summary)
 
@@ -305,7 +317,7 @@ def calculate_summary():
         db.session.commit()
 
         try:
-            FinancialAgent().analyze_month(dt.year, dt.month)
+            FinancialAgent().analyze_month(dt.year, dt.month, user_id)
         except Exception as e:
             print(f"❌ Financial Agent Error: {e}")
 
@@ -348,7 +360,7 @@ def _cached_response(analysis, month_str):
     }), 200
 
 
-def _import_transactions(extracted_txs):
+def _import_transactions(user_id, extracted_txs):
     added = skipped = 0
     stmt_ids = []
     tx_data  = []
@@ -364,10 +376,11 @@ def _import_transactions(extracted_txs):
             "date": tx_date, "amount": tx["amount"],
             "type": tx["type"], "description": tx["description"],
         })
-        exists = Transaction.query.filter_by(transaction_hash=tx_hash).first()
+        exists = Transaction.query.filter_by(user_id=user_id, transaction_hash=tx_hash).first()
 
         if not exists:
             exists = Transaction.query.filter(
+                Transaction.user_id == user_id,
                 Transaction.amount == tx["amount"],
                 Transaction.type   == tx["type"],
                 Transaction.date  >= tx_date - timedelta(days=2),
@@ -384,6 +397,7 @@ def _import_transactions(extracted_txs):
         else:
             try:
                 new_tx = Transaction(
+                    user_id=user_id,
                     source="bank_statement", date=tx_date,
                     amount=tx["amount"], type=tx["type"],
                     purpose="Uncategorized", sender="Bank Statement", receiver="Me",
@@ -397,7 +411,7 @@ def _import_transactions(extracted_txs):
                 added += 1
             except Exception:
                 db.session.rollback()
-                existing_race = Transaction.query.filter_by(transaction_hash=tx_hash).first()
+                existing_race = Transaction.query.filter_by(user_id=user_id, transaction_hash=tx_hash).first()
                 if existing_race:
                     stmt_ids.append(existing_race.id)
                 skipped += 1
@@ -405,10 +419,10 @@ def _import_transactions(extracted_txs):
     return added, skipped, stmt_ids, tx_data
 
 
-def _update_monthly_balance(month_str, open_bal, close_bal):
-    mb = MonthlyBalance.query.filter_by(month=month_str).first()
+def _update_monthly_balance(user_id, month_str, open_bal, close_bal):
+    mb = MonthlyBalance.query.filter_by(user_id=user_id, month=month_str).first()
     if not mb:
-        mb = MonthlyBalance(month=month_str, opening_balance=open_bal,
+        mb = MonthlyBalance(user_id=user_id, month=month_str, opening_balance=open_bal,
                             closing_balance=close_bal, source="bank_statement")
         db.session.add(mb)
     else:
@@ -416,7 +430,7 @@ def _update_monthly_balance(month_str, open_bal, close_bal):
         mb.closing_balance = close_bal
 
 
-def _update_statement_analysis(month_str, open_bal, close_bal, extracted_txs, stmt_ids):
+def _update_statement_analysis(user_id, month_str, open_bal, close_bal, extracted_txs, stmt_ids):
     calc_income = calc_expense = 0.0
     for tx in extracted_txs:
         try:
@@ -430,9 +444,9 @@ def _update_statement_analysis(month_str, open_bal, close_bal, extracted_txs, st
             pass
 
     surplus = calc_income - calc_expense
-    stmt    = StatementAnalysis.query.filter_by(month=month_str).first()
+    stmt    = StatementAnalysis.query.filter_by(user_id=user_id, month=month_str).first()
     if not stmt:
-        stmt = StatementAnalysis(month=month_str)
+        stmt = StatementAnalysis(user_id=user_id, month=month_str)
         db.session.add(stmt)
 
     stmt.opening_balance = open_bal
@@ -456,6 +470,7 @@ def _apply_balance(stmt, result, close_bal, target_account_number, resolver):
         return "Statement already read — no balance update.", {**wallet_info, "reason": "already_reviewed"}
 
     ab_row, reason, detail = resolver(
+        stmt.user_id,
         result.get("statement_detected_account_numbers"),
         result.get("statement_matching_text"),
         target_account_number,
