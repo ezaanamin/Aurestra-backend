@@ -26,7 +26,7 @@ def get_latest_transactions(user_id: int, limit: int = 4):
             Transaction.is_spam.isnot(True),
             Transaction.purpose.notin_(_SELF_TRANSFER_PURPOSES),
         )
-        .order_by(desc(Transaction.date))
+        .order_by(desc(Transaction.date), desc(Transaction.id))  # id tiebreaker: most recently added first
         .limit(limit)
         .all()
     )
@@ -38,7 +38,7 @@ def get_uncategorized(user_id: int):
         Transaction.categorization_status == 'pending',
         Transaction.is_deleted.isnot(True),
         Transaction.is_spam.isnot(True),
-    ).order_by(desc(Transaction.date)).all()
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
 
 
 def get_spam(user_id: int):
@@ -46,7 +46,7 @@ def get_spam(user_id: int):
         Transaction.user_id    == user_id,
         Transaction.is_spam    == True,
         Transaction.is_deleted.isnot(True),
-    ).order_by(desc(Transaction.date)).all()
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
 
 
 def get_categorized(user_id: int):
@@ -55,7 +55,7 @@ def get_categorized(user_id: int):
         Transaction.categorization_status != 'pending',
         Transaction.is_deleted.isnot(True),
         Transaction.is_spam.isnot(True),
-    ).order_by(desc(Transaction.date)).all()
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
 
 
 def get_top_categories(user_id: int, period: str = 'month'):

@@ -89,7 +89,7 @@ def get_monthly_summary_from_db(current_user):
         ).scalar() or 0.0
         
         # Check budget for income override
-        budget_entry = Budget.query.filter_by(month=current_month).first()
+        budget_entry = Budget.query.filter_by(user_id=current_user.id, month=current_month).first()
         final_income = dynamic_income_tx
         if budget_entry and budget_entry.total_budget > 0:
             final_income = budget_entry.total_budget
@@ -97,23 +97,23 @@ def get_monthly_summary_from_db(current_user):
         final_savings = final_income - dynamic_expense
 
         # 2. Update/Create MonthlyBalance persistence
-        summary = MonthlyBalance.query.filter_by(month=current_month).first()
+        summary = MonthlyBalance.query.filter_by(user_id=current_user.id, month=current_month).first()
         
-        # FIX: Closing Balance should be the TOTAL CURRENT BALANCE (Bank + Wallet + etc)
+        # FIX: Closing Balance should be the TOTAL CURRENT BALANCE for THIS user only
         total_current_balance = 0
-        account_balances = AccountBalance.query.all()
+        account_balances = AccountBalance.query.filter_by(user_id=current_user.id).all()
         for acc in account_balances:
             total_current_balance += acc.current_balance
 
         if not summary:
             # Create new
             summary = MonthlyBalance(
+                user_id=current_user.id,
                 source="auto-dynamic",
                 month=current_month,
                 opening_balance=0,
-                closing_balance=total_current_balance, # Use actual total balance
+                closing_balance=total_current_balance,
                 expense=dynamic_expense,
-                # income=final_income, # REMOVED
                 savings=final_savings,
                 fetched_at=datetime.now()
             )

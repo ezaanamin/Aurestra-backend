@@ -56,18 +56,15 @@ transactions_bp = Blueprint("transactions", __name__)
 @transactions_bp.route('/api/transactions/<int:txn_id>', methods=['DELETE'])
 @token_required
 def delete_transaction(current_user, txn_id):
-    """Permanently marks a transaction as deleted"""
+    """Permanently marks a transaction as deleted (user-scoped)"""
     try:
-        transaction = Transaction.query.get(txn_id)
+        transaction = Transaction.query.filter_by(id=txn_id, user_id=current_user.id).first()
         if not transaction:
             return jsonify({"error": "Transaction not found"}), 404
             
         transaction.is_deleted = True
-        transaction.categorization_status = 'deleted' # Optional flag update
+        transaction.categorization_status = 'deleted'
         db.session.commit()
-        
-        # Note: We keep the sms_hash so if the same SMS comes in, 
-        # process_bank_sms will find this record and see it's already there (though deleted).
         
         return jsonify({"success": True, "message": "Transaction deleted permanently"}), 200
     except Exception as e:
@@ -77,14 +74,14 @@ def delete_transaction(current_user, txn_id):
 @transactions_bp.route('/api/transactions/<int:txn_id>/spam', methods=['POST'])
 @token_required
 def mark_as_spam(current_user, txn_id):
-    """Marks a transaction as spam"""
+    """Marks a transaction as spam (user-scoped)"""
     try:
-        transaction = Transaction.query.get(txn_id)
+        transaction = Transaction.query.filter_by(id=txn_id, user_id=current_user.id).first()
         if not transaction:
             return jsonify({"error": "Transaction not found"}), 404
             
         transaction.is_spam = True
-        transaction.categorization_status = 'spam' # Optional flag update
+        transaction.categorization_status = 'spam'
         db.session.commit()
         
         return jsonify({"success": True, "message": "Transaction marked as spam"}), 200
@@ -98,6 +95,7 @@ def get_uncategorized_transactions(current_user):
     """Fetch transactions that are not yet categorized and not deleted/spam"""
     try:
         transactions = Transaction.query.filter(
+            Transaction.user_id == current_user.id,
             Transaction.categorization_status == 'pending',
             Transaction.is_deleted.isnot(True),
             Transaction.is_spam.isnot(True)
@@ -116,6 +114,7 @@ def get_spam_transactions(current_user):
     """Fetch transactions marked as spam"""
     try:
         transactions = Transaction.query.filter(
+            Transaction.user_id == current_user.id,
             Transaction.is_spam == True,
             Transaction.is_deleted.isnot(True)
         ).order_by(desc(Transaction.date)).all()
@@ -129,8 +128,8 @@ def get_spam_transactions(current_user):
 def get_categorized_transactions(current_user):
     """Fetch transactions that are categorized and not deleted/spam"""
     try:
-        # Categorized means categorization_status is NOT pending
         transactions = Transaction.query.filter(
+            Transaction.user_id == current_user.id,
             Transaction.categorization_status != 'pending',
             Transaction.is_deleted.isnot(True),
             Transaction.is_spam.isnot(True)

@@ -110,24 +110,27 @@ def set_manual_balance(current_user):
         amount = float(data.get('amount', 0))
         account_id = data.get("account_id")
         if account_id is not None:
-            balance = AccountBalance.query.get(int(account_id))
+            balance = AccountBalance.query.filter_by(id=int(account_id), user_id=current_user.id).first()
             if not balance:
                 return jsonify({"error": "Account not found"}), 404
             source = balance.source
         else:
             source = data.get('source', 'bank')
-            balance = AccountBalance.query.filter_by(source=source).first()
+            balance = AccountBalance.query.filter_by(user_id=current_user.id, source=source).first()
 
         if not balance:
             dn = (source or "bank").replace("_", " ").title()
             balance = AccountBalance(
+                user_id=current_user.id,
                 source=source or "bank",
                 display_name=dn,
                 holder_name="",
                 account_kind="bank",
                 match_keywords=json.dumps([source or "bank"]),
                 accent_color="#6366F1",
-                sort_order=(db.session.query(func.max(AccountBalance.sort_order)).scalar() or 0) + 1,
+                sort_order=(db.session.query(func.max(AccountBalance.sort_order)).filter(
+                    AccountBalance.user_id == current_user.id
+                ).scalar() or 0) + 1,
                 current_balance=amount,
             )
             db.session.add(balance)
@@ -153,11 +156,12 @@ def set_manual_balance(current_user):
         return jsonify({"error": str(e)}), 500
 
 
-def ensure_default_cash_wallet():
-    """Ensure the reserved physical-cash wallet exists (source=cash). Idempotent."""
-    if AccountBalance.query.filter_by(source="cash").first():
+def ensure_default_cash_wallet(user_id):
+    """Ensure the reserved physical-cash wallet exists for this user (source=cash). Idempotent."""
+    if AccountBalance.query.filter_by(user_id=user_id, source="cash").first():
         return
     acc = AccountBalance(
+        user_id=user_id,
         source="cash",
         display_name="Cash",
         holder_name="",
@@ -197,7 +201,8 @@ def get_accounts(current_user):
                 base = "wallet"
             slug = base
             n = 2
-            while AccountBalance.query.filter_by(source=slug).first():
+            # Scope uniqueness check to THIS user only — different users can share the same slug
+            while AccountBalance.query.filter_by(user_id=current_user.id, source=slug).first():
                 slug = f"{base}_{n}"
                 n += 1
             if slug == "cash":
@@ -217,9 +222,12 @@ def get_accounts(current_user):
                 stmt_nums = nums.strip()
             accent = (data.get("accent_color") or "#6366F1").strip()
             initial = float(data.get("initial_balance", 0) or 0)
-            max_ord = db.session.query(func.max(AccountBalance.sort_order)).scalar()
+            max_ord = db.session.query(func.max(AccountBalance.sort_order)).filter(
+                AccountBalance.user_id == current_user.id
+            ).scalar()
             max_ord = int(max_ord) if max_ord is not None else 0
             acc = AccountBalance(
+                user_id=current_user.id,  # ← scope to this user
                 source=slug,
                 display_name=display_name,
                 holder_name=holder_name,
@@ -240,7 +248,7 @@ def get_accounts(current_user):
             return jsonify({"error": str(e)}), 500
 
     with current_app.app_context():
-        ensure_default_cash_wallet()
+        ensure_default_cash_wallet(current_user.id)
         # Statement email sync must NOT run on every GET: the app calls GET /api/accounts after
         # categorize (fetchUserAccounts), and this block was overwriting bank.current_balance from
         # stale email "closing_balance", undoing per-wallet ledger updates while transaction-based
@@ -367,8 +375,8 @@ def get_accounts(current_user):
                 print(f"⚠️ get_accounts bank email sync skipped: {sync_err}")
                 db.session.rollback()
 
-        # 2. Fetch all accounts (ordered for dashboard)
-        accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+        # 2. Fetch all accounts for THIS user (ordered for dashboard)
+        accounts = AccountBalance.query.filter_by(user_id=current_user.id).order_by(AccountBalance.sort_order, AccountBalance.id).all()
 
         response_data = []
         for acc in accounts:
@@ -384,7 +392,7 @@ def get_accounts(current_user):
 @accounts_bp.route("/api/accounts/<int:account_id>", methods=["PUT", "DELETE"])
 @token_required
 def manage_single_account(current_user, account_id):
-    acc = AccountBalance.query.get(account_id)
+    acc = AccountBalance.query.filter_by(id=account_id, user_id=current_user.id).first()
     if not acc:
         return jsonify({"error": "Account not found"}), 404
     if request.method == "DELETE":

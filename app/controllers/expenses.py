@@ -53,41 +53,19 @@ expenses_bp = Blueprint("expenses", __name__)
 # EXPENSE ROUTES
 # -------------------------
 
-def calculate_month_expenses(year, month):
+def calculate_month_expenses(year, month, user_id=None):
     """
-    Running-balance expense calculation (date-ordered).
-
-    Rules:
-      - Transactions are processed in chronological order.
-      - Debit  → adds to running expense total.
-      - Credit → reduces running expense, but ONLY what has already
-                 been accumulated. It CANNOT go below 0.
-
-    This means:
-      - A bonus/income that arrives BEFORE any spending has NO effect.
-      - A refund that arrives AFTER a purchase correctly reduces it.
-
-    Example A (your case):
-      Mar 01  Credit Rs 13,000  → running=0  (nothing to reduce)
-      Mar 05  Debit  Rs  5,400  → running=5,400
-      Result: Rs 5,400  ✅
-
-    Example B (refund case):
-      Mar 01  Debit  Rs 5,400   → running=5,400
-      Mar 05  Credit Rs   100   → running=5,300
-      Result: Rs 5,300  ✅
-
-    Example C (credit wipes all spending):
-      Mar 01  Debit  Rs 5,400   → running=5,400
-      Mar 05  Credit Rs 6,000   → running=0  (clamped)
-      Result: Rs 0  ✅
+    Running-balance expense calculation (date-ordered), scoped to a single user.
     """
-    transactions = Transaction.query.filter(
+    q = Transaction.query.filter(
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
         Transaction.is_deleted.isnot(True),
         Transaction.is_spam.isnot(True),
-    ).order_by(Transaction.date.asc()).all()   # ← chronological order is key
+    )
+    if user_id is not None:
+        q = q.filter(Transaction.user_id == user_id)
+    transactions = q.order_by(Transaction.date.asc()).all()
 
     running = 0.0
     for txn in transactions:
@@ -96,7 +74,7 @@ def calculate_month_expenses(year, month):
         if txn.type == 'debit':
             running += txn.amount
         elif txn.type == 'credit':
-            running = max(0.0, running - txn.amount)  # only reduce existing spending
+            running = max(0.0, running - txn.amount)
 
     return running
 
@@ -111,8 +89,8 @@ def get_total_expenses(current_user):
         year, month = dt.year, dt.month
         month_str = dt.strftime("%Y-%m")
 
-        # --- Calculate from scratch ---
-        total_expenses = calculate_month_expenses(year, month)
+        # --- Calculate from scratch for THIS user ---
+        total_expenses = calculate_month_expenses(year, month, user_id=current_user.id)
 
         # Also expose raw totals for debugging / other screens
         total_debits = db.session.query(func.sum(Transaction.amount)).filter(
@@ -121,6 +99,7 @@ def get_total_expenses(current_user):
             Transaction.type        == 'debit',
             Transaction.is_deleted.isnot(True),
             Transaction.is_spam.isnot(True),
+            Transaction.user_id     == current_user.id,
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
 
@@ -130,11 +109,12 @@ def get_total_expenses(current_user):
             Transaction.type        == 'credit',
             Transaction.is_deleted.isnot(True),
             Transaction.is_spam.isnot(True),
+            Transaction.user_id     == current_user.id,
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
 
-        # --- Persist to Budget.total_expenses ---
-        budget_entry = Budget.query.filter_by(month=month_str).first()
+        # --- Persist to Budget.total_expenses for THIS user ---
+        budget_entry = Budget.query.filter_by(user_id=current_user.id, month=month_str).first()
         if budget_entry:
             budget_entry.total_expenses = total_expenses
             try:
