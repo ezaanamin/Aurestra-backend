@@ -69,6 +69,7 @@ def get_monthly_summary_from_db(current_user):
                 else_=0
             ))
         ).filter(
+            Transaction.user_id == current_user.id,  # SECURITY FIX (CRIT-4)
             extract('year', Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             Transaction.is_deleted.isnot(True),
@@ -79,6 +80,7 @@ def get_monthly_summary_from_db(current_user):
 
         # Dynamic Income Calculation 
         dynamic_income_tx = db.session.query(func.sum(Transaction.amount)).filter(
+            Transaction.user_id == current_user.id,  # SECURITY FIX (CRIT-4)
             extract('year', Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             Transaction.type == 'credit',

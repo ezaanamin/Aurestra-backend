@@ -20,7 +20,7 @@ from services.auth_service import (
     reset_password,
 )
 from model import User
-from database import db
+from database import db, limiter  # SECURITY FIX (HIGH-1): import rate limiter
 
 AUTH_API_URL = os.getenv('AUTH_API_URL', '').rstrip('/')
 
@@ -29,6 +29,7 @@ AUTH_API_URL = os.getenv('AUTH_API_URL', '').rstrip('/')
 # Email / Password Auth
 # ─────────────────────────────────────────────────────────────
 
+@limiter.limit("5 per minute")  # SECURITY FIX (HIGH-1): prevent registration spam
 def email_register():
     """POST /api/auth/register — Create account with email+password."""
     data      = request.get_json() or {}
@@ -51,6 +52,7 @@ def email_register():
     }), 201
 
 
+@limiter.limit("10 per minute")  # SECURITY FIX (HIGH-1): prevent brute-force login
 def email_login():
     """POST /api/auth/login — Authenticate with email+password."""
     data     = request.get_json() or {}
@@ -128,6 +130,7 @@ def resend_verification():
     return jsonify({'message': 'Verification email sent. Please check your inbox.'}), 200
 
 
+@limiter.limit("3 per minute")  # SECURITY FIX (HIGH-1): prevent email flooding
 def forgot_password():
     """POST /api/auth/forgot-password — Request password reset email."""
     data  = request.get_json() or {}
@@ -169,6 +172,7 @@ def do_reset_password():
 # Google OAuth (existing — unchanged)
 # ─────────────────────────────────────────────────────────────
 
+@limiter.limit("10 per minute")  # SECURITY FIX (HIGH-1): rate-limit Google OAuth
 def google_login():
     data = request.get_json() or {}
     id_token_str = data.get('idToken')

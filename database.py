@@ -3,6 +3,8 @@ from flask import Flask
 import os
 from dotenv import load_dotenv
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 import urllib.parse
@@ -10,7 +12,30 @@ import urllib.parse
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# SECURITY FIX (CRIT-1): was CORS(app) with no origin restriction — any site could call the API.
+# Origins are restricted to the production domain. Override via CORS_ORIGINS env var (comma-separated).
+_cors_origins_env = os.getenv("CORS_ORIGINS", "")
+_allowed_origins = (
+    [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
+    if _cors_origins_env
+    else [
+        "https://aurestra.app",
+        "https://www.aurestra.app",
+        "http://localhost:3000",   # local web dev
+        "http://localhost:8081",   # React Native Metro bundler
+    ]
+)
+CORS(app, origins=_allowed_origins, supports_credentials=True)
+
+# SECURITY FIX (HIGH-1): Rate limiting to prevent brute-force attacks on auth endpoints.
+# Limits are applied per-IP. Storage defaults to in-memory; set RATELIMIT_STORAGE_URI
+# to a Redis URL (e.g. redis://localhost:6379) for multi-process / production deployments.
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[],           # no default — apply explicitly per route
+    storage_uri=os.getenv("RATELIMIT_STORAGE_URI", "memory://"),
+)
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 

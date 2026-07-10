@@ -271,7 +271,9 @@ def get_available_months(current_user):
         return jsonify({"error": str(e)}), 500
 
 
-def calculate_summary():
+def calculate_summary(current_user):
+    """[SECURITY FIX] calculate_summary now requires authentication and uses
+    current_user.id instead of the previously hardcoded user_id = 1."""
     try:
         from financial_agent import FinancialAgent
         from sqlalchemy import func, extract, case
@@ -281,7 +283,8 @@ def calculate_summary():
         month_str = data.get("month", datetime.now().strftime("%Y-%m"))
         dt        = datetime.strptime(month_str, "%Y-%m")
 
-        user_id = 1
+        # SECURITY FIX (CRIT-3): was hardcoded `user_id = 1`
+        user_id = current_user.id
         total_income = db.session.query(func.sum(Transaction.amount)).filter(
             Transaction.user_id == user_id,
             extract('year',  Transaction.date) == dt.year,
@@ -338,7 +341,11 @@ def calculate_summary():
 def _cached_response(analysis, month_str):
     try:
         ids    = json.loads(analysis.transaction_ids) if analysis.transaction_ids else []
-        cached = Transaction.query.filter(Transaction.id.in_(ids)).order_by(Transaction.date.desc()).all()
+        # SECURITY FIX (HIGH-4): scope to analysis.user_id to prevent cross-user transaction leakage
+        cached = Transaction.query.filter(
+            Transaction.id.in_(ids),
+            Transaction.user_id == analysis.user_id,
+        ).order_by(Transaction.date.desc()).all()
     except Exception:
         cached = []
 

@@ -22,3 +22,4 @@ pandas
 beautifulsoup4
 lxml
 tabulate
+Flask-Limiter>=3.5.0

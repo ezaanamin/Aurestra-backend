@@ -764,13 +764,16 @@ class StatementAnalysis(db.Model):
             except:
                 pass
         
-        # Current balance for the wallet this statement was mapped to (if known)
+        # SECURITY FIX (MED-2): scope AccountBalance lookup to this statement's user_id
         if self.account_balance_source:
             account_balance_record = AccountBalance.query.filter_by(
+                user_id=self.user_id,
                 source=self.account_balance_source
             ).first()
         else:
-            account_balance_record = AccountBalance.query.order_by(
+            account_balance_record = AccountBalance.query.filter_by(
+                user_id=self.user_id,
+            ).order_by(
                 AccountBalance.last_updated.desc()
             ).first()
         current_account_balance = (

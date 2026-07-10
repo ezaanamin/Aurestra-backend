@@ -53,22 +53,23 @@ def get_agent_user_id() -> int:
 
     Priority order:
       1. g.agent_user_id  — set by the chatbot (current_user.id) before calling
-                            any live API function directly.
-      2. X-User-ID header — sent by external callers (mobile app, curl, etc.).
-      3. AGENT_USER_ID env — static fallback for single-user deployments.
+                            any live API function directly. This is the ONLY
+                            external source trusted for user scoping.
+      2. AGENT_USER_ID env — static fallback for single-user deployments.
+
+    SECURITY NOTE (CRIT-5): The X-User-ID header was previously accepted from
+    any external HTTP caller, allowing any authenticated user to scope queries
+    to another user's data. This has been removed. User scoping is now derived
+    exclusively from the verified JWT (via g.agent_user_id set by the chatbot)
+    or the server-side environment variable.
     """
     from flask import g, has_request_context
     if has_request_context():
-        # Priority 1: chatbot sets this on g before calling live functions
+        # Priority 1: chatbot sets this on g before calling live functions (trusted — server-side only)
         uid = getattr(g, 'agent_user_id', None)
         if uid is not None:
             return int(uid)
-        # Priority 2: external caller passes X-User-ID header
-        from flask import request
-        header_uid = request.headers.get('X-User-ID')
-        if header_uid and header_uid.isdigit():
-            return int(header_uid)
-    # Priority 3: env fallback
+    # Priority 2: env fallback for single-user / internal deployments
     return _DEFAULT_AGENT_USER_ID
 
 
@@ -159,8 +160,13 @@ def _category_name(cat_id):
 
 
 def _build_category_map():
-    """Return {id: {name, icon, color, cat_type}} dict."""
-    cats = Category.query.all()
+    """Return {id: {name, icon, color, cat_type}} dict scoped to the current agent user.
+    SECURITY FIX (MED-3): was previously returning categories for ALL users.
+    """
+    uid = get_agent_user_id()
+    cats = Category.query.filter(
+        (Category.user_id == uid) | (Category.user_id.is_(None))
+    ).all()
     return {c.id: c.to_dict() for c in cats}
 
 

@@ -12,6 +12,27 @@ app.config["SECRET_KEY"] = os.getenv(
     "default_dev_secret_change_me"
 )
 
+# SECURITY FIX (MED-5/6): Crash fast if running with insecure default secrets.
+# This prevents accidentally deploying with weak/public keys that allow JWT forgery.
+_secret_key = os.getenv("SECRET_KEY", "")
+_agent_jwt_secret = os.getenv("AGENT_JWT_SECRET", "")
+_KNOWN_WEAK_KEYS = {
+    "", "default_dev_secret_change_me", "0aefb44af279f5bb0ad9ecce393be138"
+}
+_is_production = os.getenv("FLASK_ENV", "production") not in ("development", "testing")
+
+if _is_production:
+    if _secret_key in _KNOWN_WEAK_KEYS:
+        raise RuntimeError(
+            "SECURITY ERROR: SECRET_KEY is missing or set to a known-weak default. "
+            "Set a strong SECRET_KEY in your .env file before running in production."
+        )
+    if _agent_jwt_secret in _KNOWN_WEAK_KEYS:
+        raise RuntimeError(
+            "SECURITY ERROR: AGENT_JWT_SECRET is missing or set to a known-weak default. "
+            "Set a strong AGENT_JWT_SECRET in your .env file before running in production."
+        )
+
 # ─────────────────────────────────────────────────────────────
 # Register Blueprints
 # ─────────────────────────────────────────────────────────────

@@ -18,6 +18,11 @@ class FinancialAgent:
         print(f"🤖 Financial Agent: Analyzing {year}-{month:02d} for user {user_id}...")
         
         with app.app_context():
+            # Resolve user display name for personalised narrative
+            from model import User
+            user_obj = User.query.get(user_id)
+            user_display_name = (user_obj.full_name or user_obj.email) if user_obj else "The user"
+
             # 1. Fetch Data
             transactions = self.fetch_transactions(year, month, user_id)
             budget = self.fetch_budget(year, month, user_id)
@@ -25,8 +30,8 @@ class FinancialAgent:
             # 2. Calculate Metrics
             metrics = self.calculate_metrics(transactions, budget, year, month)
             
-            # 3. Generate Narrative
-            narrative = self.generate_narrative(metrics, year, month)
+            # 3. Generate Narrative (MED-4 fix: pass user's actual name)
+            narrative = self.generate_narrative(metrics, year, month, user_display_name)
             
             # 4. Decide & Persist
             if self.decide_storage(metrics):
@@ -93,10 +98,11 @@ class FinancialAgent:
             "category_breakdown": categories
         }
 
-    def generate_narrative(self, metrics, year, month):
+    def generate_narrative(self, metrics, year, month, user_display_name="The user"):
         """
         Generates a natural language summary (Third Person).
         Optimized for RAG: Returns distinct, factual sentences.
+        SECURITY FIX (MED-4): was hardcoded to 'Ezaan' for all users.
         """
         month_name = datetime.date(year, month, 1).strftime("%B %Y")
         
@@ -109,7 +115,7 @@ class FinancialAgent:
         sentences = []
         
         # Sentence 1: High-level summary
-        sentences.append(f"In {month_name}, Ezaan recorded a total income of {income:,.0f} and total expenses of {expense:,.0f}.")
+        sentences.append(f"In {month_name}, {user_display_name} recorded a total income of {income:,.0f} and total expenses of {expense:,.0f}.")
         
         # Sentence 2: Savings Performance
         if savings >= 0:
@@ -120,7 +126,7 @@ class FinancialAgent:
         # Sentence 3: Top Spend Categories
         if top_cats:
             cat_text = ", ".join([f"{c[0]} ({c[1]:,.0f})" for c in top_cats])
-            sentences.append(f"The top spending categories for Ezaan were: {cat_text}.")
+            sentences.append(f"The top spending categories were: {cat_text}.")
             
         # Join with double newlines for clear separation in UI and RAG chunking
         return "\n\n".join(sentences)

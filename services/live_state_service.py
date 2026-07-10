@@ -116,9 +116,11 @@ def get_available_balance() -> dict:
     total_bal = round(sum(_safe_balance(a.current_balance) for a in accounts), 2)
 
     # Pending debits that haven't cleared yet (categorization_status = 'pending', type = debit)
+    # SECURITY FIX (HIGH-5): was missing user_id filter — summed pending debits across ALL users
     pending_debits = (
         Transaction.query
         .filter(
+            Transaction.user_id                == uid,
             Transaction.is_deleted.isnot(True),
             Transaction.is_spam.isnot(True),
             Transaction.type                   == "debit",
@@ -170,12 +172,14 @@ def get_pending_transactions() -> dict:
     Returns all transactions still in categorization_status = 'pending'.
     These have not yet been fully processed/categorised.
     """
+    # SECURITY FIX (HIGH-6): was missing user_id filter — returned pending txns across ALL users
     pending = (
         Transaction.query
         .filter(
+            Transaction.user_id                == _agent_user_id(),
             Transaction.is_deleted.isnot(True),
             Transaction.is_spam.isnot(True),
-            Transaction.categorization_status == "pending",
+            Transaction.categorization_status  == "pending",
         )
         .order_by(desc(Transaction.date))
         .all()
@@ -281,9 +285,11 @@ def get_todays_spending_total() -> dict:
     """
     start, end = _today_range()
 
+    # SECURITY FIX (HIGH-7): was missing user_id filter — summed ALL users' today spending
     total = (
         db.session.query(func.sum(Transaction.amount))
         .filter(
+            Transaction.user_id    == _agent_user_id(),
             Transaction.is_deleted.isnot(True),
             Transaction.is_spam.isnot(True),
             Transaction.type       == "debit",

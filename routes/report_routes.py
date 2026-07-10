@@ -12,4 +12,4 @@ report_bp.route('/api/reports/statement/mark-read', methods=['POST'])(token_requ
 report_bp.route('/api/insights/generate',          methods=['POST'])(token_required(ctrl.generate_insights))
 report_bp.route('/api/insights/list',              methods=['GET'])(token_required(ctrl.list_insights))
 report_bp.route('/api/insights/available-months',  methods=['GET'])(token_required(ctrl.get_available_months))
-report_bp.route('/api/calculate-summary',          methods=['POST'])(ctrl.calculate_summary)
+report_bp.route('/api/calculate-summary',          methods=['POST'])(token_required(ctrl.calculate_summary))  # SECURITY FIX (CRIT-6)
