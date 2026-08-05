@@ -150,7 +150,8 @@ def do_reset_password():
     """POST /api/auth/reset-password — Set new password using reset token."""
     data         = request.get_json() or {}
     token        = (data.get('token') or '').strip()
-    new_password = data.get('password') or ''
+    # Accept both 'new_password' (sent by app thunk) and 'password' (legacy)
+    new_password = data.get('new_password') or data.get('password') or ''
 
     if not token or not new_password:
         return jsonify({'message': 'Token and new password are required.'}), 400
