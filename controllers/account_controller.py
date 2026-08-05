@@ -25,6 +25,8 @@ def create_account(current_user):
         return jsonify({"error": str(e)}), 500
 
 
+
+
 def update_account(current_user, account_id):
     acc = AccountBalance.query.filter_by(id=account_id, user_id=current_user.id).first()
     if not acc:

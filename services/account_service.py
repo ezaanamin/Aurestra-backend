@@ -106,8 +106,17 @@ def create_account(user_id: int, data: dict) -> AccountBalance:
         is_manual=bool(initial),
     )
     db.session.add(acc)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Slug collision despite the loop (race condition) — append a short unique suffix and retry
+        import uuid
+        db.session.rollback()
+        acc.source = f"{slug}_{uuid.uuid4().hex[:6]}"
+        db.session.add(acc)
+        db.session.commit()
     return acc
+
 
 
 def set_manual_balance(user_id: int, account_id: int = None, source: str = None, amount: float = 0.0):
