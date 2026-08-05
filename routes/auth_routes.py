@@ -12,6 +12,7 @@ auth_bp.route('/api/auth/login',               methods=['POST'])(ctrl.email_logi
 auth_bp.route('/api/auth/verify-email',        methods=['GET', 'POST'])(ctrl.verify_email)
 auth_bp.route('/api/auth/resend-verification', methods=['POST'])(ctrl.resend_verification)
 auth_bp.route('/api/auth/forgot-password',     methods=['POST'])(ctrl.forgot_password)
+auth_bp.route('/api/auth/reset-password',      methods=['GET'])(ctrl.get_reset_password_form)
 auth_bp.route('/api/auth/reset-password',      methods=['POST'])(ctrl.do_reset_password)
 
 # ── Google OAuth ───────────────────────────────────────────────────────────────

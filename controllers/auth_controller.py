@@ -146,27 +146,184 @@ def forgot_password():
     }), 200
 
 
+def get_reset_password_form():
+    """GET /api/auth/reset-password?token=... — Render the HTML reset form."""
+    token = request.args.get('token', '').strip()
+
+    if not token:
+        return _reset_html_error('Missing Token', 'No reset token was found in the link. Please request a new password reset.'), 400
+
+    # Validate token early so we can show a clear expired message
+    from model import User
+    from datetime import datetime
+    user = User.query.filter_by(password_reset_token=token).first()
+    if not user:
+        return _reset_html_error('Invalid Token', 'This reset link is invalid or has already been used. Please request a new one.'), 400
+    if not user.password_reset_expires_at or datetime.utcnow() > user.password_reset_expires_at:
+        return _reset_html_error('Link Expired', 'This reset link has expired (links are valid for 1 hour). Please request a new one.'), 400
+
+    return _reset_html_form(token)
+
+
 def do_reset_password():
     """POST /api/auth/reset-password — Set new password using reset token."""
-    data         = request.get_json() or {}
-    token        = (data.get('token') or '').strip()
-    # Accept both 'new_password' (sent by app thunk) and 'password' (legacy)
-    new_password = data.get('new_password') or data.get('password') or ''
+    # Support both JSON (from app) and form-encoded (from web form)
+    if request.is_json:
+        data         = request.get_json() or {}
+        token        = (data.get('token') or '').strip()
+        # Accept both 'new_password' (sent by app thunk) and 'password' (legacy)
+        new_password = data.get('new_password') or data.get('password') or ''
 
-    if not token or not new_password:
-        return jsonify({'message': 'Token and new password are required.'}), 400
+        if not token or not new_password:
+            return jsonify({'message': 'Token and new password are required.'}), 400
 
-    try:
-        user = reset_password(token, new_password)
-    except ValueError as e:
-        return jsonify({'message': str(e)}), 400
+        try:
+            user = reset_password(token, new_password)
+        except ValueError as e:
+            return jsonify({'message': str(e)}), 400
 
-    jwt_token = issue_jwt(user, current_app.config['SECRET_KEY'])
-    return jsonify({
-        'message': 'Password reset successfully. You are now logged in.',
-        'token':   jwt_token,
-        'user':    user.to_dict(),
-    }), 200
+        jwt_token = issue_jwt(user, current_app.config['SECRET_KEY'])
+        return jsonify({
+            'message': 'Password reset successfully. You are now logged in.',
+            'token':   jwt_token,
+            'user':    user.to_dict(),
+        }), 200
+
+    else:
+        # HTML form submission
+        token        = (request.form.get('token') or '').strip()
+        new_password = request.form.get('new_password', '')
+        confirm      = request.form.get('confirm_password', '')
+
+        if not token or not new_password:
+            return _reset_html_error('Missing Fields', 'Both token and new password are required.'), 400
+        if new_password != confirm:
+            return _reset_html_form(token, error='Passwords do not match. Please try again.')
+        if len(new_password) < 8:
+            return _reset_html_form(token, error='Password must be at least 8 characters long.')
+
+        try:
+            reset_password(token, new_password)
+        except ValueError as e:
+            return _reset_html_error('Reset Failed', str(e)), 400
+
+        return _reset_html_success()
+
+
+# ── HTML helpers for the browser reset form ───────────────────────────────────
+
+def _reset_html_form(token: str, error: str = None) -> str:
+    error_html = f'<p style="color:#FF6B6B;text-align:center;margin-bottom:16px;">{error}</p>' if error else ''
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password — Aurestra</title>
+  <style>
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{ min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: #050D1A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }}
+    .card {{ background: #0A1628; border: 1px solid rgba(0,200,150,0.2); border-radius: 20px;
+             padding: 40px 32px; width: 100%; max-width: 420px; margin: 24px; }}
+    .logo {{ text-align: center; margin-bottom: 28px; }}
+    .logo-icon {{ width: 64px; height: 64px; border-radius: 50%; background: rgba(0,200,150,0.12);
+                  display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;
+                  border: 1px solid rgba(0,200,150,0.3); font-size: 28px; }}
+    h1 {{ font-size: 22px; font-weight: 800; color: #F0F6FF; text-align: center; margin-bottom: 6px; }}
+    p.sub {{ color: #7A8FA8; font-size: 14px; text-align: center; margin-bottom: 28px; line-height: 1.5; }}
+    label {{ display: block; color: #8DA0B8; font-size: 13px; font-weight: 600;
+             margin-bottom: 6px; letter-spacing: 0.5px; }}
+    input {{ width: 100%; background: #050D1A; border: 1px solid rgba(0,200,150,0.2);
+             border-radius: 12px; padding: 14px 16px; color: #F0F6FF; font-size: 15px;
+             margin-bottom: 18px; outline: none; transition: border-color 0.2s; }}
+    input:focus {{ border-color: #00C896; }}
+    button {{ width: 100%; padding: 15px; border: none; border-radius: 14px; cursor: pointer;
+              background: linear-gradient(135deg, #00C896, #007BFF);
+              color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.3px;
+              transition: opacity 0.2s; }}
+    button:hover {{ opacity: 0.9; }}
+    .hint {{ color: #4A5F78; font-size: 12px; margin-top: -12px; margin-bottom: 18px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">🔐</div>
+      <h1>Set New Password</h1>
+      <p class="sub">Enter your new password below. It must be at least 8 characters long.</p>
+    </div>
+    {error_html}
+    <form method="POST" action="/api/auth/reset-password">
+      <input type="hidden" name="token" value="{token}">
+      <label for="new_password">New Password</label>
+      <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required minlength="8">
+      <label for="confirm_password">Confirm Password</label>
+      <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat new password" required minlength="8">
+      <p class="hint">Must be at least 8 characters long.</p>
+      <button type="submit">Reset Password</button>
+    </form>
+  </div>
+</body>
+</html>"""
+
+
+def _reset_html_success() -> str:
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Reset — Aurestra</title>
+  <style>
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center;
+           background: #050D1A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .card { background: #0A1628; border: 1px solid rgba(0,200,150,0.25); border-radius: 20px;
+            padding: 40px 32px; max-width: 400px; text-align: center; margin: 24px; }
+    .icon { font-size: 48px; margin-bottom: 16px; }
+    h1 { color: #00C896; font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+    p { color: #7A8FA8; font-size: 14px; line-height: 1.6; }
+    .tag { display: inline-block; margin-top: 20px; background: rgba(0,200,150,0.1);
+           color: #00C896; border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✅</div>
+    <h1>Password Reset!</h1>
+    <p>Your password has been changed successfully.<br>You can now close this tab and log in to the Aurestra app with your new password.</p>
+    <span class="tag">You're all set</span>
+  </div>
+</body>
+</html>"""
+
+
+def _reset_html_error(title: str, message: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title} — Aurestra</title>
+  <style>
+    body {{ min-height: 100vh; display: flex; align-items: center; justify-content: center;
+           background: #050D1A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }}
+    .card {{ background: #0A1628; border: 1px solid rgba(255,80,80,0.25); border-radius: 20px;
+            padding: 40px 32px; max-width: 400px; text-align: center; margin: 24px; }}
+    .icon {{ font-size: 48px; margin-bottom: 16px; }}
+    h1 {{ color: #FF6B6B; font-size: 22px; font-weight: 800; margin-bottom: 10px; }}
+    p {{ color: #7A8FA8; font-size: 14px; line-height: 1.6; }}
+    a {{ display: inline-block; margin-top: 20px; color: #00C896; font-size: 14px; font-weight: 600; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">❌</div>
+    <h1>{title}</h1>
+    <p>{message}</p>
+  </div>
+</body>
+</html>"""
 
 
 # ─────────────────────────────────────────────────────────────
