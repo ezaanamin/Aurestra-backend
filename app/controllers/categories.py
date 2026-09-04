@@ -115,17 +115,13 @@ def add_category():
 
         # LLM fallback
         try:
+            from services.llm_client import generate_llm
             prompt = f"Classify this budget category into exactly one of: Needs, Wants, Savings. Category: '{cat_name}'. Respond with ONLY the bucket name, nothing else."
-            res = requests.post("http://localhost:11434/api/generate", json={
-                "model": "llama3.2", 
-                "prompt": prompt,
-                "stream": False
-            }, timeout=10)
-            if res.status_code == 200:
-                result = res.json().get("response", "").strip().lower()
-                if "need" in result: return "needs", "ai_suggested"
-                if "want" in result: return "wants", "ai_suggested"
-                if "saving" in result: return "savings", "ai_suggested"
+            res_data = generate_llm(prompt=prompt, timeout=10)
+            result = res_data.get("response", "").strip().lower()
+            if "need" in result: return "needs", "ai_suggested"
+            if "want" in result: return "wants", "ai_suggested"
+            if "saving" in result: return "savings", "ai_suggested"
         except Exception as e:
             print(f"LLM classification failed for category {cat_name}: {e}")
         

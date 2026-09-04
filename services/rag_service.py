@@ -6,8 +6,8 @@ from database import db
 from model import Transaction, Budget, FinancialInsight, Category
 import os
 
-LLM_BASE_URL = os.getenv('LLM_BASE_URL', 'https://contributor-local-into-identify.trycloudflare.com')
-LLM_URL   = f'{LLM_BASE_URL.rstrip("/")}/api/generate'
+LLM_BASE_URL = os.getenv('LLM_BASE_URL', 'https://llm.elyestra.org')
+LLM_URL   = os.getenv('LLM_API_URL', 'https://llm.elyestra.org/api/generate')
 LLM_MODEL = os.getenv('LLM_MODEL', 'qwen2.5:3b')
 
 
@@ -129,15 +129,11 @@ Write 3 to 4 natural, engaging sentences summarizing {user_name}'s performance. 
 
     summary_text = None
     try:
-        response = requests.post(LLM_URL, json={
-            "model": LLM_MODEL, "prompt": prompt, "stream": False
-        }, timeout=10)
-
-        if response.status_code == 200:
-            data = response.json()
-            summary_text = data.get('response', '').strip()
-        else:
-            print(f"⚠️ [AI_INSIGHT] LLM HTTP Error: Status {response.status_code}, falling back to rule-based summary.")
+        from services.llm_client import generate_llm
+        res_data = generate_llm(prompt=prompt, model=LLM_MODEL, timeout=10)
+        summary_text = res_data.get('response', '').strip()
+        if not summary_text:
+            print(f"⚠️ [AI_INSIGHT] LLM returned empty response, falling back to rule-based summary.")
     except Exception as e:
         print(f"⚠️ [AI_INSIGHT] LLM request unreachable ({e}), generating structured fallback narrative.")
 

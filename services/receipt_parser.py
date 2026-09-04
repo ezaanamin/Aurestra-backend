@@ -44,18 +44,16 @@ Receipt text:
     print("========================")
 
     try:
-        llm_base_url = os.getenv('LLM_BASE_URL', 'https://depending-nsw-participating-thoughts.trycloudflare.com')
-        response = requests.post(f'{llm_base_url.rstrip("/")}/api/generate', json={
-            "model": "qwen2.5:3b",
-            "prompt": prompt,
-            "format": "json",
-            "stream": False
-        }, timeout=320)
+        from services.llm_client import generate_llm
+        res_data = generate_llm(
+            prompt=prompt,
+            model="qwen2.5:3b",
+            format_json=True,
+            timeout=320
+        )
         
-        if response.status_code == 200:
-            data = response.json()
-            llm_response = data.get('response', '')
-            
+        llm_response = res_data.get('response', '')
+        if llm_response:
             print("====== LLM RAW OUTPUT ======")
             print(llm_response)
             print("============================")

@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-url = os.getenv('LLM_BASE_URL', 'https://contributor-local-into-identify.trycloudflare.com')
+url = os.getenv('LLM_BASE_URL', 'https://llm.elyestra.org')
 print("URL:", url)
 try:
     res = requests.get(f"{url.rstrip('/')}/api/tags", timeout=5)

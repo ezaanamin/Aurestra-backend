@@ -56,8 +56,8 @@ def disable_user_restriction():
     global _restrict_user_active
     _restrict_user_active = False
 
-LLM_BASE_URL = os.getenv('LLM_BASE_URL', 'https://contributor-local-into-identify.trycloudflare.com')
-LLM_URL = f'{LLM_BASE_URL.rstrip("/")}/api/generate'
+LLM_BASE_URL = os.getenv('LLM_BASE_URL', 'https://llm.elyestra.org')
+LLM_URL = os.getenv('LLM_API_URL', 'https://llm.elyestra.org/api/generate')
 LLM_MODEL = os.getenv('LLM_MODEL', 'qwen2.5:3b')
 
 def compact_json_data(data):
@@ -500,25 +500,22 @@ def chat_session(current_user):
                 live_data_info=live_data_info
             )
 
-        # 12. Send structured request payload to Ollama LLM
+        # 12. Send structured request payload to LLM via centralized client
         print(f"DEBUG [Chatbot Prompt Builder]: Intent: {intent}\nSystem Prompt built:\n{system_prompt[:600]}...\n" + ("-" * 60))
         prompt_content = f"Conversation History:{history_str}\nUser: {user_message}\nAurestra AI:"
         
         try:
-            response = requests.post(LLM_URL, json={
-                "model": LLM_MODEL,
-                "system": system_prompt,
-                "prompt": prompt_content,
-                "stream": False,
-                "options": {
-                    "temperature": 0.0
-                }
-            }, timeout=300)
+            from services.llm_client import generate_llm
+            res_data = generate_llm(
+                prompt=prompt_content,
+                system=system_prompt,
+                model=LLM_MODEL,
+                options={"temperature": 0.0},
+                timeout=300
+            )
 
-            if response.status_code == 200:
-                data = response.json()
-                reply = data.get("response", "").strip()
-                
+            reply = res_data.get("response", "").strip()
+            if reply:
                 # Save assistant reply to database
                 try:
                     assistant_msg = ChatMessage(
@@ -534,7 +531,7 @@ def chat_session(current_user):
                     
                 return jsonify({"reply": reply}), 200
             else:
-                print(f"❌ LLM request failed with status {response.status_code}: {response.text}")
+                print(f"❌ LLM request returned empty response.")
                 return jsonify({"reply": "I am having trouble connecting to my brain right now. Please try again in a moment!"}), 200
 
         except Exception as e:

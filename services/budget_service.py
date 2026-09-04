@@ -74,24 +74,15 @@ def get_current_budget(user_id: int, month_str: str = None):
             bkt = 'savings'
         
         if not bkt:
-            # Query LLM
-            import os, requests
-            LLM_BASE_URL = os.getenv('LLM_BASE_URL', 'https://contributor-local-into-identify.trycloudflare.com')
-            LLM_URL = f'{LLM_BASE_URL.rstrip("/")}/api/generate'
-            LLM_MODEL = os.getenv('LLM_MODEL', 'qwen2.5:3b')
+            # Query LLM via centralized client
             try:
+                from services.llm_client import generate_llm
                 prompt = f"Classify this budget category into exactly one of: Needs, Wants, Savings. Category: '{cat.name}'. Respond with only the bucket name."
-                res = requests.post(LLM_URL, json={
-                    "model": LLM_MODEL,
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {"temperature": 0.0}
-                }, timeout=5)
-                if res.status_code == 200:
-                    reply = res.json().get("response", "").strip().lower()
-                    if 'need' in reply: bkt = 'needs'
-                    elif 'want' in reply: bkt = 'wants'
-                    elif 'saving' in reply: bkt = 'savings'
+                res_data = generate_llm(prompt=prompt, options={"temperature": 0.0}, timeout=5)
+                reply = res_data.get("response", "").strip().lower()
+                if 'need' in reply: bkt = 'needs'
+                elif 'want' in reply: bkt = 'wants'
+                elif 'saving' in reply: bkt = 'savings'
             except Exception:
                 pass
             
