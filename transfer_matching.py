@@ -155,8 +155,8 @@ def apply_own_account_transfer_mirror_balance(
 
 
 def is_own_account_transfer_row(txn: Any) -> bool:
-    p = (getattr(txn, "purpose", None) or "").strip()
-    return p in SELF_TRANSFER_PURPOSES
+    p = (getattr(txn, "purpose", None) or "").strip().lower()
+    return p in ("self-transfer", "self transfer", "own account transfer")
 
 
 SELF_TRANSFER_PURPOSES = (
@@ -172,12 +172,16 @@ def exclude_own_account_transfer_sql():
     """
     SQLAlchemy criterion: rows that should affect discretionary spending / income totals.
     Own-account movements are ledger hygiene, not new spending or earnings.
+    Trims trailing spaces and converts to lowercase to reliably match 'Self transfer ' or 'self-transfer'.
     """
-    from sqlalchemy import and_, or_
+    from sqlalchemy import and_, or_, func
+
+    # Lowercase & trimmed targets
+    targets = ("self-transfer", "self transfer", "own account transfer")
 
     return or_(
         Transaction.purpose.is_(None),
-        Transaction.purpose.notin_(SELF_TRANSFER_PURPOSES),
+        func.lower(func.trim(Transaction.purpose)).notin_(targets),
     )
 
 
