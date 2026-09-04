@@ -273,6 +273,9 @@ with app.app_context():
                 conn.execute(text("ALTER TABLE categories ADD COLUMN icon_type VARCHAR(20) DEFAULT 'library' NOT NULL;"))
             if 'custom_icon_url' not in cols:
                 conn.execute(text("ALTER TABLE categories ADD COLUMN custom_icon_url VARCHAR(255);"))
+            tx_cols = [r[1] for r in conn.execute(text("PRAGMA table_info(transactions);")).fetchall()]
+            if 'bank_reduction_reason' not in tx_cols:
+                conn.execute(text("ALTER TABLE transactions ADD COLUMN bank_reduction_reason VARCHAR(255);"))
             acc_cols = [r[1] for r in conn.execute(text("PRAGMA table_info(account_balances);")).fetchall()]
             if 'is_deleted' not in acc_cols:
                 conn.execute(text("ALTER TABLE account_balances ADD COLUMN is_deleted BOOLEAN DEFAULT 0;"))
@@ -290,9 +293,11 @@ if __name__ == "__main__":
     with app.app_context():
         from decorator.helpers import seed_categories
         from services.subscription_service import seed_plans
+        from migrate_bank_reduction import migrate_bank_reduction_data
 
         seed_categories()
         seed_plans()
+        migrate_bank_reduction_data()
 
     app.run(
         host="0.0.0.0",

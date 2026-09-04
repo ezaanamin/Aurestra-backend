@@ -46,6 +46,7 @@ DEFAULT_CATEGORIES = [
     {"name": "Tea",              "icon": "coffee",      "color": "#F59E0B", "type": "spending"},
     {"name": "Uber",             "icon": "car",         "color": "#4ECDC4", "type": "spending"},
     {"name": "Shopping",         "icon": "shopping",    "color": "#A78BFA", "type": "spending"},
+    {"name": "Bank Reduction",    "icon": "bank",        "color": "#FF6B8A", "type": "spending"},
     {"name": "Healthcare",       "icon": "hospital",    "color": "#10B981", "type": "spending"},
     {"name": "Education",        "icon": "school",      "color": "#F59E0B", "type": "spending"},
     {"name": "Groceries",        "icon": "cart",        "color": "#10B981", "type": "spending"},

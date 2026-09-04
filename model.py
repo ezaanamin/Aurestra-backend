@@ -127,6 +127,9 @@ class Transaction(db.Model):
     # Optional extra details (store name, bank name etc.)
     notes = db.Column(EncryptedString(255), nullable=True)
 
+    # NEW — Bank Reduction Reason / Subcategory identity
+    bank_reduction_reason = db.Column(EncryptedString(255), nullable=True)
+
     # NEW — type: credit or debit
     type = db.Column(db.String(10), nullable=False)
     
@@ -199,6 +202,7 @@ class Transaction(db.Model):
             "transaction_hash": self.transaction_hash,
             "sms_hash": self.sms_hash,
             "notes": self.notes,
+            "bank_reduction_reason": self.bank_reduction_reason,
             "type": self.type,
             "categorization_status": self.categorization_status,
             "category_id": self.category_id,

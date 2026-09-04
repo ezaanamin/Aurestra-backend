@@ -472,45 +472,98 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
             "value": graph_series[0]["value"]
         })
 
-    # 6. Real Spending Breakdown by Category for current period
-    cat_query = db.session.query(
-        Transaction.purpose.label("category"),
-        func.sum(Transaction.amount).label("total")
-    ).filter(
+    # 6. Canonical Aggregation for Spending Breakdown by Category / Subcategory
+    _SELF_TRANSFER_NAMES = {'self transfer', 'self-transfer'}
+    base_tx_query = Transaction.query.filter(
         Transaction.user_id == user_id,
         Transaction.type == 'debit',
-        Transaction.purpose.isnot(None),
-        Transaction.purpose != 'Uncategorized',
         Transaction.is_deleted.isnot(True),
         Transaction.is_spam.isnot(True),
         exclude_own_account_transfer_sql(),
     )
     if curr_start:
-        cat_query = cat_query.filter(func.date(Transaction.date) >= curr_start)
+        base_tx_query = base_tx_query.filter(func.date(Transaction.date) >= curr_start)
     if curr_end:
-        cat_query = cat_query.filter(func.date(Transaction.date) <= curr_end)
+        base_tx_query = base_tx_query.filter(func.date(Transaction.date) <= curr_end)
 
-    cat_rows = (
-        cat_query
-        .group_by(Transaction.purpose)
-        .having(func.sum(Transaction.amount) > 0)
-        .order_by(func.sum(Transaction.amount).desc())
-        .limit(6)
-        .all()
-    )
+    txns = base_tx_query.all()
 
-    palette = ['#7B5CF5', '#00C9A7', '#F5A623', '#FF6B8A', '#60A5FA', '#4DE8C2']
+    # Load categories map to resolve category names cleanly
+    all_categories = {c.id: c for c in Category.query.all()}
+    name_to_cat = {c.name.strip().lower(): c for c in all_categories.values()}
+
+    aggregated = {}  # key -> {"category_id", "name", "amount", "icon", "color", "reasons": {reason_name: amt}}
+
+    for t in txns:
+        p_str = (t.purpose or "").strip()
+        if not p_str or p_str.lower() in _SELF_TRANSFER_NAMES or p_str.lower() == 'uncategorized':
+            continue
+
+        # Resolve category
+        cat = None
+        if t.category_id and t.category_id in all_categories:
+            cat = all_categories[t.category_id]
+        elif p_str.lower() in name_to_cat:
+            cat = name_to_cat[p_str.lower()]
+
+        cat_id = cat.id if cat else None
+        cat_name = cat.name if cat else p_str
+        cat_icon = cat.icon if cat else "cash"
+        cat_color = getattr(cat, "color", "#7B5CF5") if cat else "#7B5CF5"
+
+        # Unique key for canonical aggregation: category_id if present, else normalized name
+        group_key = f"cat_{cat_id}" if cat_id else f"name_{cat_name.lower()}"
+
+        if group_key not in aggregated:
+            aggregated[group_key] = {
+                "category_id": cat_id,
+                "name": cat_name,
+                "icon": cat_icon,
+                "color": cat_color,
+                "amount": 0.0,
+                "reasons": {}
+            }
+
+        aggregated[group_key]["amount"] += float(t.amount or 0.0)
+
+        # Handle subcategory / reason breakdown (e.g. for Bank Reduction or Shopping)
+        reason_val = t.bank_reduction_reason or getattr(t, 'shopping_details', None)
+        if reason_val and str(reason_val).strip():
+            r_name = str(reason_val).strip()
+            aggregated[group_key]["reasons"][r_name] = aggregated[group_key]["reasons"].get(r_name, 0.0) + float(t.amount or 0.0)
+
+    # Sort aggregated items by total amount descending
+    sorted_items = sorted(aggregated.values(), key=lambda x: x["amount"], reverse=True)
+
+    # Calculate percentages relative to total_spent for all debits in period
+    denom = total_spent if total_spent > 0 else (sum(x["amount"] for x in sorted_items) or 1.0)
+
+    palette = ['#7B5CF5', '#00C9A7', '#F5A623', '#FF6B8A', '#60A5FA', '#4DE8C2', '#EC4899', '#10B981']
     breakdown = []
-    period_spent_sum = sum(float(r.total or 0.0) for r in cat_rows) or 1.0
 
-    for idx, r in enumerate(cat_rows):
-        amt = float(r.total or 0.0)
-        pct = round((amt / period_spent_sum) * 100, 1)
+    for idx, item in enumerate(sorted_items):
+        amt = round(item["amount"], 2)
+        pct = round((amt / denom) * 100, 1)
+
+        # Build reasons/subcategories array sorted descending by amount
+        reasons_list = []
+        if item["reasons"]:
+            total_reason_amt = sum(item["reasons"].values()) or 1.0
+            for r_name, r_amt in sorted(item["reasons"].items(), key=lambda x: x[1], reverse=True):
+                reasons_list.append({
+                    "reason": r_name,
+                    "amount": round(r_amt, 2),
+                    "percentage": round((r_amt / total_reason_amt) * 100, 1)
+                })
+
         breakdown.append({
-            "name": r.category,
+            "category_id": item["category_id"],
+            "name": item["name"],
+            "icon": item["icon"],
             "amount": amt,
             "percentage": pct,
-            "color": palette[idx % len(palette)]
+            "color": item["color"] if item["color"] else palette[idx % len(palette)],
+            "reasons": reasons_list
         })
 
     return {

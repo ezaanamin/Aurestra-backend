@@ -388,10 +388,28 @@ def create_manual_transaction(user_id: int, data: dict) -> tuple:
         except Exception:
             pass
 
+    purpose_val = data.get("category") or data.get("purpose") or "Uncategorized"
+    bank_reason = data.get("bank_reduction_reason")
+
+    if purpose_val and purpose_val.strip().lower() == "bank reduction":
+        if not bank_reason or not str(bank_reason).strip():
+            raise ValueError("Bank Reduction reason is required")
+        bank_reason = str(bank_reason).strip()
+    else:
+        bank_reason = None
+
+    cat_id = data.get("category_id")
+    if not cat_id and purpose_val:
+        cat_obj = Category.query.filter_by(name=purpose_val).first()
+        if cat_obj:
+            cat_id = cat_obj.id
+
     new_tx = Transaction(
         user_id=user_id,
         source="manual", date=tx_date, amount=amount, type=t_type,
-        purpose=data.get("category", "Uncategorized"),
+        purpose=purpose_val,
+        category_id=cat_id,
+        bank_reduction_reason=bank_reason,
         sender=data.get("sender") or "Manual Entry",
         receiver=data.get("receiver") or data.get("recipient") or ("Me" if t_type == "credit" else "Merchant"),
         transaction_id=data.get("transaction_id"),
@@ -501,6 +519,20 @@ def update_transaction_category(user_id: int, txn_id: int, data: dict):
 
     if "notes" in data:
         txn.notes = data["notes"]
+
+    current_purpose = txn.purpose or ""
+    if current_purpose.strip().lower() == "bank reduction":
+        if "bank_reduction_reason" in data:
+            reason = data["bank_reduction_reason"]
+            if not reason or not str(reason).strip():
+                raise ValueError("Bank Reduction reason is required")
+            txn.bank_reduction_reason = str(reason).strip()
+        elif not txn.bank_reduction_reason:
+            raise ValueError("Bank Reduction reason is required")
+    else:
+        # Changing away from Bank Reduction clears the reason
+        if "purpose" in data or "category_id" in data:
+            txn.bank_reduction_reason = None
 
     db.session.commit()
     return txn
