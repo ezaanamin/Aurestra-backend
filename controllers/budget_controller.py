@@ -6,7 +6,8 @@ import services.budget_service as svc
 
 def get_budget(current_user):
     try:
-        return jsonify(svc.get_current_budget(current_user.id)), 200
+        month = request.args.get('month')
+        return jsonify(svc.get_current_budget(current_user.id, month_str=month)), 200
     except LookupError as e:
         return jsonify({"message": str(e)}), 404
 

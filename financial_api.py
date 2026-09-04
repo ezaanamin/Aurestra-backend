@@ -165,6 +165,21 @@ def executive_snapshot(current_user):
         "net_change": round(net - prev_net, 2)
     }
 
+    # 7. Net Worth History (30-day rolling window)
+    from model import NetWorthHistory
+    today = now.date()
+    baseline_date = today - timedelta(days=30)
+    baseline_record = NetWorthHistory.query.filter_by(user_id=get_agent_user_id(), date=baseline_date).first()
+    
+    nw_change = {"type": "new", "value": 0, "window": "past 30 days"}
+    if baseline_record:
+        if baseline_record.net_worth_value > 0:
+            pct = ((total_balance - baseline_record.net_worth_value) / baseline_record.net_worth_value) * 100
+            nw_change = {"type": "percentage", "value": round(pct, 1), "window": "past 30 days"}
+        else:
+            delta = total_balance - baseline_record.net_worth_value
+            nw_change = {"type": "delta", "value": round(delta, 2), "window": "past 30 days"}
+
     return jsonify({
         "month": month_param,
         "generated_at": now.isoformat(),
@@ -187,7 +202,8 @@ def executive_snapshot(current_user):
             "overall_pct": overall_pct
         },
         "top_categories": top_categories_list,
-        "comparison": comp_data
+        "comparison": comp_data,
+        "net_worth_change": nw_change
     }), 200
 
 # =============================================================================

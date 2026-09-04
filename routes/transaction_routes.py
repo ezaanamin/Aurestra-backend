@@ -8,8 +8,11 @@ transaction_bp = Blueprint('transactions', __name__)
 
 # Read
 transaction_bp.route('/api/latest-transactions',           methods=['GET'])(token_required(ctrl.get_latest))
+transaction_bp.route('/api/transactions-search',           methods=['GET'])(token_required(ctrl.search_transactions))
+transaction_bp.route('/api/accounts/statement',             methods=['GET'])(token_required(ctrl.get_account_statement))
 transaction_bp.route('/api/expenses/total',                methods=['GET'])(token_required(ctrl.get_total_expenses))
 transaction_bp.route('/api/analytics/trend',              methods=['GET'])(token_required(ctrl.get_analytics_trend))
+transaction_bp.route('/api/analytics/dashboard',          methods=['GET'])(token_required(ctrl.get_analytics_dashboard))
 transaction_bp.route('/api/transactions/top-categories',  methods=['GET'])(token_required(ctrl.get_top_categories))
 transaction_bp.route('/api/categories/monthly',           methods=['GET'])(token_required(ctrl.get_monthly_category_totals))
 transaction_bp.route('/api/transactions/uncategorized',   methods=['GET'])(token_required(ctrl.get_uncategorized))

@@ -120,6 +120,8 @@ class Transaction(db.Model):
     __table_args__ = (
         db.UniqueConstraint('user_id', 'transaction_id', name='uq_transaction_user_id'),
         db.UniqueConstraint('user_id', 'transaction_hash', name='uq_transaction_user_hash'),
+        db.Index('idx_transaction_user_account_source', 'user_id', 'account_balance_source'),
+        db.Index('idx_transaction_user_date', 'user_id', 'date'),
     )
 
     # Optional extra details (store name, bank name etc.)
@@ -168,6 +170,23 @@ class Transaction(db.Model):
         return hashlib.sha256(raw_string.encode('utf-8')).hexdigest()
 
     def to_dict(self):
+        cat_info = None
+        if self.category_id:
+            try:
+                from model import Category
+                cat = Category.query.get(self.category_id)
+                if cat:
+                    cat_info = {
+                        "id": cat.id,
+                        "name": cat.name,
+                        "icon": cat.icon,
+                        "icon_type": getattr(cat, 'icon_type', 'library'),
+                        "custom_icon_url": getattr(cat, 'custom_icon_url', None),
+                        "color": getattr(cat, 'color', '#00C9A7'),
+                    }
+            except Exception:
+                pass
+
         return {
             "id": self.id,
             "source": self.source,
@@ -183,6 +202,7 @@ class Transaction(db.Model):
             "type": self.type,
             "categorization_status": self.categorization_status,
             "category_id": self.category_id,
+            "category": cat_info,
             "account_balance_source": self.account_balance_source,
             "balance_applied": self.balance_applied,
             "receipt_id": self.receipt_id,
@@ -194,33 +214,6 @@ class Transaction(db.Model):
 
     def __repr__(self):
         return f"<Transaction {self.source} | {self.amount} | {self.date} | {self.sender} → {self.receiver}>"
-
-class SMSHistory(db.Model):
-    __tablename__ = 'sms_history'
-
-    id = db.Column(db.Integer, primary_key=True)
-    # Phase 2: user ownership (nullable for safe migration)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    device_sms_id = db.Column(db.String(100))  # Unique SMS ID from device
-    sender = db.Column(db.String(50))
-    body = db.Column(db.Text)
-    device_timestamp = db.Column(db.DateTime)
-    sms_hash = db.Column(db.String(64), nullable=False)  # Deterministic hash
-    status = db.Column(db.String(20), default='pending')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    __table_args__ = (db.UniqueConstraint('user_id', 'sms_hash', name='uq_sms_history_user_hash'),)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'device_sms_id': self.device_sms_id,
-            'sender': self.sender,
-            'body': self.body,
-            'status': self.status,
-            'created_at': self.created_at.isoformat() if self.created_at else None
-        }
-
 
 class UploadedReceipt(db.Model):
     __tablename__ = 'uploaded_receipts'
@@ -364,6 +357,7 @@ class AccountBalance(db.Model):
         """Never allow a negative balance to be stored — floor at 0.0."""
         return max(0.0, float(value or 0.0))
     is_manual = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)
     # JSON array of digit strings (full or partial account numbers) to match e-statement PDF text
     statement_account_numbers = db.Column(db.Text, nullable=True)
 
@@ -465,24 +459,29 @@ class Category(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     # Phase 2: user ownership (nullable for safe migration)
-    # NOTE: unique=True on 'name' intentionally kept until Phase 3 constraint update
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     name = db.Column(db.String(100), nullable=False)
-    icon = db.Column(db.String(50), nullable=False, default="cash")
+    icon = db.Column(db.String(100), nullable=False, default="cash")
+    icon_type = db.Column(db.String(20), nullable=False, default="library") # 'library' or 'custom'
+    custom_icon_url = db.Column(db.String(255), nullable=True)
     
     __table_args__ = (db.UniqueConstraint('user_id', 'name', name='uq_category_user_name'),)
     color = db.Column(db.String(20), nullable=False, default="#64748B")
     cat_type = db.Column(db.String(20), nullable=False, default="spending") # 'spending', 'income', 'both'
     is_default = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)
 
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "icon": self.icon,
+            "icon_type": self.icon_type or "library",
+            "custom_icon_url": self.custom_icon_url,
             "color": self.color,
             "cat_type": self.cat_type,
-            "is_default": self.is_default
+            "is_default": self.is_default,
+            "is_deleted": self.is_deleted
         }
 
 
@@ -602,6 +601,7 @@ class User(db.Model):
 
     # ── Preferences ───────────────────────────────────────────
     notifications_enabled = db.Column(db.Boolean, default=True)
+    ai_feed = db.Column(db.Boolean, default=True)
     decryption_key = db.Column(db.String(255), nullable=True)
     decryption_key_hash = db.Column(db.String(255), nullable=True)
     decryption_key_salt = db.Column(db.String(255), nullable=True)
@@ -637,6 +637,7 @@ class User(db.Model):
             "full_name": self.full_name,
             "avatar_url": self.avatar_url,
             "notifications_enabled": self.notifications_enabled,
+            "ai_feed": self.ai_feed if self.ai_feed is not None else True,
             "is_email_verified": bool(self.is_email_verified),
             "auth_method": self.auth_method or "google",
             "has_decryption_key": self.decryption_key_hash is not None,
@@ -877,6 +878,55 @@ class ChatMessage(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "intent": self.intent,
             "api_route": self.api_route
+        }
+
+class NetWorthHistory(db.Model):
+    """
+    Stores daily snapshot of user's net worth (sum of all wallet balances).
+    Used to calculate rolling 30-day percentage changes.
+    """
+    __tablename__ = "net_worth_history"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)  # One row per user per day
+    net_worth_value = db.Column(db.Float, nullable=False, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'date', name='uq_net_worth_user_date'),)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "date": self.date.isoformat() if self.date else None,
+            "net_worth_value": self.net_worth_value,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
+
+class CategoryBucketMapping(db.Model):
+    """
+    Maps a category to a high-level budget bucket (Needs, Wants, Savings).
+    """
+    __tablename__ = "category_buckets"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete='CASCADE'), nullable=False)
+    bucket = db.Column(db.String(20), nullable=False)  # 'needs', 'wants', 'savings'
+    source = db.Column(db.String(20), nullable=False)  # 'seed_default', 'ai_suggested', 'user_override'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'category_id', name='uq_bucket_user_category'),)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "category_id": self.category_id,
+            "bucket": self.bucket,
+            "source": self.source,
+            "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
 

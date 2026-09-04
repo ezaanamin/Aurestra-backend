@@ -1,4 +1,4 @@
-# app.py
+# app.py - refreshed modules
 import os
 from flask_apscheduler import APScheduler
 
@@ -41,7 +41,6 @@ from routes.account_routes import account_bp
 from routes.transaction_routes import transaction_bp
 from routes.budget_routes import budget_bp
 from routes.savings_routes import savings_bp
-from routes.sms_routes import sms_bp
 from routes.category_routes import category_bp
 from routes.report_routes import report_bp
 from routes.notification_routes import notification_bp
@@ -53,6 +52,7 @@ from financial_api import financial_api_bp
 from routes.backup_routes import backup_bp
 from routes.chat_routes import chat_bp
 from routes.subscription_routes import subscription_bp
+from routes.export_routes import export_bp
 
 blueprints = [
     auth_bp,
@@ -60,7 +60,6 @@ blueprints = [
     transaction_bp,
     budget_bp,
     savings_bp,
-    sms_bp,
     category_bp,
     report_bp,
     notification_bp,
@@ -72,6 +71,7 @@ blueprints = [
     backup_bp,
     chat_bp,
     subscription_bp,
+    export_bp,
 ]
 
 for bp in blueprints:
@@ -142,36 +142,49 @@ def do_8am_retry_backup_job():
 @scheduler.task(
     "cron",
     id="generate_monthly_summary",
-    day="*",
-    hour=23,
-    minute=50,
+    day="1",
+    hour=0,
+    minute=5,
     misfire_grace_time=3600,
     timezone="Asia/Karachi",
 )
 def scheduled_monthly_summary():
     import datetime
-    from calendar import monthrange
-    
-    # Check if today is the last day of the month in Asia/Karachi (UTC+5)
+    from dateutil.relativedelta import relativedelta
+
     tz = datetime.timezone(datetime.timedelta(hours=5))
     now = datetime.datetime.now(tz)
-    _, last_day = monthrange(now.year, now.month)
     
-    if now.day != last_day:
-        return
+    # Calculate completed month (e.g. on Oct 1st -> process September)
+    first_of_this_month = datetime.datetime(now.year, now.month, 1, tzinfo=tz)
+    completed_month_dt = first_of_this_month - relativedelta(months=1)
+    target_month_str = completed_month_dt.strftime('%Y-%m')
 
-    print("⏰ [CRON] Running end-of-month RAG summary for all users...")
+    print(f"⏰ [AI_INSIGHT] Scheduled monthly insight job started at {now.isoformat()} for target completed month: {target_month_str}")
+
     from services.rag_service import generate_monthly_rag_summary
     from model import User
+
     with app.app_context():
-        month_str = now.strftime('%Y-%m')
         users = User.query.all()
+        processed = 0
+        failed = 0
+
         for u in users:
             try:
-                generate_monthly_rag_summary(u.id, month_str)
-                print(f"✅ Generated summary for user {u.email}")
+                print(f"⏰ [AI_INSIGHT] Processing user: {u.id} for month: {target_month_str}")
+                res = generate_monthly_rag_summary(u.id, target_month_str)
+                if res is not None:
+                    print(f"✅ [AI_INSIGHT] Insight generated & saved for user: {u.id}")
+                else:
+                    print(f"ℹ️ [AI_INSIGHT] Insight skipped/handled for user: {u.id}")
+                processed += 1
             except Exception as e:
-                print(f"❌ Failed to generate summary for user {u.email}: {e}")
+                import traceback
+                failed += 1
+                print(f"❌ [AI_INSIGHT] Failed processing user: {u.id} ({e})\n{traceback.format_exc()}")
+
+        print(f"⏰ [AI_INSIGHT] Monthly job completed: {processed} succeeded/handled, {failed} failed out of {len(users)} users.")
 
 
 # @scheduler.task(
@@ -190,6 +203,49 @@ def scheduled_monthly_summary():
 #         generate_monthly_rag_summary(month_str)
 
 
+@scheduler.task(
+    "cron",
+    id="capture_daily_net_worth",
+    hour=23,
+    minute=55,
+    misfire_grace_time=3600,
+    timezone="Asia/Karachi",
+)
+def scheduled_daily_net_worth():
+    import datetime
+    import logging
+    
+    print(f"⏰ [CRON] net_worth_snapshot job started at {datetime.datetime.now().isoformat()}")
+    with app.app_context():
+        from model import User, AccountBalance, NetWorthHistory
+        from database import db
+        
+        # Use server local date based on timezone (Asia/Karachi)
+        tz = datetime.timezone(datetime.timedelta(hours=5))
+        today = datetime.datetime.now(tz).date()
+        
+        users = User.query.all()
+        processed = 0
+        for u in users:
+            try:
+                balances = AccountBalance.query.filter_by(user_id=u.id).all()
+                total_nw = sum(b.current_balance for b in balances)
+                
+                record = NetWorthHistory.query.filter_by(user_id=u.id, date=today).first()
+                if record:
+                    record.net_worth_value = total_nw
+                else:
+                    record = NetWorthHistory(user_id=u.id, date=today, net_worth_value=total_nw)
+                    db.session.add(record)
+                db.session.commit()
+                processed += 1
+            except Exception as e:
+                import traceback
+                db.session.rollback()
+                print(f"❌ net_worth_snapshot failed for user {u.id}: {repr(e)}\n{traceback.format_exc()}")
+        
+        print(f"⏰ [CRON] net_worth_snapshot complete: {processed}/{len(users)} users processed successfully.")
+
 scheduler.init_app(app)
 
 # Print backup password on startup for decryption reference
@@ -206,10 +262,26 @@ if not _is_reloader_parent:
     scheduler.start()
 
 # ─────────────────────────────────────────────────────────────
-# Database Initialization
-# ─────────────────────────────────────────────────────────────
 with app.app_context():
     db.create_all()
+    # Ensure newly added columns exist in existing SQLite database tables
+    try:
+        from sqlalchemy import text
+        with db.engine.connect() as conn:
+            cols = [r[1] for r in conn.execute(text("PRAGMA table_info(categories);")).fetchall()]
+            if 'icon_type' not in cols:
+                conn.execute(text("ALTER TABLE categories ADD COLUMN icon_type VARCHAR(20) DEFAULT 'library' NOT NULL;"))
+            if 'custom_icon_url' not in cols:
+                conn.execute(text("ALTER TABLE categories ADD COLUMN custom_icon_url VARCHAR(255);"))
+            acc_cols = [r[1] for r in conn.execute(text("PRAGMA table_info(account_balances);")).fetchall()]
+            if 'is_deleted' not in acc_cols:
+                conn.execute(text("ALTER TABLE account_balances ADD COLUMN is_deleted BOOLEAN DEFAULT 0;"))
+            user_cols = [r[1] for r in conn.execute(text("PRAGMA table_info(users);")).fetchall()]
+            if 'ai_feed' not in user_cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN ai_feed BOOLEAN DEFAULT 1;"))
+            conn.commit()
+    except Exception as _e:
+        print(f"⚠️ Table migration check: {_e}")
 
 # ─────────────────────────────────────────────────────────────
 # Run Application

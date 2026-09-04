@@ -63,12 +63,9 @@ def get_analytics_trend():
         for i in range(6, -1, -1):
             target_date = datetime.now().date() - timedelta(days=i)
             total = (
-                db.session.query(func.sum(case(
-                    (Transaction.type == 'debit', Transaction.amount),
-                    (Transaction.type == 'credit', -Transaction.amount),
-                    else_=0
-                )))
+                db.session.query(func.sum(Transaction.amount))
                 .filter(
+                    Transaction.type == 'debit',
                     func.date(Transaction.date) == target_date,
                     Transaction.is_deleted.isnot(True),
                     Transaction.is_spam.isnot(True),
@@ -89,12 +86,9 @@ def get_analytics_trend():
             month_str = target_date.strftime("%Y-%m")
             
             total = (
-                db.session.query(func.sum(case(
-                    (Transaction.type == 'debit', Transaction.amount),
-                    (Transaction.type == 'credit', -Transaction.amount),
-                    else_=0
-                )))
+                db.session.query(func.sum(Transaction.amount))
                 .filter(
+                    Transaction.type == 'debit',
                     extract('year', Transaction.date) == target_date.year,
                     extract('month', Transaction.date) == target_date.month,
                     Transaction.is_deleted.isnot(True),
@@ -114,12 +108,9 @@ def get_analytics_trend():
         for i in range(1, 13):
             year = datetime.now().year
             total = (
-                db.session.query(func.sum(case(
-                    (Transaction.type == 'debit', Transaction.amount),
-                    (Transaction.type == 'credit', -Transaction.amount),
-                    else_=0
-                )))
+                db.session.query(func.sum(Transaction.amount))
                 .filter(
+                    Transaction.type == 'debit',
                     extract('year', Transaction.date) == year,
                     extract('month', Transaction.date) == i,
                     Transaction.is_deleted.isnot(True),
@@ -139,12 +130,9 @@ def get_analytics_trend():
         for i in range(4, -1, -1):
             year = datetime.now().year - i
             total = (
-                db.session.query(func.sum(case(
-                    (Transaction.type == 'debit', Transaction.amount),
-                    (Transaction.type == 'credit', -Transaction.amount),
-                    else_=0
-                )))
+                db.session.query(func.sum(Transaction.amount))
                 .filter(
+                    Transaction.type == 'debit',
                     extract('year', Transaction.date) == year,
                     Transaction.is_deleted.isnot(True),
                     Transaction.is_spam.isnot(True),
@@ -159,6 +147,57 @@ def get_analytics_trend():
             })
             
     return jsonify(data_points), 200
+
+def _get_sum_for_range(start, end, txn_type):
+    query = db.session.query(func.sum(Transaction.amount)).filter(
+        Transaction.type == txn_type,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
+        Transaction.categorization_status != 'pending',
+        exclude_own_account_transfer_sql(),
+    )
+    if start: query = query.filter(Transaction.date >= start)
+    if end: query = query.filter(Transaction.date <= end)
+    return float(query.scalar() or 0.0)
+
+@analytics_bp.route('/api/analytics/summary', methods=['GET'])
+@token_required
+def get_analytics_summary(current_user):
+    period = request.args.get('period', default='month')
+    now = datetime.now()
+
+    if period == 'week':
+        curr_start = (now - timedelta(days=7)).date()
+        curr_end = now.date()
+        prev_start = (now - timedelta(days=14)).date()
+        prev_end = (now - timedelta(days=7)).date()
+    elif period == 'month':
+        curr_start = date(now.year, now.month, 1)
+        curr_end = now.date()
+        prev_start = (now - relativedelta(months=1)).replace(day=1).date()
+        prev_end = curr_start - timedelta(days=1)
+    elif period == 'year':
+        curr_start = date(now.year, 1, 1)
+        curr_end = now.date()
+        prev_start = date(now.year - 1, 1, 1)
+        prev_end = date(now.year - 1, 12, 31)
+    else: # all
+        curr_start = None
+        curr_end = None
+        prev_start = None
+        prev_end = None
+
+    curr_exp = _get_sum_for_range(curr_start, curr_end, 'debit')
+    prev_exp = _get_sum_for_range(prev_start, prev_end, 'debit')
+    curr_inc = _get_sum_for_range(curr_start, curr_end, 'credit')
+    prev_inc = _get_sum_for_range(prev_start, prev_end, 'credit')
+
+    return jsonify({
+        "currentExpense": curr_exp,
+        "prevExpense": prev_exp,
+        "currentIncome": curr_inc,
+        "prevIncome": prev_inc
+    }), 200
 
 @analytics_bp.route('/api/latest-transactions', methods=['GET'])
 def latest_transactions():

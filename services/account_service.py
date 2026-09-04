@@ -31,13 +31,12 @@ def ensure_default_cash_wallet(user_id: int):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-
-
 def get_all_accounts(user_id: int):
     ensure_default_cash_wallet(user_id)
     accounts = (
         AccountBalance.query
         .filter_by(user_id=user_id)
+        .filter(AccountBalance.is_deleted.isnot(True))
         .order_by(AccountBalance.sort_order, AccountBalance.id)
         .all()
     )
@@ -66,8 +65,8 @@ def create_account(user_id: int, data: dict) -> AccountBalance:
     raw_slug = (data.get("slug") or "").strip().lower()
     base = raw_slug or re.sub(r"[^a-z0-9]+", "_", display_name.lower()).strip("_")[:48] or "wallet"
     slug, n = base, 2
-    # Slug uniqueness scoped to this user
-    while AccountBalance.query.filter_by(user_id=user_id, source=slug).first():
+    # Slug uniqueness scoped to this user (excluding deleted accounts to allow re-using names)
+    while AccountBalance.query.filter_by(user_id=user_id, source=slug).filter(AccountBalance.is_deleted.isnot(True)).first():
         slug = f"{base}_{n}"; n += 1
     if slug == "cash":
         raise ValueError("That name is reserved for built-in Cash.")
@@ -104,6 +103,7 @@ def create_account(user_id: int, data: dict) -> AccountBalance:
         current_balance=initial,
         last_updated=datetime.now(),
         is_manual=bool(initial),
+        is_deleted=False,
     )
     db.session.add(acc)
     try:
@@ -116,7 +116,6 @@ def create_account(user_id: int, data: dict) -> AccountBalance:
         db.session.add(acc)
         db.session.commit()
     return acc
-
 
 
 def set_manual_balance(user_id: int, account_id: int = None, source: str = None, amount: float = 0.0):
@@ -136,6 +135,7 @@ def set_manual_balance(user_id: int, account_id: int = None, source: str = None,
             account_kind="bank", match_keywords=json.dumps([source or "bank"]),
             accent_color="#6366F1", sort_order=int(max_ord) + 1,
             current_balance=amount,
+            is_deleted=False,
         )
         db.session.add(balance)
 
@@ -188,5 +188,5 @@ def delete_account(user_id: int, acc: AccountBalance):
         raise PermissionError("Access denied")
     if acc.source == "cash":
         raise ValueError("The Cash wallet cannot be deleted.")
-    db.session.delete(acc)
+    acc.is_deleted = True
     db.session.commit()

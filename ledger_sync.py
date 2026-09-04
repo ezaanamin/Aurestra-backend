@@ -26,7 +26,7 @@ WALLET_ATTRIBUTION_TAG = "[WALLET_ATTRIBUTION]"
 _EASYPAY_SLUGS = frozenset({"easypaisa", "easypasia", "easy_paisa"})
 
 
-def find_account_balance_row_for_slug(slug: str) -> AccountBalance | None:
+def find_account_balance_row_for_slug(slug: str, user_id: int | None = None) -> AccountBalance | None:
     """
     Return an existing AccountBalance for this wallet.
 
@@ -36,7 +36,10 @@ def find_account_balance_row_for_slug(slug: str) -> AccountBalance | None:
     """
     s = (slug or "sms").strip().lower()
     if s not in _EASYPAY_SLUGS:
-        return AccountBalance.query.filter_by(source=s).first()
+        row = AccountBalance.query.filter(func.lower(AccountBalance.source) == s).first()
+        if not row and user_id is not None:
+            row = AccountBalance.query.filter(AccountBalance.user_id == user_id, func.lower(AccountBalance.source) == s).first()
+        return row
 
     rows = AccountBalance.query.filter(AccountBalance.source.in_(tuple(_EASYPAY_SLUGS))).all()
     if not rows:
@@ -56,12 +59,12 @@ def find_account_balance_row_for_slug(slug: str) -> AccountBalance | None:
     return sorted(rows, key=_sort_key)[0]
 
 
-def _account_balance_snapshot(slug: object) -> dict[str, object]:
+def _account_balance_snapshot(slug: object, user_id: int | None = None) -> dict[str, object]:
     """Human-readable row from account_balances for debug logs."""
     s = (str(slug or "")).strip().lower()
     if not s:
         return {}
-    row = find_account_balance_row_for_slug(s)
+    row = find_account_balance_row_for_slug(s, user_id)
     if not row:
         return {
             "acct_row": f"(no row yet for slug={s!r}; commit runs ensure_account_balance_row → new wallet row)",
@@ -143,7 +146,7 @@ def _format_wallet_attribution_table(event: str, merged: dict[str, object], valu
     return "\n".join(out_lines)
 
 
-def log_wallet_attribution(event: str, **fields: object) -> None:
+def log_wallet_attribution(event: str, user_id: int | None = None, **fields: object) -> None:
     """
     Wallet attribution for debugging: prints a two-column table (field | value).
     Adds acct_* snapshot when resolved_slug or resolved_wallet_slug is present.
@@ -151,7 +154,7 @@ def log_wallet_attribution(event: str, **fields: object) -> None:
     merged: dict[str, object] = dict(fields)
     slug_for_snap = merged.get("resolved_slug") or merged.get("resolved_wallet_slug")
     if slug_for_snap:
-        for k, v in _account_balance_snapshot(slug_for_snap).items():
+        for k, v in _account_balance_snapshot(slug_for_snap, user_id).items():
             if k not in merged or merged[k] is None or merged[k] == "":
                 merged[k] = v
 
@@ -171,7 +174,7 @@ def log_wallet_attribution(event: str, **fields: object) -> None:
 
 
 def resolve_ingest_balance_slug(sender: str, balance_source_override: str | None) -> str:
-    """Same routing rules as sms_parser.process_bank_sms (which wallet slug to use)."""
+    """Same routing rules as notification_parser.ingest_notification_for_user (which wallet slug to use)."""
     if balance_source_override:
         return str(balance_source_override).strip().lower()
     if sender in ["BAHL", "BankALHabib", "AL-Habib", "8810", "8812", "8815"]:
@@ -205,6 +208,7 @@ def resolve_balance_slug_for_ingest(
     message: str,
     balance_source_override: str | None,
     transaction_data: dict | None = None,
+    user_id: int | None = None,
 ) -> str:
     """
     Pick wallet slug for a new SMS/notification row.
@@ -229,6 +233,7 @@ def resolve_balance_slug_for_ingest(
             route = "override_corrected_easypaisa_leg"
         log_wallet_attribution(
             "INGEST_WALLET_SLUG",
+            user_id=user_id,
             resolved_slug=out,
             route=route,
             sms_sender_peer=sender_in,
@@ -243,6 +248,7 @@ def resolve_balance_slug_for_ingest(
     if sl != "sms":
         log_wallet_attribution(
             "INGEST_WALLET_SLUG",
+            user_id=user_id,
             resolved_slug=sl,
             route="sms_sender_peer",
             sms_sender_peer=sender,
@@ -282,7 +288,7 @@ def resolve_balance_slug_for_ingest(
     ):
         out = "bank"
     else:
-        accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+        accounts = AccountBalance.query.filter_by(user_id=user_id).order_by(AccountBalance.sort_order, AccountBalance.id).all()
         matched = match_account_for_notification(accounts, title="", text=hay, package_name="")
         if matched:
             slug = (getattr(matched, "source", None) or "").strip().lower()
@@ -292,6 +298,7 @@ def resolve_balance_slug_for_ingest(
 
     log_wallet_attribution(
         "INGEST_WALLET_SLUG",
+        user_id=user_id,
         resolved_slug=out,
         route=route,
         sms_sender_peer=sender,
@@ -304,15 +311,51 @@ def resolve_balance_slug_for_ingest(
     return out
 
 
-def ensure_account_balance_row(source: str) -> AccountBalance:
+def ensure_account_balance_row(source: str, user_id: int | None = None) -> AccountBalance:
     source = (source or "sms").strip().lower()
-    found = find_account_balance_row_for_slug(source)
+    if user_id is None:
+        try:
+            first_u = AccountBalance.query.filter(AccountBalance.user_id.isnot(None)).first()
+            if first_u:
+                user_id = first_u.user_id
+            else:
+                try:
+                    from model import User
+                    u = db.session.query(User).first()
+                    if u:
+                        user_id = u.id
+                except Exception:
+                    from app.models import User as AppUser
+                    u = db.session.query(AppUser).first()
+                    if u:
+                        user_id = u.id
+        except Exception:
+            pass
+        if user_id is None:
+            user_id = 1
+
+    found = find_account_balance_row_for_slug(source, user_id)
+    if not found:
+        found = AccountBalance.query.filter(
+            (func.lower(AccountBalance.source) == source) | 
+            (func.lower(AccountBalance.display_name) == source)
+        ).first()
+    if not found:
+        found = AccountBalance.query.filter_by(user_id=user_id).first() or AccountBalance.query.first()
+
     if found:
+        if user_id is not None and getattr(found, 'user_id', None) is None:
+            found.user_id = user_id
+            try:
+                db.session.flush()
+            except Exception:
+                db.session.rollback()
         return found
+
     create_slug = source
     if create_slug in _EASYPAY_SLUGS:
         create_slug = "easypaisa"
-    max_ord = db.session.query(func.max(AccountBalance.sort_order)).scalar()
+    max_ord = db.session.query(func.max(AccountBalance.sort_order)).filter_by(user_id=user_id).scalar()
     max_ord = int(max_ord) if max_ord is not None else 0
     dn = "Bank (SMS)" if create_slug == "bank" else create_slug.replace("_", " ").title()
     ak = "bank" if create_slug == "bank" else "mobile_wallet"
@@ -321,6 +364,7 @@ def ensure_account_balance_row(source: str) -> AccountBalance:
     else:
         mk = [create_slug]
     balance = AccountBalance(
+        user_id=user_id,
         source=create_slug,
         display_name=dn,
         holder_name="",
@@ -330,9 +374,16 @@ def ensure_account_balance_row(source: str) -> AccountBalance:
         sort_order=max_ord + 1,
         current_balance=0.0,
     )
-    db.session.add(balance)
-    db.session.flush()
-    return balance
+    try:
+        db.session.add(balance)
+        db.session.flush()
+        return balance
+    except Exception:
+        db.session.rollback()
+        existing = AccountBalance.query.filter_by(user_id=user_id).first() or AccountBalance.query.first()
+        if existing:
+            return existing
+        return balance
 
 
 def infer_balance_slug_for_transaction(txn: Transaction) -> str:
@@ -380,7 +431,7 @@ def infer_balance_slug_for_transaction(txn: Transaction) -> str:
     if (getattr(txn, "source", None) or "").strip().lower() == "bank":
         return "bank"
 
-    accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+    accounts = AccountBalance.query.filter_by(user_id=txn.user_id).order_by(AccountBalance.sort_order, AccountBalance.id).all()
     matched = match_account_for_notification(accounts, title="", text=hay, package_name="")
     if matched:
         slug = (getattr(matched, "source", None) or "").strip().lower()
@@ -456,7 +507,7 @@ def apply_pending_transaction_ledger(
         return False
 
     primary = _primary_slug_for_ledger(txn, balance_slug_override)
-    accounts = AccountBalance.query.order_by(AccountBalance.sort_order, AccountBalance.id).all()
+    accounts = AccountBalance.query.filter_by(user_id=txn.user_id).order_by(AccountBalance.sort_order, AccountBalance.id).all()
 
     cp = None
     if kind == "debit":
@@ -471,7 +522,7 @@ def apply_pending_transaction_ledger(
     if other_acc:
         oslug = (getattr(other_acc, "source", None) or "").strip().lower()
         if oslug and oslug != primary:
-            p_bal = ensure_account_balance_row(primary)
+            p_bal = ensure_account_balance_row(primary, txn.user_id)
             if opposite_internal_transfer_leg_exists(txn, p_bal, other_acc, accounts):
                 logger.info(
                     "Self-transfer: opposite SMS leg already in DB — applying single-wallet ledger on %s only",
@@ -482,6 +533,7 @@ def apply_pending_transaction_ledger(
     plan_other = (getattr(other_acc, "source", None) or "").strip().lower() if other_acc else ""
     log_wallet_attribution(
         "CATEGORIZE_LEDGER_PLAN",
+        user_id=txn.user_id,
         transaction_id=getattr(txn, "id", None),
         resolved_slug=primary,
         primary_slug=primary,
@@ -498,8 +550,8 @@ def apply_pending_transaction_ledger(
     if other_acc:
         oslug = (getattr(other_acc, "source", None) or "").strip().lower()
         if oslug and oslug != primary:
-            p_bal = ensure_account_balance_row(primary)
-            o_bal = ensure_account_balance_row(oslug)
+            p_bal = ensure_account_balance_row(primary, txn.user_id)
+            o_bal = ensure_account_balance_row(oslug, txn.user_id)
             if kind == "debit":
                 # Funds left primary wallet, arrived at counterparty wallet.
                 _apply_balance_delta(p_bal, primary, -amt, respect_manual_lock=respect_manual_lock)
@@ -530,7 +582,7 @@ def apply_pending_transaction_ledger(
 
     # Single-wallet movement (external spend / income)
     slug = primary
-    balance = ensure_account_balance_row(slug)
+    balance = ensure_account_balance_row(slug, txn.user_id)
     if kind == "credit":
         _apply_balance_delta(balance, slug, amt, respect_manual_lock=respect_manual_lock)
         logger.info(

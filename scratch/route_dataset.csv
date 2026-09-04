@@ -1,0 +1,1001 @@
+question,api_route
+Detect any anomalies in my recent spending.,/api/agent/analytics/anomalies
+What is my balance sheet total?,/api/agent/analytics/net-worth
+Show my overall spending limit progress.,/api/agent/analytics/budget
+What is my current monthly savings rate?,/api/agent/analytics/savings
+List all my linked bank account balances.,/api/agent/overview
+What is the MoM change in my category expenses?,/api/agent/trends/mom
+What is the MoM change for shopping?,/api/agent/trends/mom
+Identify my recurring bills.,/api/agent/analytics/recurring
+Retrieve transactions matching utilities.,/api/agent/transactions/search
+Did you find any unusual transactions this week?,/api/agent/analytics/anomalies
+Show any weird or abnormal charges on my account.,/api/agent/analytics/anomalies
+Check my savings goals progression.,/api/agent/analytics/savings
+List my closing balance for each of the last 6 months.,/api/agent/trends/monthly-balance
+Show me outlier transactions.,/api/agent/analytics/anomalies
+What did I spend on travel in SCB during January?,/api/agent/summary/expense-income
+Where did most of my money go this month?,/api/agent/analytics/top-categories
+Retrieve expense and income summary for April.,/api/agent/summary/expense-income
+Calculate my total assets and liabilities.,/api/agent/analytics/net-worth
+Show my monthly balance history for the last 3 months.,/api/agent/trends/monthly-balance
+Calculate my financial runway.,/api/agent/analytics/projections
+How much money do I have in my accounts?,/api/agent/overview
+Retrieve expense and income summary for July.,/api/agent/summary/expense-income
+Am I saving enough money this month?,/api/agent/analytics/savings
+What is my projected month-end balance?,/api/agent/analytics/projections
+List my highest spending categories.,/api/agent/analytics/top-categories
+Search my payment logs for Careem.,/api/agent/transactions/search
+Show my asset breakdown.,/api/agent/analytics/net-worth
+Show my asset vs liability ratio.,/api/agent/analytics/net-worth
+How close am I to my savings goal target?,/api/agent/analytics/savings
+Show my investment portfolio logs.,/api/agent/analytics/investments
+Give me my account balances overview.,/api/agent/overview
+What are my main expense drivers this month?,/api/agent/analytics/top-categories
+Is my cashflow positive or negative?,/api/agent/trends/cashflow
+Show my top spending categories for this month.,/api/agent/analytics/top-categories
+Calculate the return rate on my investments.,/api/agent/analytics/investments
+Check my accounts for suspicious activity or charges.,/api/agent/analytics/anomalies
+What are my balances in Meezan and JazzCash for February?,/api/agent/overview
+Is my monthly dining out budget running out?,/api/agent/analytics/budget
+What is my current cashflow trend?,/api/agent/trends/cashflow
+List my monthly opening and closing balances.,/api/agent/trends/monthly-balance
+Estimate my monthly recurring costs.,/api/agent/analytics/recurring
+Show my projected ending balance for May.,/api/agent/analytics/projections
+What is the MoM change for groceries?,/api/agent/trends/mom
+Show balance fluctuations over time.,/api/agent/trends/monthly-balance
+How much budget do I have left for fuel in my SCB account for March?,/api/agent/analytics/budget
+List all my detected recurring subscriptions.,/api/agent/analytics/recurring
+Show my recent cash deposits.,/api/agent/transactions/search
+What is my total spending vs total earnings this month?,/api/agent/summary/expense-income
+Search my payment logs for McDonalds.,/api/agent/transactions/search
+What is my top category in November?,/api/agent/analytics/top-categories
+List recurring items under fuel for my SCB card.,/api/agent/analytics/recurring
+Give me my multi-month balance trend.,/api/agent/trends/monthly-balance
+Did I make any purchases at Careem recently?,/api/agent/transactions/search
+Calculate my overall investment returns.,/api/agent/analytics/investments
+What are my balances in HBL and Easypaisa for May?,/api/agent/overview
+What was my largest transaction this week?,/api/agent/summary/expense-income
+Show my cashflow history logs.,/api/agent/trends/cashflow
+Get statement report for July for UBL.,/api/agent/analytics/statements
+What is my cashflow for JazzCash in April?,/api/agent/trends/cashflow
+Calculate my current net worth in NBP as of March.,/api/agent/analytics/net-worth
+Retrieve expense and income summary for August.,/api/agent/summary/expense-income
+List my processed bank statements.,/api/agent/analytics/statements
+Show details of my uploaded bank statements.,/api/agent/analytics/statements
+Show my liabilities list.,/api/agent/analytics/net-worth
+What is my overall net wealth?,/api/agent/analytics/net-worth
+When is my estimated zero-balance date?,/api/agent/analytics/projections
+Show my projected ending balance for October.,/api/agent/analytics/projections
+Analyze my monthly income and expense cashflow.,/api/agent/trends/cashflow
+List all debit transactions matching McDonalds.,/api/agent/transactions/search
+List all my active savings goals.,/api/agent/analytics/savings
+List recurring items under entertainment for my NBP card.,/api/agent/analytics/recurring
+Show my wallet balances.,/api/agent/overview
+How are my investments performing?,/api/agent/analytics/investments
+Check my net worth using my UBL portfolio.,/api/agent/analytics/net-worth
+Retrieve expense and income summary for October.,/api/agent/summary/expense-income
+Check my budget progress.,/api/agent/analytics/budget
+Check my net worth using my SCB portfolio.,/api/agent/analytics/net-worth
+Show daily cashflow movement for last 30 days.,/api/agent/trends/cashflow
+Do I have any active recurring subscriptions?,/api/agent/analytics/recurring
+Did I make any purchases at Savyour recently?,/api/agent/transactions/search
+Provide a summary of inflow and outflow for May.,/api/agent/summary/expense-income
+Estimate how many days of runway I have left.,/api/agent/analytics/projections
+What are my balances in Alfalah and SCB for June?,/api/agent/overview
+Give me the monthly income and expense totals.,/api/agent/summary/expense-income
+Show my projected ending balance for April.,/api/agent/analytics/projections
+Check my total cash balance.,/api/agent/overview
+Compare my spending in April vs August by category in SCB.,/api/agent/trends/mom
+Provide a summary of inflow and outflow for December.,/api/agent/summary/expense-income
+Show my top 5 spending areas.,/api/agent/analytics/top-categories
+List all debit transactions matching Spotify.,/api/agent/transactions/search
+What is my top category in March?,/api/agent/analytics/top-categories
+Show investment profit for June in my HBL portfolio.,/api/agent/analytics/investments
+Search all transactions under 1500 PKR.,/api/agent/transactions/search
+Show my total expense vs credit ratio.,/api/agent/summary/expense-income
+List all debit transactions matching Careem.,/api/agent/transactions/search
+Is my monthly rent budget running out?,/api/agent/analytics/budget
+Compare my category spending MoM.,/api/agent/trends/mom
+What is my closing balance history.,/api/agent/trends/monthly-balance
+What is my ROI on active investments?,/api/agent/analytics/investments
+Show my statement analysis results.,/api/agent/analytics/statements
+Show investment profit for October in my Alfalah portfolio.,/api/agent/analytics/investments
+Retrieve expense and income summary for February.,/api/agent/summary/expense-income
+Search all transactions under 100000 PKR.,/api/agent/transactions/search
+What did I spend on food in UBL during September?,/api/agent/summary/expense-income
+Track my progress for the shopping savings goal.,/api/agent/analytics/savings
+Show summaries of statement metadata.,/api/agent/analytics/statements
+What is the remaining balance on my fuel budget?,/api/agent/analytics/budget
+Summarize my income vs expenses for this month.,/api/agent/summary/expense-income
+What are my balances in HBL and JazzCash for April?,/api/agent/overview
+Did I make any purchases at Daraz recently?,/api/agent/transactions/search
+When will my Meezan balance run out based on trend?,/api/agent/analytics/projections
+Show category-wise changes for this month vs last month.,/api/agent/trends/mom
+Show my inflow vs outflow trends.,/api/agent/trends/cashflow
+When will my Alfalah balance run out based on trend?,/api/agent/analytics/projections
+Find transactions over 50000 PKR.,/api/agent/transactions/search
+Retrieve my current wallet totals.,/api/agent/overview
+What is the remaining balance on my utilities budget?,/api/agent/analytics/budget
+What is my cashflow for NBP in November?,/api/agent/trends/cashflow
+Get statement report for June for UBL.,/api/agent/analytics/statements
+Provide a summary of inflow and outflow for July.,/api/agent/summary/expense-income
+What is my current balance in UBL?,/api/agent/overview
+Get statement report for January for UBL.,/api/agent/analytics/statements
+Show my daily spending projections.,/api/agent/analytics/projections
+Find transactions matching KFC from last night.,/api/agent/transactions/search
+Have I made any unusually large purchases recently?,/api/agent/analytics/anomalies
+Show my savings target completion percentages.,/api/agent/analytics/savings
+How close am I to my saving goal of 100000 PKR in NBP?,/api/agent/analytics/savings
+How much room do I have left in my budget?,/api/agent/analytics/budget
+Retrieve transactions matching travel.,/api/agent/transactions/search
+Check statement logs for errors.,/api/agent/analytics/statements
+List all my category budgets and limits.,/api/agent/analytics/budget
+What monthly regular bills do I pay?,/api/agent/analytics/recurring
+Show current funds in my NBP wallet.,/api/agent/overview
+Search my payment logs for Savyour.,/api/agent/transactions/search
+How close am I to my saving goal of 10000 PKR in Meezan?,/api/agent/analytics/savings
+Did my category expenses increase or decrease MoM?,/api/agent/trends/mom
+What did I spend on fuel in HBL during June?,/api/agent/summary/expense-income
+Detect any spending anomaly in March.,/api/agent/analytics/anomalies
+How much budget do I have left for shopping in my JazzCash account for July?,/api/agent/analytics/budget
+Find my latest transaction for dining out.,/api/agent/transactions/search
+Check my top expense categories.,/api/agent/analytics/top-categories
+Search for transactions from last night.,/api/agent/transactions/search
+What is my cashflow for HBL in July?,/api/agent/trends/cashflow
+Show my budget utilization for shopping in September.,/api/agent/analytics/budget
+What are my total debt and asset values?,/api/agent/analytics/net-worth
+How much net return have I made on investments?,/api/agent/analytics/investments
+Did I exceed my monthly budget limit?,/api/agent/analytics/budget
+List category expenditure from highest to lowest.,/api/agent/analytics/top-categories
+What did I spend on fuel in UBL during June?,/api/agent/summary/expense-income
+Show my investment return rate and net profit.,/api/agent/analytics/investments
+What is my current bank status?,/api/agent/overview
+Analyze my cashflow trend since January.,/api/agent/trends/cashflow
+What are my balances in UBL and Alfalah for January?,/api/agent/overview
+Show investment profit for June in my NBP portfolio.,/api/agent/analytics/investments
+Show my projected ending balance for February.,/api/agent/analytics/projections
+Search my payment logs for Speedy.,/api/agent/transactions/search
+Show current funds in my Easypaisa wallet.,/api/agent/overview
+Is my monthly fuel budget running out?,/api/agent/analytics/budget
+List recurring items under groceries for my Meezan card.,/api/agent/analytics/recurring
+Detect any spending anomaly in April.,/api/agent/analytics/anomalies
+List recurring items under rent for my SCB card.,/api/agent/analytics/recurring
+Find transactions matching Daraz from last week.,/api/agent/transactions/search
+Is my monthly food budget running out?,/api/agent/analytics/budget
+How close am I to my saving goal of 5000 PKR in Alfalah?,/api/agent/analytics/savings
+Search all transactions under 10000 PKR.,/api/agent/transactions/search
+Is my monthly utilities budget running out?,/api/agent/analytics/budget
+List recurring items under rent for my HBL card.,/api/agent/analytics/recurring
+Show my projected ending balance for September.,/api/agent/analytics/projections
+Get statement report for November for JazzCash.,/api/agent/analytics/statements
+Get statement report for November for Alfalah.,/api/agent/analytics/statements
+List all debit transactions matching KFC.,/api/agent/transactions/search
+Find transactions matching Speedy from last week.,/api/agent/transactions/search
+What did I spend on shopping in Meezan during December?,/api/agent/summary/expense-income
+What is my cashflow for Meezan in June?,/api/agent/trends/cashflow
+Provide a summary of inflow and outflow for March.,/api/agent/summary/expense-income
+Compare my spending in June vs August by category in SCB.,/api/agent/trends/mom
+Summarize my performance from my latest bank statement.,/api/agent/analytics/statements
+What is my current balance in Alfalah?,/api/agent/overview
+What did I spend the most money on in SCB during March?,/api/agent/analytics/top-categories
+What is my cashflow for HBL in April?,/api/agent/trends/cashflow
+When will my UBL balance run out based on trend?,/api/agent/analytics/projections
+Detect any spending anomaly in May.,/api/agent/analytics/anomalies
+What is the MoM change for entertainment?,/api/agent/trends/mom
+Find transactions matching Spotify from last night.,/api/agent/transactions/search
+Compare my spending in August vs March by category in JazzCash.,/api/agent/trends/mom
+List recurring items under rent for my NBP card.,/api/agent/analytics/recurring
+Track my progress for the groceries savings goal.,/api/agent/analytics/savings
+What is the MoM change for fuel?,/api/agent/trends/mom
+Show my recurring expenses list.,/api/agent/analytics/recurring
+What is the remaining balance on my rent budget?,/api/agent/analytics/budget
+When will my HBL balance run out based on trend?,/api/agent/analytics/projections
+Show my balance trend for UBL since July.,/api/agent/trends/monthly-balance
+What did I spend on utilities in UBL during August?,/api/agent/summary/expense-income
+What is the remaining balance on my groceries budget?,/api/agent/analytics/budget
+What did I spend on shopping in NBP during March?,/api/agent/summary/expense-income
+What is my top category in January?,/api/agent/analytics/top-categories
+What is my cashflow for UBL in September?,/api/agent/trends/cashflow
+Retrieve transactions matching fuel.,/api/agent/transactions/search
+List recurring items under rent for my Easypaisa card.,/api/agent/analytics/recurring
+Provide a summary of inflow and outflow for January.,/api/agent/summary/expense-income
+Compare my spending in November vs May by category in Meezan.,/api/agent/trends/mom
+When will my NBP balance run out based on trend?,/api/agent/analytics/projections
+What are my balances in NBP and HBL for February?,/api/agent/overview
+Show investment profit for May in my Alfalah portfolio.,/api/agent/analytics/investments
+Retrieve expense and income summary for June.,/api/agent/summary/expense-income
+Did I make any purchases at Speedy recently?,/api/agent/transactions/search
+Show my balance trend for SCB since October.,/api/agent/trends/monthly-balance
+Find transactions matching Savyour from last week.,/api/agent/transactions/search
+Show current funds in my HBL wallet.,/api/agent/overview
+Compare my spending in July vs June by category in Meezan.,/api/agent/trends/mom
+Check my net worth using my Easypaisa portfolio.,/api/agent/analytics/net-worth
+Get statement report for February for Easypaisa.,/api/agent/analytics/statements
+What is my net worth today?,/api/agent/analytics/net-worth
+Detect any spending anomaly in November.,/api/agent/analytics/anomalies
+List all debit transactions matching Netflix.,/api/agent/transactions/search
+List recurring items under food for my HBL card.,/api/agent/analytics/recurring
+How close am I to my saving goal of 25000 PKR in NBP?,/api/agent/analytics/savings
+What did I spend the most money on in JazzCash during December?,/api/agent/analytics/top-categories
+Are there any unusual transaction spikes on my JazzCash account in June?,/api/agent/analytics/anomalies
+Track my progress for the entertainment savings goal.,/api/agent/analytics/savings
+Provide a summary of inflow and outflow for April.,/api/agent/summary/expense-income
+Show investment profit for April in my SCB portfolio.,/api/agent/analytics/investments
+Did I make any purchases at Uber recently?,/api/agent/transactions/search
+Analyze my cashflow trend since February.,/api/agent/trends/cashflow
+Is my monthly travel budget running out?,/api/agent/analytics/budget
+Are there any unusual transaction spikes on my UBL account in June?,/api/agent/analytics/anomalies
+Show my budget utilization for entertainment in February.,/api/agent/analytics/budget
+Analyze my cashflow trend since December.,/api/agent/trends/cashflow
+What did I spend the most money on in HBL during November?,/api/agent/analytics/top-categories
+What did I spend the most money on in JazzCash during March?,/api/agent/analytics/top-categories
+List all debit transactions matching Daraz.,/api/agent/transactions/search
+Calculate my current net worth in NBP as of August.,/api/agent/analytics/net-worth
+When will my SCB balance run out based on trend?,/api/agent/analytics/projections
+When will my Easypaisa balance run out based on trend?,/api/agent/analytics/projections
+Search for transactions from today.,/api/agent/transactions/search
+Calculate my current net worth in UBL as of January.,/api/agent/analytics/net-worth
+What is the MoM change for food?,/api/agent/trends/mom
+Compare my spending in June vs February by category in HBL.,/api/agent/trends/mom
+What is my cashflow for JazzCash in December?,/api/agent/trends/cashflow
+Show my projected ending balance for July.,/api/agent/analytics/projections
+What is my top category in May?,/api/agent/analytics/top-categories
+Retrieve transactions matching groceries.,/api/agent/transactions/search
+Show my budget utilization for dining out in May.,/api/agent/analytics/budget
+Get statement report for July for JazzCash.,/api/agent/analytics/statements
+How much budget do I have left for shopping in my JazzCash account for October?,/api/agent/analytics/budget
+Are there any unusual transaction spikes on my SCB account in September?,/api/agent/analytics/anomalies
+Find transactions over 1500 PKR.,/api/agent/transactions/search
+Are there any unusual transaction spikes on my UBL account in September?,/api/agent/analytics/anomalies
+What is the MoM change for rent?,/api/agent/trends/mom
+Calculate my current net worth in Alfalah as of October.,/api/agent/analytics/net-worth
+Calculate my current net worth in Easypaisa as of September.,/api/agent/analytics/net-worth
+How much budget do I have left for utilities in my Easypaisa account for January?,/api/agent/analytics/budget
+Am I over budget this month?,/api/agent/analytics/budget
+What did I spend the most money on in NBP during March?,/api/agent/analytics/top-categories
+Retrieve transactions matching shopping.,/api/agent/transactions/search
+Retrieve expense and income summary for January.,/api/agent/summary/expense-income
+Find transactions over 25000 PKR.,/api/agent/transactions/search
+Show investment profit for September in my JazzCash portfolio.,/api/agent/analytics/investments
+How much budget do I have left for shopping in my Alfalah account for October?,/api/agent/analytics/budget
+Find transactions matching Savyour from last night.,/api/agent/transactions/search
+How close am I to my saving goal of 1500 PKR in Alfalah?,/api/agent/analytics/savings
+List recurring items under travel for my UBL card.,/api/agent/analytics/recurring
+Compare my spending in July vs June by category in Easypaisa.,/api/agent/trends/mom
+Search my payment logs for Daraz.,/api/agent/transactions/search
+Calculate my current net worth in Meezan as of September.,/api/agent/analytics/net-worth
+Analyze my cashflow trend since July.,/api/agent/trends/cashflow
+Check my net worth using my JazzCash portfolio.,/api/agent/analytics/net-worth
+Compare my spending in June vs October by category in UBL.,/api/agent/trends/mom
+How close am I to my saving goal of 10000 PKR in JazzCash?,/api/agent/analytics/savings
+What did I spend the most money on in JazzCash during November?,/api/agent/analytics/top-categories
+Show my balance trend for Easypaisa since July.,/api/agent/trends/monthly-balance
+List recurring items under utilities for my HBL card.,/api/agent/analytics/recurring
+Show my projected ending balance for November.,/api/agent/analytics/projections
+What did I spend on groceries in UBL during April?,/api/agent/summary/expense-income
+What did I spend on travel in Alfalah during November?,/api/agent/summary/expense-income
+What is my cashflow for Alfalah in January?,/api/agent/trends/cashflow
+What is my cashflow for UBL in January?,/api/agent/trends/cashflow
+Are there any unusual transaction spikes on my HBL account in June?,/api/agent/analytics/anomalies
+Did I make any purchases at KFC recently?,/api/agent/transactions/search
+Check my net worth using my HBL portfolio.,/api/agent/analytics/net-worth
+How much budget do I have left for rent in my Alfalah account for January?,/api/agent/analytics/budget
+How much budget do I have left for fuel in my Easypaisa account for June?,/api/agent/analytics/budget
+Calculate my current net worth in Meezan as of July.,/api/agent/analytics/net-worth
+Get statement report for August for JazzCash.,/api/agent/analytics/statements
+Calculate my current net worth in UBL as of December.,/api/agent/analytics/net-worth
+What are my balances in Alfalah and Meezan for March?,/api/agent/overview
+Search my payment logs for Netflix.,/api/agent/transactions/search
+What is the MoM change for dining out?,/api/agent/trends/mom
+Compare my spending in September vs March by category in JazzCash.,/api/agent/trends/mom
+What is my current balance in HBL?,/api/agent/overview
+Get statement report for December for Easypaisa.,/api/agent/analytics/statements
+Get statement report for December for JazzCash.,/api/agent/analytics/statements
+Retrieve expense and income summary for September.,/api/agent/summary/expense-income
+What is my top category in June?,/api/agent/analytics/top-categories
+Show my projected ending balance for March.,/api/agent/analytics/projections
+Provide a summary of inflow and outflow for February.,/api/agent/summary/expense-income
+Are there any unusual transaction spikes on my SCB account in January?,/api/agent/analytics/anomalies
+Check my net worth using my NBP portfolio.,/api/agent/analytics/net-worth
+Retrieve expense and income summary for November.,/api/agent/summary/expense-income
+Detect any spending anomaly in January.,/api/agent/analytics/anomalies
+Calculate my current net worth in Easypaisa as of December.,/api/agent/analytics/net-worth
+What is the MoM change for utilities?,/api/agent/trends/mom
+Search all transactions under 5000 PKR.,/api/agent/transactions/search
+Get statement report for July for NBP.,/api/agent/analytics/statements
+Get statement report for October for JazzCash.,/api/agent/analytics/statements
+Retrieve expense and income summary for May.,/api/agent/summary/expense-income
+What is my cashflow for JazzCash in June?,/api/agent/trends/cashflow
+Show my budget utilization for dining out in July.,/api/agent/analytics/budget
+Show my budget utilization for utilities in December.,/api/agent/analytics/budget
+Find my latest transaction for food.,/api/agent/transactions/search
+What is the MoM change for travel?,/api/agent/trends/mom
+Are there any unusual transaction spikes on my JazzCash account in August?,/api/agent/analytics/anomalies
+Show current funds in my SCB wallet.,/api/agent/overview
+Is my monthly entertainment budget running out?,/api/agent/analytics/budget
+Search all transactions under 25000 PKR.,/api/agent/transactions/search
+Are there any unusual transaction spikes on my JazzCash account in March?,/api/agent/analytics/anomalies
+What is my top category in July?,/api/agent/analytics/top-categories
+Search for transactions from yesterday.,/api/agent/transactions/search
+Show my balance trend for SCB since March.,/api/agent/trends/monthly-balance
+Show investment profit for May in my SCB portfolio.,/api/agent/analytics/investments
+Show my budget utilization for utilities in April.,/api/agent/analytics/budget
+What are my balances in Easypaisa and Alfalah for July?,/api/agent/overview
+Track my progress for the food savings goal.,/api/agent/analytics/savings
+Find transactions matching Spotify from this morning.,/api/agent/transactions/search
+What did I spend the most money on in UBL during August?,/api/agent/analytics/top-categories
+Show current funds in my Meezan wallet.,/api/agent/overview
+How close am I to my saving goal of 500 PKR in Alfalah?,/api/agent/analytics/savings
+What are my balances in Alfalah and Easypaisa for August?,/api/agent/overview
+Find my latest transaction for groceries.,/api/agent/transactions/search
+Calculate my current net worth in Easypaisa as of February.,/api/agent/analytics/net-worth
+Did I make any purchases at McDonalds recently?,/api/agent/transactions/search
+Get statement report for February for HBL.,/api/agent/analytics/statements
+Find transactions over 100000 PKR.,/api/agent/transactions/search
+Is my monthly shopping budget running out?,/api/agent/analytics/budget
+Analyze my cashflow trend since May.,/api/agent/trends/cashflow
+What did I spend on utilities in Meezan during April?,/api/agent/summary/expense-income
+Show current funds in my Alfalah wallet.,/api/agent/overview
+Show investment profit for August in my Easypaisa portfolio.,/api/agent/analytics/investments
+How much budget do I have left for shopping in my JazzCash account for August?,/api/agent/analytics/budget
+What is the remaining balance on my entertainment budget?,/api/agent/analytics/budget
+List recurring items under groceries for my SCB card.,/api/agent/analytics/recurring
+Find transactions matching Careem from this morning.,/api/agent/transactions/search
+List recurring items under food for my Meezan card.,/api/agent/analytics/recurring
+How much budget do I have left for entertainment in my Meezan account for August?,/api/agent/analytics/budget
+What did I spend on food in Meezan during August?,/api/agent/summary/expense-income
+Check my net worth using my Meezan portfolio.,/api/agent/analytics/net-worth
+What did I spend on dining out in UBL during January?,/api/agent/summary/expense-income
+What are my balances in NBP and JazzCash for December?,/api/agent/overview
+How much budget do I have left for groceries in my NBP account for October?,/api/agent/analytics/budget
+What are my balances in Meezan and HBL for August?,/api/agent/overview
+Find my latest transaction for rent.,/api/agent/transactions/search
+Track my progress for the travel savings goal.,/api/agent/analytics/savings
+What is my cashflow for HBL in August?,/api/agent/trends/cashflow
+How much budget do I have left for shopping in my HBL account for February?,/api/agent/analytics/budget
+Analyze my cashflow trend since March.,/api/agent/trends/cashflow
+Get statement report for February for Alfalah.,/api/agent/analytics/statements
+What are my balances in Meezan and Easypaisa for April?,/api/agent/overview
+What is the remaining balance on my travel budget?,/api/agent/analytics/budget
+Show my balance trend for Easypaisa since April.,/api/agent/trends/monthly-balance
+What is my top category in October?,/api/agent/analytics/top-categories
+Show current funds in my JazzCash wallet.,/api/agent/overview
+How much budget do I have left for utilities in my HBL account for February?,/api/agent/analytics/budget
+List recurring items under entertainment for my Easypaisa card.,/api/agent/analytics/recurring
+Show my balance trend for Easypaisa since December.,/api/agent/trends/monthly-balance
+Track my progress for the dining out savings goal.,/api/agent/analytics/savings
+Show my budget utilization for shopping in November.,/api/agent/analytics/budget
+What is my cashflow for JazzCash in February?,/api/agent/trends/cashflow
+Retrieve expense and income summary for December.,/api/agent/summary/expense-income
+Find my latest transaction for entertainment.,/api/agent/transactions/search
+Search my payment logs for Uber.,/api/agent/transactions/search
+What did I spend the most money on in Meezan during October?,/api/agent/analytics/top-categories
+How much budget do I have left for utilities in my HBL account for January?,/api/agent/analytics/budget
+Is my monthly groceries budget running out?,/api/agent/analytics/budget
+Analyze my cashflow trend since September.,/api/agent/trends/cashflow
+Show my budget utilization for rent in June.,/api/agent/analytics/budget
+Show my budget utilization for travel in October.,/api/agent/analytics/budget
+Search my payment logs for Spotify.,/api/agent/transactions/search
+Find transactions over 10000 PKR.,/api/agent/transactions/search
+Get statement report for July for SCB.,/api/agent/analytics/statements
+How much budget do I have left for rent in my NBP account for December?,/api/agent/analytics/budget
+What is the remaining balance on my food budget?,/api/agent/analytics/budget
+Show investment profit for July in my UBL portfolio.,/api/agent/analytics/investments
+List recurring items under shopping for my UBL card.,/api/agent/analytics/recurring
+Provide a summary of inflow and outflow for October.,/api/agent/summary/expense-income
+Analyze my cashflow trend since November.,/api/agent/trends/cashflow
+What are my balances in Meezan and SCB for August?,/api/agent/overview
+Find my latest transaction for shopping.,/api/agent/transactions/search
+What did I spend the most money on in Meezan during January?,/api/agent/analytics/top-categories
+Show investment profit for October in my JazzCash portfolio.,/api/agent/analytics/investments
+Find my latest transaction for utilities.,/api/agent/transactions/search
+What did I spend the most money on in Easypaisa during April?,/api/agent/analytics/top-categories
+Show investment profit for October in my NBP portfolio.,/api/agent/analytics/investments
+Calculate my current net worth in SCB as of January.,/api/agent/analytics/net-worth
+Retrieve expense and income summary for March.,/api/agent/summary/expense-income
+What is my current balance in SCB?,/api/agent/overview
+Show my budget utilization for fuel in January.,/api/agent/analytics/budget
+Find transactions over 500 PKR.,/api/agent/transactions/search
+Show my budget utilization for entertainment in July.,/api/agent/analytics/budget
+List all debit transactions matching Savyour.,/api/agent/transactions/search
+What are my balances in Meezan and HBL for October?,/api/agent/overview
+Compare my spending in March vs January by category in JazzCash.,/api/agent/trends/mom
+Are there any unusual transaction spikes on my JazzCash account in April?,/api/agent/analytics/anomalies
+Compare my spending in October vs November by category in Alfalah.,/api/agent/trends/mom
+What is my top category in February?,/api/agent/analytics/top-categories
+Are there any unusual transaction spikes on my NBP account in July?,/api/agent/analytics/anomalies
+What is the remaining balance on my dining out budget?,/api/agent/analytics/budget
+Retrieve transactions matching food.,/api/agent/transactions/search
+Compare my spending in August vs November by category in JazzCash.,/api/agent/trends/mom
+Show my budget utilization for rent in April.,/api/agent/analytics/budget
+Compare my spending in January vs April by category in UBL.,/api/agent/trends/mom
+Find transactions matching Spotify from two days ago.,/api/agent/transactions/search
+What did I spend on dining out in Easypaisa during August?,/api/agent/summary/expense-income
+Are there any unusual transaction spikes on my Easypaisa account in October?,/api/agent/analytics/anomalies
+Show investment profit for July in my NBP portfolio.,/api/agent/analytics/investments
+Compare my spending in June vs January by category in JazzCash.,/api/agent/trends/mom
+What are my balances in HBL and Easypaisa for April?,/api/agent/overview
+Compare my spending in September vs April by category in Easypaisa.,/api/agent/trends/mom
+Show my budget utilization for groceries in March.,/api/agent/analytics/budget
+Find transactions matching Daraz from yesterday.,/api/agent/transactions/search
+What did I spend the most money on in JazzCash during August?,/api/agent/analytics/top-categories
+What is my cashflow for HBL in December?,/api/agent/trends/cashflow
+Show current funds in my UBL wallet.,/api/agent/overview
+Calculate my current net worth in Alfalah as of January.,/api/agent/analytics/net-worth
+Track my progress for the rent savings goal.,/api/agent/analytics/savings
+What is my cashflow for Alfalah in December?,/api/agent/trends/cashflow
+How much budget do I have left for travel in my SCB account for February?,/api/agent/analytics/budget
+How much budget do I have left for rent in my JazzCash account for August?,/api/agent/analytics/budget
+How close am I to my saving goal of 25000 PKR in SCB?,/api/agent/analytics/savings
+Compare my spending in November vs January by category in Meezan.,/api/agent/trends/mom
+What is my cashflow for NBP in May?,/api/agent/trends/cashflow
+Did I make any purchases at Netflix recently?,/api/agent/transactions/search
+Analyze my cashflow trend since June.,/api/agent/trends/cashflow
+Get statement report for January for SCB.,/api/agent/analytics/statements
+Show investment profit for November in my JazzCash portfolio.,/api/agent/analytics/investments
+What are my balances in UBL and Easypaisa for October?,/api/agent/overview
+How close am I to my saving goal of 25000 PKR in JazzCash?,/api/agent/analytics/savings
+Show my balance trend for JazzCash since September.,/api/agent/trends/monthly-balance
+Detect any spending anomaly in August.,/api/agent/analytics/anomalies
+Find transactions matching Netflix from last night.,/api/agent/transactions/search
+What are my balances in UBL and NBP for March?,/api/agent/overview
+Detect any spending anomaly in February.,/api/agent/analytics/anomalies
+Check my net worth using my Alfalah portfolio.,/api/agent/analytics/net-worth
+What is my current balance in Meezan?,/api/agent/overview
+Get statement report for September for HBL.,/api/agent/analytics/statements
+Get statement report for January for JazzCash.,/api/agent/analytics/statements
+Are there any unusual transaction spikes on my SCB account in March?,/api/agent/analytics/anomalies
+Are there any unusual transaction spikes on my HBL account in December?,/api/agent/analytics/anomalies
+Get statement report for March for Easypaisa.,/api/agent/analytics/statements
+List recurring items under entertainment for my JazzCash card.,/api/agent/analytics/recurring
+What did I spend the most money on in JazzCash during May?,/api/agent/analytics/top-categories
+How much budget do I have left for shopping in my UBL account for December?,/api/agent/analytics/budget
+Analyze my cashflow trend since August.,/api/agent/trends/cashflow
+Are there any unusual transaction spikes on my SCB account in June?,/api/agent/analytics/anomalies
+Show my balance trend for SCB since May.,/api/agent/trends/monthly-balance
+Detect any spending anomaly in June.,/api/agent/analytics/anomalies
+How close am I to my saving goal of 500 PKR in UBL?,/api/agent/analytics/savings
+Are there any unusual transaction spikes on my JazzCash account in October?,/api/agent/analytics/anomalies
+List recurring items under dining out for my JazzCash card.,/api/agent/analytics/recurring
+Search all transactions under 50000 PKR.,/api/agent/transactions/search
+Get statement report for June for HBL.,/api/agent/analytics/statements
+Get statement report for June for Alfalah.,/api/agent/analytics/statements
+Calculate my current net worth in Easypaisa as of August.,/api/agent/analytics/net-worth
+Show my balance trend for JazzCash since August.,/api/agent/trends/monthly-balance
+Compare my spending in May vs November by category in SCB.,/api/agent/trends/mom
+Search for transactions from two days ago.,/api/agent/transactions/search
+What did I spend the most money on in SCB during August?,/api/agent/analytics/top-categories
+What did I spend on utilities in JazzCash during November?,/api/agent/summary/expense-income
+What is my cashflow for UBL in March?,/api/agent/trends/cashflow
+What is my cashflow for HBL in June?,/api/agent/trends/cashflow
+Search all transactions under 500 PKR.,/api/agent/transactions/search
+How close am I to my saving goal of 10000 PKR in Alfalah?,/api/agent/analytics/savings
+When will my JazzCash balance run out based on trend?,/api/agent/analytics/projections
+Show my balance trend for Easypaisa since October.,/api/agent/trends/monthly-balance
+Get statement report for November for Easypaisa.,/api/agent/analytics/statements
+What is my top category in August?,/api/agent/analytics/top-categories
+Find my latest transaction for fuel.,/api/agent/transactions/search
+What did I spend on food in SCB during November?,/api/agent/summary/expense-income
+What is my cashflow for UBL in June?,/api/agent/trends/cashflow
+What did I spend on entertainment in JazzCash during March?,/api/agent/summary/expense-income
+Show my balance trend for HBL since May.,/api/agent/trends/monthly-balance
+Show my budget utilization for fuel in July.,/api/agent/analytics/budget
+What did I spend on dining out in Alfalah during February?,/api/agent/summary/expense-income
+What is my current balance in JazzCash?,/api/agent/overview
+Find transactions matching Speedy from two days ago.,/api/agent/transactions/search
+Show my balance trend for JazzCash since April.,/api/agent/trends/monthly-balance
+How close am I to my saving goal of 25000 PKR in UBL?,/api/agent/analytics/savings
+Search my payment logs for KFC.,/api/agent/transactions/search
+How much budget do I have left for utilities in my Alfalah account for August?,/api/agent/analytics/budget
+What did I spend the most money on in Alfalah during August?,/api/agent/analytics/top-categories
+Show my balance trend for NBP since July.,/api/agent/trends/monthly-balance
+How much budget do I have left for groceries in my Easypaisa account for February?,/api/agent/analytics/budget
+Get statement report for June for Easypaisa.,/api/agent/analytics/statements
+Are there any unusual transaction spikes on my HBL account in January?,/api/agent/analytics/anomalies
+Compare my spending in September vs July by category in JazzCash.,/api/agent/trends/mom
+How much budget do I have left for rent in my UBL account for July?,/api/agent/analytics/budget
+Compare my spending in August vs September by category in JazzCash.,/api/agent/trends/mom
+Show my projected ending balance for January.,/api/agent/analytics/projections
+What are my balances in Alfalah and HBL for March?,/api/agent/overview
+Retrieve transactions matching dining out.,/api/agent/transactions/search
+Get statement report for April for Alfalah.,/api/agent/analytics/statements
+Calculate my current net worth in UBL as of October.,/api/agent/analytics/net-worth
+How much budget do I have left for food in my Easypaisa account for September?,/api/agent/analytics/budget
+What is my cashflow for HBL in October?,/api/agent/trends/cashflow
+Get statement report for March for SCB.,/api/agent/analytics/statements
+What is my cashflow for UBL in April?,/api/agent/trends/cashflow
+Track my progress for the fuel savings goal.,/api/agent/analytics/savings
+Retrieve transactions matching rent.,/api/agent/transactions/search
+Show my balance trend for UBL since September.,/api/agent/trends/monthly-balance
+Show my budget utilization for shopping in August.,/api/agent/analytics/budget
+What did I spend the most money on in SCB during November?,/api/agent/analytics/top-categories
+What is my cashflow for Alfalah in August?,/api/agent/trends/cashflow
+Detect any spending anomaly in October.,/api/agent/analytics/anomalies
+Are there any unusual transaction spikes on my Meezan account in May?,/api/agent/analytics/anomalies
+Find transactions matching KFC from this morning.,/api/agent/transactions/search
+Show investment profit for July in my Alfalah portfolio.,/api/agent/analytics/investments
+What did I spend on travel in Easypaisa during September?,/api/agent/summary/expense-income
+Compare my spending in September vs July by category in Easypaisa.,/api/agent/trends/mom
+What did I spend on utilities in Alfalah during April?,/api/agent/summary/expense-income
+Show my budget utilization for food in April.,/api/agent/analytics/budget
+What did I spend the most money on in Easypaisa during November?,/api/agent/analytics/top-categories
+Find transactions matching Netflix from today.,/api/agent/transactions/search
+How much budget do I have left for shopping in my Meezan account for July?,/api/agent/analytics/budget
+What is my cashflow for UBL in December?,/api/agent/trends/cashflow
+Find transactions matching Uber from today.,/api/agent/transactions/search
+What did I spend on food in NBP during September?,/api/agent/summary/expense-income
+Provide a summary of inflow and outflow for August.,/api/agent/summary/expense-income
+How much budget do I have left for shopping in my HBL account for October?,/api/agent/analytics/budget
+Show investment profit for February in my UBL portfolio.,/api/agent/analytics/investments
+Compare my spending in January vs May by category in Meezan.,/api/agent/trends/mom
+Get statement report for January for Meezan.,/api/agent/analytics/statements
+Compare my spending in January vs August by category in HBL.,/api/agent/trends/mom
+Calculate my current net worth in JazzCash as of March.,/api/agent/analytics/net-worth
+Compare my spending in January vs April by category in NBP.,/api/agent/trends/mom
+Get statement report for April for SCB.,/api/agent/analytics/statements
+Are there any unusual transaction spikes on my SCB account in May?,/api/agent/analytics/anomalies
+What are my balances in NBP and Alfalah for May?,/api/agent/overview
+What did I spend the most money on in Alfalah during March?,/api/agent/analytics/top-categories
+Track my progress for the utilities savings goal.,/api/agent/analytics/savings
+Are there any unusual transaction spikes on my NBP account in June?,/api/agent/analytics/anomalies
+Compare my spending in December vs February by category in SCB.,/api/agent/trends/mom
+Calculate my current net worth in JazzCash as of August.,/api/agent/analytics/net-worth
+What is my cashflow for Meezan in August?,/api/agent/trends/cashflow
+Find transactions matching Netflix from last week.,/api/agent/transactions/search
+Show my budget utilization for shopping in April.,/api/agent/analytics/budget
+Show my budget utilization for travel in September.,/api/agent/analytics/budget
+What did I spend the most money on in HBL during April?,/api/agent/analytics/top-categories
+List recurring items under utilities for my Meezan card.,/api/agent/analytics/recurring
+Show my balance trend for NBP since June.,/api/agent/trends/monthly-balance
+Show my balance trend for UBL since May.,/api/agent/trends/monthly-balance
+Show my budget utilization for groceries in June.,/api/agent/analytics/budget
+Show my balance trend for Meezan since January.,/api/agent/trends/monthly-balance
+How close am I to my saving goal of 5000 PKR in NBP?,/api/agent/analytics/savings
+What did I spend the most money on in NBP during May?,/api/agent/analytics/top-categories
+Find my latest transaction for travel.,/api/agent/transactions/search
+Compare my spending in December vs September by category in JazzCash.,/api/agent/trends/mom
+Calculate my current net worth in Easypaisa as of May.,/api/agent/analytics/net-worth
+What is my cashflow for SCB in January?,/api/agent/trends/cashflow
+Compare my spending in April vs July by category in UBL.,/api/agent/trends/mom
+Get statement report for December for UBL.,/api/agent/analytics/statements
+Compare my spending in June vs January by category in Alfalah.,/api/agent/trends/mom
+Are there any unusual transaction spikes on my Meezan account in June?,/api/agent/analytics/anomalies
+What are my balances in Alfalah and HBL for August?,/api/agent/overview
+Show my balance trend for HBL since November.,/api/agent/trends/monthly-balance
+Show investment profit for September in my NBP portfolio.,/api/agent/analytics/investments
+Are there any unusual transaction spikes on my Alfalah account in December?,/api/agent/analytics/anomalies
+List recurring items under dining out for my Easypaisa card.,/api/agent/analytics/recurring
+What did I spend on groceries in HBL during August?,/api/agent/summary/expense-income
+What did I spend the most money on in UBL during October?,/api/agent/analytics/top-categories
+What is my cashflow for Alfalah in October?,/api/agent/trends/cashflow
+What did I spend on entertainment in UBL during November?,/api/agent/summary/expense-income
+What did I spend on food in NBP during October?,/api/agent/summary/expense-income
+Show investment profit for May in my Easypaisa portfolio.,/api/agent/analytics/investments
+Find transactions over 5000 PKR.,/api/agent/transactions/search
+Show my balance trend for Meezan since May.,/api/agent/trends/monthly-balance
+What did I spend on dining out in JazzCash during August?,/api/agent/summary/expense-income
+Compare my spending in February vs December by category in SCB.,/api/agent/trends/mom
+How much budget do I have left for groceries in my NBP account for May?,/api/agent/analytics/budget
+Get statement report for September for NBP.,/api/agent/analytics/statements
+Show my balance trend for Meezan since September.,/api/agent/trends/monthly-balance
+Show my budget utilization for fuel in March.,/api/agent/analytics/budget
+Provide a summary of inflow and outflow for November.,/api/agent/summary/expense-income
+Are there any unusual transaction spikes on my Meezan account in September?,/api/agent/analytics/anomalies
+How much budget do I have left for travel in my Easypaisa account for March?,/api/agent/analytics/budget
+Compare my spending in October vs November by category in UBL.,/api/agent/trends/mom
+Compare my spending in August vs October by category in JazzCash.,/api/agent/trends/mom
+Get statement report for March for UBL.,/api/agent/analytics/statements
+Are there any unusual transaction spikes on my Alfalah account in August?,/api/agent/analytics/anomalies
+List recurring items under rent for my Alfalah card.,/api/agent/analytics/recurring
+Compare my spending in June vs May by category in Meezan.,/api/agent/trends/mom
+Show my projected ending balance for August.,/api/agent/analytics/projections
+What did I spend on shopping in HBL during February?,/api/agent/summary/expense-income
+Show my balance trend for Meezan since June.,/api/agent/trends/monthly-balance
+Compare my spending in May vs October by category in Alfalah.,/api/agent/trends/mom
+How close am I to my saving goal of 100000 PKR in Meezan?,/api/agent/analytics/savings
+Show investment profit for August in my JazzCash portfolio.,/api/agent/analytics/investments
+What is my cashflow for NBP in July?,/api/agent/trends/cashflow
+List recurring items under travel for my JazzCash card.,/api/agent/analytics/recurring
+What did I spend the most money on in Meezan during March?,/api/agent/analytics/top-categories
+Compare my spending in September vs October by category in HBL.,/api/agent/trends/mom
+What is my cashflow for Easypaisa in July?,/api/agent/trends/cashflow
+Show my budget utilization for dining out in April.,/api/agent/analytics/budget
+Provide a summary of inflow and outflow for June.,/api/agent/summary/expense-income
+Find transactions matching Spotify from last week.,/api/agent/transactions/search
+Show my balance trend for UBL since March.,/api/agent/trends/monthly-balance
+Are there any unusual transaction spikes on my NBP account in December?,/api/agent/analytics/anomalies
+What is my cashflow for Easypaisa in May?,/api/agent/trends/cashflow
+Show investment profit for January in my Alfalah portfolio.,/api/agent/analytics/investments
+What did I spend on fuel in Easypaisa during February?,/api/agent/summary/expense-income
+Get statement report for August for NBP.,/api/agent/analytics/statements
+Show my balance trend for HBL since October.,/api/agent/trends/monthly-balance
+List recurring items under utilities for my Alfalah card.,/api/agent/analytics/recurring
+What did I spend on shopping in UBL during February?,/api/agent/summary/expense-income
+Calculate my current net worth in Meezan as of March.,/api/agent/analytics/net-worth
+What is my cashflow for Alfalah in April?,/api/agent/trends/cashflow
+Show my budget utilization for shopping in October.,/api/agent/analytics/budget
+Find transactions matching KFC from last week.,/api/agent/transactions/search
+What is my top category in September?,/api/agent/analytics/top-categories
+Analyze my cashflow trend since October.,/api/agent/trends/cashflow
+Get statement report for May for SCB.,/api/agent/analytics/statements
+Get statement report for August for Easypaisa.,/api/agent/analytics/statements
+Provide a summary of inflow and outflow for September.,/api/agent/summary/expense-income
+Compare my spending in January vs June by category in JazzCash.,/api/agent/trends/mom
+Search for transactions from last week.,/api/agent/transactions/search
+How close am I to my saving goal of 50000 PKR in Meezan?,/api/agent/analytics/savings
+Show investment profit for January in my HBL portfolio.,/api/agent/analytics/investments
+List all debit transactions matching Speedy.,/api/agent/transactions/search
+Are there any unusual transaction spikes on my UBL account in October?,/api/agent/analytics/anomalies
+Calculate my current net worth in Alfalah as of March.,/api/agent/analytics/net-worth
+How close am I to my saving goal of 25000 PKR in Easypaisa?,/api/agent/analytics/savings
+What did I spend on fuel in UBL during March?,/api/agent/summary/expense-income
+How close am I to my saving goal of 10000 PKR in Easypaisa?,/api/agent/analytics/savings
+Are there any unusual transaction spikes on my SCB account in February?,/api/agent/analytics/anomalies
+What is my cashflow for Easypaisa in January?,/api/agent/trends/cashflow
+Compare my spending in June vs March by category in Meezan.,/api/agent/trends/mom
+How close am I to my saving goal of 50000 PKR in UBL?,/api/agent/analytics/savings
+Are there any unusual transaction spikes on my JazzCash account in November?,/api/agent/analytics/anomalies
+Are there any unusual transaction spikes on my Easypaisa account in May?,/api/agent/analytics/anomalies
+Calculate my current net worth in NBP as of December.,/api/agent/analytics/net-worth
+Find transactions matching McDonalds from two days ago.,/api/agent/transactions/search
+What is my cashflow for Meezan in September?,/api/agent/trends/cashflow
+List recurring items under rent for my UBL card.,/api/agent/analytics/recurring
+List recurring items under travel for my Easypaisa card.,/api/agent/analytics/recurring
+Retrieve transactions matching entertainment.,/api/agent/transactions/search
+Show investment profit for April in my Meezan portfolio.,/api/agent/analytics/investments
+How close am I to my saving goal of 1500 PKR in Easypaisa?,/api/agent/analytics/savings
+What did I spend on rent in Alfalah during June?,/api/agent/summary/expense-income
+List recurring items under entertainment for my HBL card.,/api/agent/analytics/recurring
+Show my balance trend for Alfalah since November.,/api/agent/trends/monthly-balance
+What did I spend on rent in Meezan during December?,/api/agent/summary/expense-income
+How close am I to my saving goal of 100000 PKR in HBL?,/api/agent/analytics/savings
+What did I spend on fuel in Easypaisa during March?,/api/agent/summary/expense-income
+What is my cashflow for SCB in April?,/api/agent/trends/cashflow
+How close am I to my saving goal of 50000 PKR in NBP?,/api/agent/analytics/savings
+Show my budget utilization for shopping in June.,/api/agent/analytics/budget
+What did I spend on entertainment in JazzCash during November?,/api/agent/summary/expense-income
+Compare my spending in March vs September by category in SCB.,/api/agent/trends/mom
+Compare my spending in November vs December by category in Meezan.,/api/agent/trends/mom
+What did I spend on fuel in Alfalah during February?,/api/agent/summary/expense-income
+What did I spend on groceries in Alfalah during November?,/api/agent/summary/expense-income
+List recurring items under dining out for my UBL card.,/api/agent/analytics/recurring
+List recurring items under rent for my JazzCash card.,/api/agent/analytics/recurring
+How close am I to my saving goal of 5000 PKR in Easypaisa?,/api/agent/analytics/savings
+Are there any unusual transaction spikes on my HBL account in September?,/api/agent/analytics/anomalies
+Calculate my current net worth in Alfalah as of August.,/api/agent/analytics/net-worth
+Analyze my cashflow trend since April.,/api/agent/trends/cashflow
+What are my balances in Easypaisa and NBP for March?,/api/agent/overview
+What is my cashflow for JazzCash in July?,/api/agent/trends/cashflow
+Show investment profit for August in my SCB portfolio.,/api/agent/analytics/investments
+Detect any spending anomaly in July.,/api/agent/analytics/anomalies
+How close am I to my saving goal of 500 PKR in SCB?,/api/agent/analytics/savings
+Show my budget utilization for travel in June.,/api/agent/analytics/budget
+How much budget do I have left for entertainment in my HBL account for January?,/api/agent/analytics/budget
+Detect any spending anomaly in December.,/api/agent/analytics/anomalies
+How much budget do I have left for travel in my SCB account for December?,/api/agent/analytics/budget
+How much budget do I have left for travel in my JazzCash account for January?,/api/agent/analytics/budget
+What is my current balance in NBP?,/api/agent/overview
+List recurring items under travel for my HBL card.,/api/agent/analytics/recurring
+Compare my spending in September vs January by category in UBL.,/api/agent/trends/mom
+Compare my spending in February vs September by category in Alfalah.,/api/agent/trends/mom
+Compare my spending in September vs April by category in HBL.,/api/agent/trends/mom
+Are there any unusual transaction spikes on my HBL account in October?,/api/agent/analytics/anomalies
+What is my cashflow for JazzCash in August?,/api/agent/trends/cashflow
+Get statement report for August for UBL.,/api/agent/analytics/statements
+Calculate my current net worth in Alfalah as of May.,/api/agent/analytics/net-worth
+What are my balances in SCB and UBL for February?,/api/agent/overview
+Calculate my current net worth in UBL as of July.,/api/agent/analytics/net-worth
+Show my balance trend for HBL since June.,/api/agent/trends/monthly-balance
+Show my budget utilization for dining out in March.,/api/agent/analytics/budget
+Show investment profit for June in my Meezan portfolio.,/api/agent/analytics/investments
+Show investment profit for February in my JazzCash portfolio.,/api/agent/analytics/investments
+Show my balance trend for SCB since June.,/api/agent/trends/monthly-balance
+What did I spend the most money on in HBL during October?,/api/agent/analytics/top-categories
+Show my balance trend for Meezan since October.,/api/agent/trends/monthly-balance
+Show investment profit for November in my Alfalah portfolio.,/api/agent/analytics/investments
+What did I spend the most money on in NBP during January?,/api/agent/analytics/top-categories
+What did I spend on food in NBP during June?,/api/agent/summary/expense-income
+Get statement report for January for HBL.,/api/agent/analytics/statements
+Calculate my current net worth in SCB as of August.,/api/agent/analytics/net-worth
+What did I spend the most money on in Alfalah during February?,/api/agent/analytics/top-categories
+Show my projected ending balance for June.,/api/agent/analytics/projections
+What are my balances in Meezan and JazzCash for May?,/api/agent/overview
+Detect any spending anomaly in September.,/api/agent/analytics/anomalies
+Show my budget utilization for entertainment in September.,/api/agent/analytics/budget
+Show my balance trend for JazzCash since November.,/api/agent/trends/monthly-balance
+What is my cashflow for NBP in June?,/api/agent/trends/cashflow
+What are my balances in Meezan and NBP for September?,/api/agent/overview
+What are my balances in JazzCash and NBP for December?,/api/agent/overview
+Search for transactions from this morning.,/api/agent/transactions/search
+What is my cashflow for HBL in February?,/api/agent/trends/cashflow
+Compare my spending in May vs July by category in NBP.,/api/agent/trends/mom
+How much budget do I have left for groceries in my HBL account for September?,/api/agent/analytics/budget
+List recurring items under fuel for my Meezan card.,/api/agent/analytics/recurring
+What are my balances in Meezan and Alfalah for July?,/api/agent/overview
+What is my cashflow for Easypaisa in October?,/api/agent/trends/cashflow
+What did I spend on entertainment in JazzCash during December?,/api/agent/summary/expense-income
+Compare my spending in September vs January by category in HBL.,/api/agent/trends/mom
+List recurring items under travel for my NBP card.,/api/agent/analytics/recurring
+Get statement report for May for Meezan.,/api/agent/analytics/statements
+What did I spend on shopping in SCB during May?,/api/agent/summary/expense-income
+How close am I to my saving goal of 100000 PKR in UBL?,/api/agent/analytics/savings
+What did I spend the most money on in HBL during July?,/api/agent/analytics/top-categories
+What are my balances in SCB and NBP for June?,/api/agent/overview
+Did I make any purchases at Spotify recently?,/api/agent/transactions/search
+What is my cashflow for HBL in January?,/api/agent/trends/cashflow
+Show my balance trend for HBL since July.,/api/agent/trends/monthly-balance
+Compare my spending in April vs November by category in HBL.,/api/agent/trends/mom
+What did I spend on dining out in NBP during January?,/api/agent/summary/expense-income
+List recurring items under shopping for my Alfalah card.,/api/agent/analytics/recurring
+What did I spend the most money on in Easypaisa during June?,/api/agent/analytics/top-categories
+What is my cashflow for Alfalah in February?,/api/agent/trends/cashflow
+How much budget do I have left for utilities in my NBP account for November?,/api/agent/analytics/budget
+What did I spend the most money on in SCB during January?,/api/agent/analytics/top-categories
+How close am I to my saving goal of 100000 PKR in Alfalah?,/api/agent/analytics/savings
+How much budget do I have left for utilities in my Alfalah account for January?,/api/agent/analytics/budget
+What are my balances in HBL and SCB for August?,/api/agent/overview
+Find transactions matching Daraz from last night.,/api/agent/transactions/search
+What did I spend on travel in SCB during November?,/api/agent/summary/expense-income
+Get statement report for May for Alfalah.,/api/agent/analytics/statements
+How much budget do I have left for rent in my Alfalah account for March?,/api/agent/analytics/budget
+Show my balance trend for HBL since December.,/api/agent/trends/monthly-balance
+What is the remaining balance on my shopping budget?,/api/agent/analytics/budget
+What is my cashflow for HBL in November?,/api/agent/trends/cashflow
+What did I spend on entertainment in Meezan during May?,/api/agent/summary/expense-income
+Show investment profit for August in my UBL portfolio.,/api/agent/analytics/investments
+What are my balances in UBL and NBP for February?,/api/agent/overview
+Get statement report for April for NBP.,/api/agent/analytics/statements
+Compare my spending in August vs April by category in NBP.,/api/agent/trends/mom
+Are there any unusual transaction spikes on my JazzCash account in July?,/api/agent/analytics/anomalies
+Get statement report for May for NBP.,/api/agent/analytics/statements
+Show my balance trend for Easypaisa since March.,/api/agent/trends/monthly-balance
+Compare my spending in November vs May by category in Easypaisa.,/api/agent/trends/mom
+Calculate my current net worth in SCB as of October.,/api/agent/analytics/net-worth
+Find transactions matching Careem from two days ago.,/api/agent/transactions/search
+Show my budget utilization for fuel in June.,/api/agent/analytics/budget
+Show investment profit for September in my Meezan portfolio.,/api/agent/analytics/investments
+What is my current balance in Easypaisa?,/api/agent/overview
+What are my balances in HBL and SCB for September?,/api/agent/overview
+What is my cashflow for SCB in September?,/api/agent/trends/cashflow
+Compare my spending in July vs June by category in Alfalah.,/api/agent/trends/mom
+What is my top category in April?,/api/agent/analytics/top-categories
+What did I spend on food in NBP during August?,/api/agent/summary/expense-income
+What did I spend the most money on in Alfalah during November?,/api/agent/analytics/top-categories
+Show my budget utilization for entertainment in May.,/api/agent/analytics/budget
+What are my balances in SCB and Alfalah for October?,/api/agent/overview
+List recurring items under shopping for my JazzCash card.,/api/agent/analytics/recurring
+How close am I to my saving goal of 10000 PKR in SCB?,/api/agent/analytics/savings
+Compare my spending in June vs July by category in Easypaisa.,/api/agent/trends/mom
+Show my balance trend for SCB since August.,/api/agent/trends/monthly-balance
+What is my cashflow for NBP in April?,/api/agent/trends/cashflow
+How much budget do I have left for fuel in my UBL account for April?,/api/agent/analytics/budget
+Show my balance trend for HBL since September.,/api/agent/trends/monthly-balance
+Show my budget utilization for travel in March.,/api/agent/analytics/budget
+How close am I to my saving goal of 50000 PKR in HBL?,/api/agent/analytics/savings
+Get statement report for June for SCB.,/api/agent/analytics/statements
+Are there any unusual transaction spikes on my Easypaisa account in August?,/api/agent/analytics/anomalies
+Calculate my current net worth in SCB as of June.,/api/agent/analytics/net-worth
+Compare my spending in May vs April by category in Easypaisa.,/api/agent/trends/mom
+What is my cashflow for Easypaisa in April?,/api/agent/trends/cashflow
+Compare my spending in November vs February by category in Easypaisa.,/api/agent/trends/mom
+Show my balance trend for Alfalah since December.,/api/agent/trends/monthly-balance
+Get statement report for October for Alfalah.,/api/agent/analytics/statements
+Show my budget utilization for dining out in December.,/api/agent/analytics/budget
+What did I spend the most money on in Meezan during December?,/api/agent/analytics/top-categories
+Show my balance trend for SCB since February.,/api/agent/trends/monthly-balance
+How close am I to my saving goal of 5000 PKR in Meezan?,/api/agent/analytics/savings
+Get statement report for October for UBL.,/api/agent/analytics/statements
+Are there any unusual transaction spikes on my SCB account in April?,/api/agent/analytics/anomalies
+List recurring items under dining out for my Meezan card.,/api/agent/analytics/recurring
+What is my cashflow for SCB in June?,/api/agent/trends/cashflow
+What is my cashflow for NBP in December?,/api/agent/trends/cashflow
+Compare my spending in August vs May by category in HBL.,/api/agent/trends/mom
+Get statement report for November for Meezan.,/api/agent/analytics/statements
+What did I spend on food in UBL during April?,/api/agent/summary/expense-income
+Find transactions matching McDonalds from last night.,/api/agent/transactions/search
+Find transactions matching Uber from last week.,/api/agent/transactions/search
+How much budget do I have left for fuel in my HBL account for July?,/api/agent/analytics/budget
+Show investment profit for March in my NBP portfolio.,/api/agent/analytics/investments
+How close am I to my saving goal of 50000 PKR in Alfalah?,/api/agent/analytics/savings
+Show my balance trend for Easypaisa since June.,/api/agent/trends/monthly-balance
+How close am I to my saving goal of 100000 PKR in JazzCash?,/api/agent/analytics/savings
+Compare my spending in January vs June by category in Meezan.,/api/agent/trends/mom
+What did I spend on groceries in Easypaisa during August?,/api/agent/summary/expense-income
+Find transactions matching KFC from two days ago.,/api/agent/transactions/search
+How close am I to my saving goal of 10000 PKR in HBL?,/api/agent/analytics/savings
+Compare my spending in January vs August by category in Alfalah.,/api/agent/trends/mom
+Find transactions matching Spotify from today.,/api/agent/transactions/search
+How much budget do I have left for shopping in my SCB account for December?,/api/agent/analytics/budget
+Show my budget utilization for travel in February.,/api/agent/analytics/budget
+What are my balances in Alfalah and NBP for February?,/api/agent/overview
+Calculate my current net worth in HBL as of October.,/api/agent/analytics/net-worth
+How much budget do I have left for utilities in my NBP account for May?,/api/agent/analytics/budget
+What are my balances in HBL and Meezan for December?,/api/agent/overview
+What is my cashflow for Easypaisa in December?,/api/agent/trends/cashflow
+List all debit transactions matching Uber.,/api/agent/transactions/search
+Get statement report for December for HBL.,/api/agent/analytics/statements
+Show my budget utilization for rent in September.,/api/agent/analytics/budget
+Show my balance trend for UBL since June.,/api/agent/trends/monthly-balance
+What did I spend on fuel in Alfalah during July?,/api/agent/summary/expense-income
+List recurring items under food for my Alfalah card.,/api/agent/analytics/recurring
+What did I spend on utilities in NBP during June?,/api/agent/summary/expense-income
+Compare my spending in December vs August by category in HBL.,/api/agent/trends/mom
+How much budget do I have left for entertainment in my Meezan account for October?,/api/agent/analytics/budget
+What is my cashflow for NBP in January?,/api/agent/trends/cashflow
+What did I spend on dining out in HBL during June?,/api/agent/summary/expense-income
+Compare my spending in January vs June by category in Easypaisa.,/api/agent/trends/mom
+Calculate my current net worth in UBL as of May.,/api/agent/analytics/net-worth
+What did I spend the most money on in Easypaisa during February?,/api/agent/analytics/top-categories
+Get statement report for February for SCB.,/api/agent/analytics/statements
+How close am I to my saving goal of 500 PKR in HBL?,/api/agent/analytics/savings
+List recurring items under utilities for my UBL card.,/api/agent/analytics/recurring
+What did I spend on utilities in NBP during October?,/api/agent/summary/expense-income
+Compare my spending in March vs December by category in NBP.,/api/agent/trends/mom
+Are there any unusual transaction spikes on my UBL account in May?,/api/agent/analytics/anomalies
+Are there any unusual transaction spikes on my SCB account in August?,/api/agent/analytics/anomalies
+What is my cashflow for Easypaisa in August?,/api/agent/trends/cashflow
+Show investment profit for December in my HBL portfolio.,/api/agent/analytics/investments
+What are my balances in Alfalah and NBP for August?,/api/agent/overview
+Get statement report for May for JazzCash.,/api/agent/analytics/statements
+Show my budget utilization for rent in November.,/api/agent/analytics/budget
+How close am I to my saving goal of 50000 PKR in Easypaisa?,/api/agent/analytics/savings
+What did I spend on utilities in Alfalah during September?,/api/agent/summary/expense-income
+How close am I to my saving goal of 25000 PKR in HBL?,/api/agent/analytics/savings
+List recurring items under utilities for my JazzCash card.,/api/agent/analytics/recurring
+Compare my spending in September vs March by category in UBL.,/api/agent/trends/mom
+How much budget do I have left for dining out in my SCB account for February?,/api/agent/analytics/budget
+What is my cashflow for JazzCash in September?,/api/agent/trends/cashflow
+What is my cashflow for UBL in February?,/api/agent/trends/cashflow
+How much budget do I have left for shopping in my Alfalah account for August?,/api/agent/analytics/budget
+What did I spend on travel in UBL during March?,/api/agent/summary/expense-income
+Show investment profit for February in my Easypaisa portfolio.,/api/agent/analytics/investments
+Show my balance trend for NBP since February.,/api/agent/trends/monthly-balance
+Get statement report for March for NBP.,/api/agent/analytics/statements
+What is my cashflow for Meezan in March?,/api/agent/trends/cashflow
+Compare my spending in June vs March by category in JazzCash.,/api/agent/trends/mom
+How close am I to my saving goal of 500 PKR in JazzCash?,/api/agent/analytics/savings
+How close am I to my saving goal of 1500 PKR in Meezan?,/api/agent/analytics/savings
+Get statement report for April for JazzCash.,/api/agent/analytics/statements
+What are my balances in Alfalah and Meezan for January?,/api/agent/overview
+Are there any unusual transaction spikes on my JazzCash account in December?,/api/agent/analytics/anomalies
+What is my cashflow for Meezan in November?,/api/agent/trends/cashflow
+Are there any unusual transaction spikes on my Alfalah account in July?,/api/agent/analytics/anomalies
+What did I spend on travel in JazzCash during November?,/api/agent/summary/expense-income
+How close am I to my saving goal of 500 PKR in NBP?,/api/agent/analytics/savings
+Are there any unusual transaction spikes on my UBL account in November?,/api/agent/analytics/anomalies
+Compare my spending in December vs July by category in UBL.,/api/agent/trends/mom
+Show my budget utilization for shopping in December.,/api/agent/analytics/budget
+Show my projected ending balance for December.,/api/agent/analytics/projections
+Calculate my current net worth in JazzCash as of December.,/api/agent/analytics/net-worth
+Compare my spending in December vs February by category in UBL.,/api/agent/trends/mom
+How much budget do I have left for utilities in my JazzCash account for August?,/api/agent/analytics/budget
+What did I spend the most money on in Alfalah during April?,/api/agent/analytics/top-categories
+What did I spend the most money on in JazzCash during September?,/api/agent/analytics/top-categories
+How much budget do I have left for travel in my UBL account for July?,/api/agent/analytics/budget
+Show my budget utilization for travel in January.,/api/agent/analytics/budget
+Are there any unusual transaction spikes on my Easypaisa account in September?,/api/agent/analytics/anomalies
+What did I spend on dining out in Alfalah during March?,/api/agent/summary/expense-income
+Show my balance trend for SCB since April.,/api/agent/trends/monthly-balance
+What did I spend on rent in SCB during May?,/api/agent/summary/expense-income
+Are there any unusual transaction spikes on my SCB account in July?,/api/agent/analytics/anomalies
+Show my budget utilization for groceries in July.,/api/agent/analytics/budget
+What did I spend the most money on in Easypaisa during January?,/api/agent/analytics/top-categories
+Show investment profit for December in my JazzCash portfolio.,/api/agent/analytics/investments
+What did I spend on fuel in Easypaisa during October?,/api/agent/summary/expense-income
+What did I spend on entertainment in UBL during July?,/api/agent/summary/expense-income
+What is my cashflow for Easypaisa in November?,/api/agent/trends/cashflow
+Show investment profit for January in my Easypaisa portfolio.,/api/agent/analytics/investments
+Compare my spending in May vs August by category in HBL.,/api/agent/trends/mom
+Compare my spending in January vs May by category in Alfalah.,/api/agent/trends/mom
+Calculate my current net worth in Easypaisa as of March.,/api/agent/analytics/net-worth
+Find transactions matching McDonalds from today.,/api/agent/transactions/search
+Get statement report for August for Alfalah.,/api/agent/analytics/statements
+How close am I to my saving goal of 5000 PKR in SCB?,/api/agent/analytics/savings
+How close am I to my saving goal of 10000 PKR in UBL?,/api/agent/analytics/savings
+Calculate my current net worth in Easypaisa as of April.,/api/agent/analytics/net-worth
+Compare my spending in September vs July by category in UBL.,/api/agent/trends/mom
+What did I spend on rent in SCB during August?,/api/agent/summary/expense-income
+List recurring items under entertainment for my Alfalah card.,/api/agent/analytics/recurring
+Compare my spending in February vs September by category in Meezan.,/api/agent/trends/mom
+How close am I to my saving goal of 25000 PKR in Alfalah?,/api/agent/analytics/savings
+List recurring items under travel for my Meezan card.,/api/agent/analytics/recurring
+Compare my spending in August vs June by category in HBL.,/api/agent/trends/mom
+What did I spend the most money on in HBL during June?,/api/agent/analytics/top-categories
+What did I spend the most money on in SCB during October?,/api/agent/analytics/top-categories
+Show my balance trend for Meezan since December.,/api/agent/trends/monthly-balance
+Find transactions matching Careem from today.,/api/agent/transactions/search
+What did I spend on entertainment in Easypaisa during November?,/api/agent/summary/expense-income
+What are my balances in NBP and SCB for January?,/api/agent/overview
+Are there any unusual transaction spikes on my SCB account in October?,/api/agent/analytics/anomalies
+List recurring items under shopping for my NBP card.,/api/agent/analytics/recurring
+Compare my spending in June vs April by category in HBL.,/api/agent/trends/mom
+What are my balances in UBL and SCB for November?,/api/agent/overview
+Calculate my current net worth in HBL as of February.,/api/agent/analytics/net-worth
+What did I spend the most money on in SCB during July?,/api/agent/analytics/top-categories
+What did I spend the most money on in Meezan during November?,/api/agent/analytics/top-categories
+Calculate my current net worth in NBP as of April.,/api/agent/analytics/net-worth
+What did I spend the most money on in Meezan during June?,/api/agent/analytics/top-categories
+Compare my spending in September vs October by category in UBL.,/api/agent/trends/mom
+What did I spend on travel in SCB during May?,/api/agent/summary/expense-income
+What are my balances in JazzCash and Alfalah for May?,/api/agent/overview
+What is my cashflow for Meezan in July?,/api/agent/trends/cashflow
+Show my balance trend for HBL since April.,/api/agent/trends/monthly-balance
+How much budget do I have left for fuel in my JazzCash account for February?,/api/agent/analytics/budget
+How much budget do I have left for groceries in my SCB account for November?,/api/agent/analytics/budget
+Compare my spending in June vs September by category in UBL.,/api/agent/trends/mom
+Compare my spending in April vs December by category in SCB.,/api/agent/trends/mom
+How much budget do I have left for rent in my SCB account for December?,/api/agent/analytics/budget
+Get statement report for October for SCB.,/api/agent/analytics/statements
+What did I spend on entertainment in NBP during October?,/api/agent/summary/expense-income
+What is my cashflow for HBL in March?,/api/agent/trends/cashflow
+How much budget do I have left for rent in my Easypaisa account for July?,/api/agent/analytics/budget
+What is my cashflow for Meezan in January?,/api/agent/trends/cashflow
+What is my cashflow for Meezan in May?,/api/agent/trends/cashflow
+Are there any unusual transaction spikes on my UBL account in February?,/api/agent/analytics/anomalies
+How much budget do I have left for shopping in my Easypaisa account for April?,/api/agent/analytics/budget
+What are my balances in HBL and NBP for August?,/api/agent/overview
+What are my balances in Easypaisa and NBP for December?,/api/agent/overview
+Compare my spending in May vs December by category in SCB.,/api/agent/trends/mom
+What is my cashflow for Easypaisa in June?,/api/agent/trends/cashflow
+How much budget do I have left for dining out in my SCB account for August?,/api/agent/analytics/budget
+Are there any unusual transaction spikes on my Alfalah account in September?,/api/agent/analytics/anomalies
+How much budget do I have left for shopping in my Alfalah account for January?,/api/agent/analytics/budget
+How much budget do I have left for food in my NBP account for January?,/api/agent/analytics/budget
+Compare my spending in June vs October by category in JazzCash.,/api/agent/trends/mom
+What did I spend the most money on in Easypaisa during October?,/api/agent/analytics/top-categories
+What did I spend the most money on in NBP during February?,/api/agent/analytics/top-categories
+Compare my spending in January vs September by category in Alfalah.,/api/agent/trends/mom
+What are my balances in JazzCash and Easypaisa for December?,/api/agent/overview
+What is my cashflow for UBL in October?,/api/agent/trends/cashflow
+Show my balance trend for Meezan since November.,/api/agent/trends/monthly-balance
+Show my budget utilization for groceries in April.,/api/agent/analytics/budget
+Find transactions matching Careem from last night.,/api/agent/transactions/search
+What did I spend on entertainment in JazzCash during October?,/api/agent/summary/expense-income
+Compare my spending in October vs March by category in Easypaisa.,/api/agent/trends/mom
+Show my balance trend for NBP since August.,/api/agent/trends/monthly-balance
+List recurring items under entertainment for my UBL card.,/api/agent/analytics/recurring
+Compare my spending in November vs February by category in HBL.,/api/agent/trends/mom
+How much budget do I have left for food in my Alfalah account for October?,/api/agent/analytics/budget
+What is my cashflow for NBP in February?,/api/agent/trends/cashflow
+Calculate my current net worth in UBL as of March.,/api/agent/analytics/net-worth
+Compare my spending in March vs November by category in JazzCash.,/api/agent/trends/mom
+Compare my spending in July vs March by category in UBL.,/api/agent/trends/mom
+Show my budget utilization for fuel in April.,/api/agent/analytics/budget
+Compare my spending in September vs February by category in NBP.,/api/agent/trends/mom
+Show my balance trend for Easypaisa since February.,/api/agent/trends/monthly-balance
+What is my cashflow for NBP in March?,/api/agent/trends/cashflow
+How much budget do I have left for fuel in my SCB account for July?,/api/agent/analytics/budget
+What did I spend on dining out in HBL during November?,/api/agent/summary/expense-income
+What did I spend on food in JazzCash during January?,/api/agent/summary/expense-income
+What did I spend the most money on in UBL during April?,/api/agent/analytics/top-categories
+List recurring items under shopping for my HBL card.,/api/agent/analytics/recurring
+Calculate my current net worth in HBL as of May.,/api/agent/analytics/net-worth
+What did I spend on shopping in NBP during December?,/api/agent/summary/expense-income
+How much budget do I have left for travel in my Easypaisa account for November?,/api/agent/analytics/budget
+What are my balances in Alfalah and HBL for September?,/api/agent/overview
+Show investment profit for September in my Easypaisa portfolio.,/api/agent/analytics/investments
+How much budget do I have left for dining out in my Meezan account for January?,/api/agent/analytics/budget
+Are there any unusual transaction spikes on my Meezan account in October?,/api/agent/analytics/anomalies
+Show investment profit for December in my Alfalah portfolio.,/api/agent/analytics/investments
+How close am I to my saving goal of 500 PKR in Meezan?,/api/agent/analytics/savings
+Compare my spending in October vs August by category in JazzCash.,/api/agent/trends/mom
+Show my budget utilization for dining out in November.,/api/agent/analytics/budget
+What are my balances in UBL and Easypaisa for December?,/api/agent/overview
+Are there any unusual transaction spikes on my SCB account in November?,/api/agent/analytics/anomalies
+What did I spend on fuel in Meezan during October?,/api/agent/summary/expense-income
+Are there any unusual transaction spikes on my Easypaisa account in February?,/api/agent/analytics/anomalies
+Calculate my current net worth in Meezan as of December.,/api/agent/analytics/net-worth
+What did I spend on dining out in SCB during May?,/api/agent/summary/expense-income
+What did I spend the most money on in UBL during July?,/api/agent/analytics/top-categories
+Show my budget utilization for utilities in February.,/api/agent/analytics/budget
+What is my cashflow for SCB in March?,/api/agent/trends/cashflow
+How much budget do I have left for entertainment in my HBL account for May?,/api/agent/analytics/budget
+Get statement report for February for JazzCash.,/api/agent/analytics/statements
+What is my cashflow for Easypaisa in March?,/api/agent/trends/cashflow
+How much budget do I have left for rent in my Meezan account for December?,/api/agent/analytics/budget
+Show my balance trend for HBL since March.,/api/agent/trends/monthly-balance
+Get statement report for July for HBL.,/api/agent/analytics/statements
+What are my balances in JazzCash and NBP for March?,/api/agent/overview
+Compare my spending in January vs February by category in NBP.,/api/agent/trends/mom
+What did I spend on rent in Easypaisa during February?,/api/agent/summary/expense-income
+What did I spend on groceries in HBL during March?,/api/agent/summary/expense-income

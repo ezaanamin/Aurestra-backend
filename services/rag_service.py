@@ -69,22 +69,34 @@ def generate_monthly_rag_summary(user_id: int, month_str: str = None):
     Generates a concise monthly financial summary using LLM and stores it
     in FinancialInsight scoped to the given user.
     month_str format: 'YYYY-MM'
+    If month_str is not provided, defaults to the previous (completed) month.
     """
+    import datetime as dt_mod
+    tz_karachi = dt_mod.timezone(dt_mod.timedelta(hours=5))
+    now_karachi = dt_mod.datetime.now(tz_karachi)
+
     if not month_str:
-        month_str = datetime.utcnow().strftime('%Y-%m')
+        # Default to the previous completed month
+        first_of_this_month = datetime(now_karachi.year, now_karachi.month, 1)
+        prev_month_dt = first_of_this_month - relativedelta(months=1)
+        month_str = prev_month_dt.strftime('%Y-%m')
 
     from model import User
     user = User.query.get(user_id)
-    user_name = user.full_name.split()[0] if user and user.full_name else "there"
+    if user and user.ai_feed is False:
+        print(f"⏩ Skipping monthly summary generation for user={user_id} (ai_feed disabled).")
+        return None
 
-    current  = _get_month_totals(user_id, month_str)
+    user_name = user.full_name.split()[0] if (user and user.full_name) else "there"
 
-    year, month    = map(int, month_str.split('-'))
-    prev_date      = datetime(year, month, 1) - relativedelta(months=1)
+    current = _get_month_totals(user_id, month_str)
+
+    year, month = map(int, month_str.split('-'))
+    prev_date = datetime(year, month, 1) - relativedelta(months=1)
     prev_month_str = prev_date.strftime('%Y-%m')
-    previous       = _get_month_totals(user_id, prev_month_str)
+    previous = _get_month_totals(user_id, prev_month_str)
 
-    income_change_pct  = _pct_change(current['total_income'],  previous['total_income'])
+    income_change_pct = _pct_change(current['total_income'], previous['total_income'])
     expense_change_pct = _pct_change(current['total_expense'], previous['total_expense'])
 
     budget = Budget.query.filter_by(user_id=user_id, month=month_str).first()
@@ -95,70 +107,69 @@ def generate_monthly_rag_summary(user_id: int, month_str: str = None):
             f"- Total Expenses recorded in budget: PKR {budget.total_expenses}\n"
         )
 
-    prompt = f"""You are a helpful financial AI assistant. Write a short, conversational paragraph summarizing the financial performance for {month_str}. Start by warmly greeting the user by their name ("{user_name}").
-Use short, natural sentences. Mention the total income, total expense, savings, and biggest expense category.
-All amounts are in Pakistani Rupees — write "PKR" directly before every number, every time. Never use the dollar sign.
+    prompt = f"""You are a helpful financial AI assistant. Write a short, dynamic, conversational paragraph summarizing the user's financial performance for the completed month {month_str}. Start by warmly greeting the user by their name ("{user_name}").
+Analyze ONLY the supplied user data. Do NOT invent transactions, income sources, or unsupported assumptions.
+All amounts are in Pakistani Rupees — write "PKR" directly before every number. Never use internal IDs or backend metadata.
 
-Here is {user_name}'s data you must summarize:
+Here is {user_name}'s structured data for {month_str}:
 - Total Income: PKR {current['total_income']}
 - Total Expense: PKR {current['total_expense']}
-- Net Savings: PKR {current['savings']}
+- Net Savings / Cashflow: PKR {current['savings']}
 - Transaction Count: {current['transaction_count']}
 {budget_info}\
 - Expense Categories: {json.dumps(current['expense_categories'])}
 - Income Sources: {json.dumps(current['income_sources'])}
 - Largest Single Expense: {json.dumps(current['largest_expense']) if current['largest_expense'] else "None"}
 
-Comparison to last month ({prev_month_str}):
+Comparison to previous month ({prev_month_str}):
 - Income Change: {f"{income_change_pct}%" if income_change_pct is not None else "N/A"}
 - Expense Change: {f"{expense_change_pct}%" if expense_change_pct is not None else "N/A"}
 
-Now, write exactly 3 to 4 natural sentences summarizing {user_name}'s performance. Do NOT just copy the list. Write it like a story:
-"""
+Write 3 to 4 natural, engaging sentences summarizing {user_name}'s performance. Do NOT copy raw JSON. Focus on key spending categories, income highlights, and notable month-over-month changes."""
 
+    summary_text = None
     try:
         response = requests.post(LLM_URL, json={
             "model": LLM_MODEL, "prompt": prompt, "stream": False
-        }, timeout=30)
+        }, timeout=10)
 
         if response.status_code == 200:
-            data         = response.json()
+            data = response.json()
             summary_text = data.get('response', '').strip()
-
-            # Upsert insight for this user+month
-            insight = FinancialInsight.query.filter_by(user_id=user_id, month=month_str).first()
-            if not insight:
-                insight = FinancialInsight(user_id=user_id, month=month_str)
-                db.session.add(insight)
-
-            insight.content     = summary_text
-            insight.metrics_json = json.dumps({
-                "total_income":       current['total_income'],
-                "total_expense":      current['total_expense'],
-                "savings":            current['savings'],
-                "transaction_count":  current['transaction_count'],
-                "largest_expense":    current['largest_expense'],
-                "income_change_pct":  income_change_pct,
-                "expense_change_pct": expense_change_pct,
-                "budget":             budget.total_budget if budget else 0,
-            })
-            insight.tags = "monthly_summary"
-            db.session.commit()
-            print(f"✅ Generated and saved monthly summary for user={user_id} {month_str}")
-            print("\n====== GENERATED RAG SUMMARY ======")
-            print(summary_text)
-            print("===================================\n")
-            return summary_text
-
         else:
-            print(f"❌ Failed to generate summary. Status: {response.status_code}, {response.text}")
-
+            print(f"⚠️ [AI_INSIGHT] LLM HTTP Error: Status {response.status_code}, falling back to rule-based summary.")
     except Exception as e:
-        import traceback
-        print(f"❌ Error generating RAG summary: {e}")
-        print(traceback.format_exc())
+        print(f"⚠️ [AI_INSIGHT] LLM request unreachable ({e}), generating structured fallback narrative.")
 
-    return None
+    if not summary_text:
+        # Fallback narrative synthesis if LLM service is offline
+        summary_text = (
+            f"Hello {user_name}! In {month_str}, you recorded total income of PKR {current['total_income']:,.2f} "
+            f"and total expenses of PKR {current['total_expense']:,.2f}, resulting in net cashflow of PKR {current['savings']:,.2f}. "
+            f"You logged {current['transaction_count']} transactions across your accounts."
+        )
+
+    # Upsert insight for this user+month (Idempotent per user_id + month)
+    insight = FinancialInsight.query.filter_by(user_id=user_id, month=month_str).first()
+    if not insight:
+        insight = FinancialInsight(user_id=user_id, month=month_str)
+        db.session.add(insight)
+
+    insight.content = summary_text
+    insight.metrics_json = json.dumps({
+        "total_income": current['total_income'],
+        "total_expense": current['total_expense'],
+        "savings": current['savings'],
+        "transaction_count": current['transaction_count'],
+        "largest_expense": current['largest_expense'],
+        "income_change_pct": income_change_pct,
+        "expense_change_pct": expense_change_pct,
+        "budget": budget.total_budget if budget else 0,
+    })
+    insight.tags = "monthly_summary"
+    db.session.commit()
+    print(f"✅ [AI_INSIGHT] Saved monthly summary for user={user_id} {month_str}")
+    return summary_text
 
 
 def get_insights_for_user(user_id: int, limit: int = 6):

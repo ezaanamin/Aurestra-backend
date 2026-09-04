@@ -35,7 +35,7 @@ def migrate_database():
             # Add reviewed_at column if it doesn't exist
             if 'reviewed_at' not in columns:
                 print("Adding reviewed_at column...")
-                db.session.execute(text(3
+                db.session.execute(text(
                     "ALTER TABLE statement_analysis ADD COLUMN reviewed_at DATETIME"
                 ))
                 db.session.commit()

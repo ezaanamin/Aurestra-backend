@@ -51,8 +51,15 @@ class BackupLocalStorage:
         print(f"ℹ️  [Storage] Keeping all records for user {user_id}. Rotation skipped.")
         return
 
-    def rotate_system_backups(self, keep: int = 14) -> None:
-        """Delete oldest system backups, retaining the latest `keep`."""
+    def rotate_system_backups(self, keep: int = None) -> None:
+        """Delete oldest system backups, retaining at least `keep` (default 14 or BACKUP_RETENTION_COUNT env)."""
+        if keep is None:
+            try:
+                keep = int(os.getenv("BACKUP_RETENTION_COUNT", "14"))
+            except (ValueError, TypeError):
+                keep = 14
+        # Safety constraint: Never keep fewer than 1 backup
+        keep = max(1, keep)
         self._rotate_directory(self.system_backups_dir, keep, ext=".enc")
 
     def _rotate_directory(self, directory: str, keep: int, ext: str) -> None:

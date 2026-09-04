@@ -26,7 +26,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from app.extensions import db
-from app.middleware.auth import token_required
+from utils.auth import token_required
 from app.models import (
     MonthlyBalance, Transaction, Budget, AccountBalance, SavingsGoal,
     Category, SMSHistory, FinancialInsight, User, DeviceToken,
@@ -174,17 +174,21 @@ def create_transaction(current_user):
     try:
         data = request.get_json()
 
-        amount = float(data.get("amount", 0))
-        if amount <= 0:
+        amount = abs(float(data.get("amount", 0)))
+        if amount == 0:
             return jsonify({"error": "Amount must be positive"}), 400
 
         t_type = (data.get("type") or "debit").strip().lower()
         if t_type not in ("debit", "credit"):
             return jsonify({"error": "type must be debit or credit"}), 400
 
-        purpose = data.get("category", "Uncategorized")
+        purpose = data.get("category") or data.get("purpose") or "Uncategorized"
         notes = data.get("notes", "")
+        shopping_details = (data.get("shopping_details") or "").strip()
         date_str = data.get("date")
+
+        if str(purpose).strip().lower() == "shopping" and not shopping_details:
+            return jsonify({"error": "shopping_details is required for Shopping transactions."}), 400
 
         slug = (
             (data.get("account_balance_source") or data.get("wallet_slug") or data.get("balance_account_slug") or "")
@@ -199,11 +203,20 @@ def create_transaction(current_user):
         tx_date = datetime.utcnow()
         if date_str:
             try:
-                tx_date = datetime.strptime(date_str, "%Y-%m-%d")
+                tx_date = datetime.strptime(date_str[:10], "%Y-%m-%d")
             except Exception:
                 pass
 
+        user_id = getattr(current_user, 'id', None)
+        if user_id is None and isinstance(current_user, dict):
+            user_id = current_user.get('id')
+        if user_id is None:
+            first_u = User.query.first()
+            if first_u:
+                user_id = first_u.id
+
         new_tx = Transaction(
+            user_id=user_id,
             source="manual",
             date=tx_date,
             amount=amount,
@@ -212,6 +225,7 @@ def create_transaction(current_user):
             sender="Manual Entry",
             receiver="Me" if t_type == "credit" else "Merchant",
             notes=notes,
+            shopping_details=shopping_details if str(purpose).strip().lower() == "shopping" else None,
             categorization_status="confirmed",
             account_balance_source=slug,
             balance_applied=False,
@@ -220,7 +234,7 @@ def create_transaction(current_user):
         db.session.add(new_tx)
         db.session.flush()
 
-        ensure_account_balance_row(slug)
+        ensure_account_balance_row(slug, user_id=user_id)
         try:
             log_wallet_attribution(
                 "MANUAL_TXN_CREATED",

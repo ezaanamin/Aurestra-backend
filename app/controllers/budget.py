@@ -121,29 +121,82 @@ def save_budget(current_user):
 @budget_bp.route("/api/budget", methods=["GET"])
 @token_required
 def get_budget(current_user):
-    month = datetime.now().strftime("%Y-%m")
-    
+    month = request.args.get('month')
+    if not month:
+        month = datetime.now().strftime("%Y-%m")
+
     with current_app.app_context():
+        try:
+            start_date = datetime.strptime(f"{month}-01", "%Y-%m-%d")
+            if start_date.month == 12:
+                end_date = start_date.replace(year=start_date.year + 1, month=1)
+            else:
+                end_date = start_date.replace(month=start_date.month + 1)
+        except Exception:
+            month = datetime.now().strftime("%Y-%m")
+            start_date = datetime.strptime(f"{month}-01", "%Y-%m-%d")
+            if start_date.month == 12:
+                end_date = start_date.replace(year=start_date.year + 1, month=1)
+            else:
+                end_date = start_date.replace(month=start_date.month + 1)
+
         budget = Budget.query.filter_by(month=month).first()
-        # ... logic ... (simplified, just call existing logic or wrap it)
-        # Note: Original code didn't use user ID, but we should eventually.
-        # For now, we just protecting the route.
-        if not budget:
-             return jsonify({"message": f"No budget found for {month}."}), 404
-        
-        created_at_str = budget.created_at.strftime("%Y-%m-%d %H:%M:%S")
-        
-        # Calculate Spending Limit (User Request: Sum Wants + Needs)
-        spending_limit = (budget.needs or 0) + (budget.wants or 0)
-        
+
+        # Monthly-only actual expense calculations
+        tx_query = Transaction.query.filter(
+            Transaction.date >= start_date,
+            Transaction.date < end_date,
+            Transaction.is_deleted == False,
+            Transaction.is_spam == False,
+            exclude_own_account_transfer_sql(),
+        )
+
+        month_txs = tx_query.all()
+
+        monthly_total_expense = sum(
+            t.amount for t in month_txs if t.type == 'debit' or (not t.type and t.amount > 0)
+        )
+        monthly_total_income = sum(
+            t.amount for t in month_txs if t.type == 'credit'
+        )
+
+        # Monthly Shopping details breakdown
+        shopping_txs = [
+            t for t in month_txs 
+            if (t.purpose and t.purpose.strip().lower() == 'shopping') and (t.type == 'debit' or not t.type)
+        ]
+        shopping_items = [
+            {
+                "id": t.id,
+                "details": t.shopping_details or t.notes or "Shopping item",
+                "amount": float(t.amount),
+                "date": t.date.isoformat() if t.date else None
+            }
+            for t in shopping_txs
+        ]
+        shopping_total = sum(t["amount"] for t in shopping_items)
+
+        total_budget = budget.total_budget if budget else 0.0
+        needs = budget.needs if budget else (total_budget * 0.50)
+        wants = budget.wants if budget else (total_budget * 0.30)
+        saving = budget.saving if budget else (total_budget * 0.20)
+        spending_limit = needs + wants
+        created_at_str = budget.created_at.strftime("%Y-%m-%d %H:%M:%S") if budget and budget.created_at else None
+
         return jsonify({
-            "month": budget.month,
-            "total_budget": budget.total_budget, # This is Income
-            "needs": budget.needs,
-            "wants": budget.wants,
-            "saving": budget.saving,
-            "spending_limit": spending_limit, # The actual limit to show
-            "created_at": created_at_str
+            "month": month,
+            "total_budget": total_budget,
+            "needs": needs,
+            "wants": wants,
+            "saving": saving,
+            "spending_limit": spending_limit,
+            "created_at": created_at_str,
+            "actual": {
+                "total_expense": monthly_total_expense,
+                "total_income": monthly_total_income,
+                "shopping_total": shopping_total,
+                "shopping_items": shopping_items
+            }
         }), 200
 
 @budget_bp.route("/api/budget/history", methods=["GET"])

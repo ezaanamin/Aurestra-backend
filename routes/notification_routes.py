@@ -8,5 +8,5 @@ notification_bp = Blueprint('notifications', __name__)
 
 notification_bp.route('/api/notifications/ingest', methods=['POST'])(token_required(ctrl.ingest))
 notification_bp.route('/api/notifications',        methods=['GET'])(token_required(ctrl.list_notifications))
-notification_bp.route('/api/register-device',      methods=['POST'])(ctrl.register_device)
-notification_bp.route('/api/send-test',            methods=['POST'])(ctrl.send_test)
+notification_bp.route('/api/register-device',      methods=['POST'])(token_required(ctrl.register_device))
+notification_bp.route('/api/send-test',            methods=['POST'])(token_required(ctrl.send_test))

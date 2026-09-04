@@ -1,7 +1,21 @@
 from app import app, db
 from model import Transaction
 from sqlalchemy import func
-from sms_parser import generate_transaction_hash
+import hashlib
+
+def generate_transaction_hash(transaction_data):
+    """SHA256 of: date|amount|type|source"""
+    if hasattr(transaction_data['date'], 'isoformat'):
+        date_iso = transaction_data['date'].isoformat()
+    else:
+        date_iso = str(transaction_data['date'])
+        
+    amount_str = f"{float(transaction_data['amount']):.2f}"
+    tx_type = str(transaction_data['type'])
+    source = str(transaction_data.get('source', 'sms'))
+    
+    hash_string = f"{date_iso}|{amount_str}|{tx_type}|{source}"
+    return hashlib.sha256(hash_string.encode()).hexdigest()
 
 def cleanup_duplicates():
     with app.app_context():

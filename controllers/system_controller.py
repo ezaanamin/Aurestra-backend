@@ -35,15 +35,6 @@ def db_health_check():
         return jsonify({"status": "offline", "error": str(e)}), 500
 
 
-def push_diagnostics():
-    try:
-        from fcm_utils import get_push_service_diagnostics
-        return jsonify({"success": True, "diagnostics": get_push_service_diagnostics()}), 200
-    except Exception as e:
-        import traceback
-        return jsonify({"success": False, "error": str(e), "traceback": traceback.format_exc()}), 500
-
-
 def debug_push_status(current_user):
     from fcm_utils import get_push_service_diagnostics
     return jsonify(get_push_service_diagnostics()), 200
@@ -72,24 +63,6 @@ def manual_backup(current_user):
 def trigger_backup(current_user):
     """POST /api/backup/trigger — compatibility entrypoint for backup triggering."""
     return manual_backup(current_user)
-
-
-def list_api_insights(current_user):
-    """Returns API endpoint documentation for the LIVE_STATE service."""
-    try:
-        endpoints = []
-        for rule in current_app.url_map.iter_rules():
-            if rule.endpoint.startswith("live_state."):
-                func = current_app.view_functions[rule.endpoint]
-                endpoints.append({
-                    "id":          str(rule),
-                    "endpoint":    str(rule),
-                    "methods":     [m for m in rule.methods if m not in ("HEAD", "OPTIONS")],
-                    "description": (func.__doc__ or "No description available.").strip(),
-                })
-        return jsonify(endpoints), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 def test_route():

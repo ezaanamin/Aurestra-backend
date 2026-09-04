@@ -49,6 +49,160 @@ def get_spam(user_id: int):
     ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
 
 
+def search_transactions(user_id: int, account_source: str = None, q: str = None, tx_type: str = None, period: str = None, category_id: int = None, limit: int = 100, offset: int = 0):
+    """
+    Search and filter transactions strictly for the authenticated user.
+    Supports filtering by: account_source, text search (q), type (credit/debit), period (week/month/year/YYYY-MM), category_id.
+    """
+    query = Transaction.query.filter(
+        Transaction.user_id == user_id,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
+    )
+
+    if account_source and account_source != 'all':
+        query = query.filter(Transaction.account_balance_source == account_source)
+
+    if q and q.strip():
+        search_pattern = f"%{q.strip().lower()}%"
+        query = query.filter(
+            func.lower(Transaction.purpose).like(search_pattern) |
+            func.lower(Transaction.sender).like(search_pattern) |
+            func.lower(Transaction.receiver).like(search_pattern) |
+            func.lower(Transaction.notes).like(search_pattern)
+        )
+
+    if tx_type and tx_type.lower() in ('credit', 'debit'):
+        query = query.filter(Transaction.type == tx_type.lower())
+
+    if category_id:
+        query = query.filter(Transaction.category_id == category_id)
+
+    if period:
+        p_str = period.lower().strip()
+        now = datetime.now()
+        if p_str == 'this_week' or p_str == 'week':
+            query = query.filter(Transaction.date >= now - timedelta(days=7))
+        elif p_str == 'this_month' or p_str == 'month':
+            query = query.filter(
+                extract('year', Transaction.date) == now.year,
+                extract('month', Transaction.date) == now.month
+            )
+        elif p_str == 'this_year' or p_str == 'year':
+            query = query.filter(extract('year', Transaction.date) == now.year)
+        elif len(p_str) == 7 and p_str[4] == '-':
+            try:
+                dt = datetime.strptime(p_str, "%Y-%m")
+                query = query.filter(
+                    extract('year', Transaction.date) == dt.year,
+                    extract('month', Transaction.date) == dt.month
+                )
+            except ValueError:
+                pass
+
+    total_count = query.count()
+    txs = query.order_by(desc(Transaction.date), desc(Transaction.id)).offset(offset).limit(limit).all()
+    return txs, total_count
+
+
+def get_account_statement(user_id: int, account_source: str, month_str: str = None):
+    """
+    Generate an account-specific financial statement for a user's wallet or bank account.
+    Calculates opening balance, total credits, total debits, closing balance, and transaction history.
+    """
+    acc = AccountBalance.query.filter_by(user_id=user_id, source=account_source).first()
+    if not acc:
+        raise LookupError(f"Account '{account_source}' not found or unauthorized.")
+
+    if not month_str:
+        month_str = datetime.now().strftime("%Y-%m")
+
+    try:
+        dt = datetime.strptime(month_str, "%Y-%m")
+    except ValueError:
+        dt = datetime.now().replace(day=1)
+        month_str = dt.strftime("%Y-%m")
+
+    start_of_month = dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end_of_month = (start_of_month + relativedelta(months=1)) - timedelta(microseconds=1)
+
+    # Calculate net cashflow AFTER the month to determine opening/closing balance relative to current_balance
+    net_after = db.session.query(
+        func.sum(case(
+            (Transaction.type == 'credit', Transaction.amount),
+            (Transaction.type == 'debit', -Transaction.amount),
+            else_=0
+        ))
+    ).filter(
+        Transaction.user_id == user_id,
+        Transaction.account_balance_source == account_source,
+        Transaction.date > end_of_month,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True)
+    ).scalar() or 0.0
+
+    closing_balance = acc.current_balance - net_after
+
+    # Month txs
+    txs = Transaction.query.filter(
+        Transaction.user_id == user_id,
+        Transaction.account_balance_source == account_source,
+        Transaction.date >= start_of_month,
+        Transaction.date <= end_of_month,
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True)
+    ).order_by(desc(Transaction.date), desc(Transaction.id)).all()
+
+    total_credits = sum(t.amount for t in txs if t.type == 'credit')
+    total_debits = sum(t.amount for t in txs if t.type == 'debit')
+    opening_balance = closing_balance - total_credits + total_debits
+
+    # Format line-by-line statement with running balance
+    running_bal = opening_balance
+    statement_rows = []
+    # Reverse to calculate running balance chronologically
+    sorted_asc = sorted(txs, key=lambda x: (x.date, x.id))
+    for t in sorted_asc:
+        if t.type == 'credit':
+            running_bal += t.amount
+        else:
+            running_bal -= t.amount
+        
+        statement_rows.append({
+            "id": t.id,
+            "date": t.date.strftime("%Y-%m-%d %H:%M:%S"),
+            "description": t.notes or t.sender or t.receiver or t.purpose or "Transaction",
+            "purpose": t.purpose or "General",
+            "type": t.type,
+            "amount": t.amount,
+            "money_in": t.amount if t.type == 'credit' else 0.0,
+            "money_out": t.amount if t.type == 'debit' else 0.0,
+            "running_balance": round(running_bal, 2),
+            "account_name": acc.display_name,
+            "account_source": acc.source
+        })
+
+    # Return descending order for display
+    statement_rows.reverse()
+
+    return {
+        "account": {
+            "id": acc.id,
+            "source": acc.source,
+            "display_name": acc.display_name,
+            "account_kind": acc.account_kind,
+            "current_balance": acc.current_balance,
+        },
+        "month": month_str,
+        "opening_balance": round(opening_balance, 2),
+        "closing_balance": round(closing_balance, 2),
+        "total_credits": round(total_credits, 2),
+        "total_debits": round(total_debits, 2),
+        "transaction_count": len(txs),
+        "transactions": statement_rows
+    }
+
+
 def get_categorized(user_id: int):
     return Transaction.query.filter(
         Transaction.user_id              == user_id,
@@ -222,7 +376,7 @@ def create_manual_transaction(user_id: int, data: dict) -> tuple:
         raise ValueError("account_balance_source is required (wallet slug, e.g. bank, easypaisa, cash)")
 
     if t_type == "debit":
-        account = ensure_account_balance_row(slug)
+        account = ensure_account_balance_row(slug, user_id=user_id)
         if float(account.current_balance or 0.0) < amount:
             raise ValueError(f"Insufficient funds in wallet '{account.display_name or slug}'. Balance is {float(account.current_balance or 0.0)}.")
 
@@ -250,7 +404,7 @@ def create_manual_transaction(user_id: int, data: dict) -> tuple:
     db.session.add(new_tx)
     db.session.flush()
 
-    ensure_account_balance_row(slug)
+    ensure_account_balance_row(slug, user_id=user_id)
     try:
         log_wallet_attribution(
             "MANUAL_TXN_CREATED", transaction_id=new_tx.id,
@@ -305,6 +459,31 @@ def update_transaction_category(user_id: int, txn_id: int, data: dict):
     will_finalize = ("category_id" in data) or ("purpose" in data)
     if prev_status == "pending" and will_finalize and not getattr(txn, "balance_applied", False):
         apply_pending_transaction_ledger(txn, balance_slug_override=slug_hint or None)
+
+    if "amount" in data and data["amount"] is not None:
+        try:
+            txn.amount = float(data["amount"])
+        except (ValueError, TypeError):
+            pass
+
+    if "type" in data and data["type"] in ["debit", "credit"]:
+        txn.type = data["type"]
+
+    if "date" in data and data["date"]:
+        try:
+            if isinstance(data["date"], str):
+                from dateutil.parser import parse
+                txn.date = parse(data["date"])
+            elif isinstance(data["date"], datetime):
+                txn.date = data["date"]
+        except Exception:
+            pass
+
+    if "sender" in data:
+        txn.sender = data["sender"]
+
+    if "receiver" in data:
+        txn.receiver = data["receiver"]
 
     if "category_id" in data:
         txn.category_id = data["category_id"]

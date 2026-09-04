@@ -23,7 +23,7 @@ from transfer_matching import exclude_own_account_transfer_sql
 from model import (
     Transaction, MonthlyBalance, Budget, AccountBalance,
     SavingsGoal, Category, CategorizationRule, User,
-    FinancialInsight, StatementAnalysis, SMSHistory, DeviceToken
+    FinancialInsight, StatementAnalysis, DeviceToken
 )
 
 # ---------------------------------------------------------------------------

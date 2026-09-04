@@ -70,6 +70,9 @@ class Transaction(db.Model):
     # Optional extra details (store name, bank name etc.)
     notes = db.Column(db.String(255), nullable=True)
 
+    # NEW — Shopping details for Shopping category transactions
+    shopping_details = db.Column(db.String(255), nullable=True)
+
     # NEW — type: credit or debit
     type = db.Column(db.String(10), nullable=False)
     
@@ -122,6 +125,7 @@ class Transaction(db.Model):
             "transaction_hash": self.transaction_hash,
             "sms_hash": self.sms_hash,
             "notes": self.notes,
+            "shopping_details": self.shopping_details,
             "type": self.type,
             "categorization_status": self.categorization_status,
             "category_id": self.category_id,
@@ -415,6 +419,42 @@ class CategorizationRule(db.Model):
         return f"<CategorizationRule '{self.merchant_pattern}' -> {self.category.name if self.category else 'None'}>"
 
 
+class Plan(db.Model):
+    """
+    Stores subscription plans, their pricing, permissions, and limits.
+    """
+    __tablename__ = "plans"
+
+    plan_id = db.Column(db.String(50), primary_key=True)  # 'free', 'plus', 'pro', 'developer'
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False, default=0.0)
+    currency = db.Column(db.String(10), nullable=False, default="PKR")
+    description = db.Column(db.Text, nullable=True)
+    features_json = db.Column(db.Text, nullable=False, default="{}")  # JSON string of allowed features
+    limits_json = db.Column(db.Text, nullable=False, default="{}")  # JSON string of limits (e.g. {"ai_chat_limit": 10})
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        import json
+        try:
+            features = json.loads(self.features_json or "{}")
+        except:
+            features = {}
+        try:
+            limits = json.loads(self.limits_json or "{}")
+        except:
+            limits = {}
+        return {
+            "plan_id": self.plan_id,
+            "name": self.name,
+            "price": self.price,
+            "currency": self.currency,
+            "description": self.description,
+            "features": features,
+            "limits": limits
+        }
+
+
 class User(db.Model):
     """
     Stores user authentication and profile details.
@@ -439,13 +479,40 @@ class User(db.Model):
     # Notifications Preference
     notifications_enabled = db.Column(db.Boolean, default=True)
 
+    # ── Subscription / Plan Details ───────────────────────────
+    current_plan_id = db.Column(db.String(50), nullable=False, default="free")
+    subscription_status = db.Column(db.String(50), nullable=False, default="active")
+    subscription_started_at = db.Column(db.DateTime, nullable=True)
+    subscription_expires_at = db.Column(db.DateTime, nullable=True)
+
     def to_dict(self):
+        try:
+            from services.subscription_service import get_user_subscription_info
+            sub_info = get_user_subscription_info(self)
+        except Exception as e:
+            # Fallback if subscription service fails or imports incorrectly
+            print(f"Error getting subscription info: {e}")
+            sub_info = {
+                "current_plan": {
+                    "plan_id": self.current_plan_id or "free",
+                    "name": "Free Plan",
+                    "status": self.subscription_status or "active",
+                    "expires_at": self.subscription_expires_at.isoformat() if self.subscription_expires_at else None,
+                    "started_at": self.subscription_started_at.isoformat() if self.subscription_started_at else None,
+                },
+                "features_allowed": {},
+                "limits_remaining": {}
+            }
+
         return {
             "id": self.id,
             "email": self.email,
             "full_name": self.full_name,
             "avatar_url": self.avatar_url,
-            "notifications_enabled": self.notifications_enabled
+            "notifications_enabled": self.notifications_enabled,
+            "current_plan": sub_info["current_plan"],
+            "features_allowed": sub_info["features_allowed"],
+            "limits_remaining": sub_info["limits_remaining"]
         }
 
 

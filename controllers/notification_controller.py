@@ -27,40 +27,31 @@ def list_notifications(current_user):
         return jsonify({"error": str(e)}), 500
 
 
-def register_device():
+def register_device(current_user):
     data  = request.get_json() or {}
     token = data.get("token")
-
-    user_id = None
-    auth_header = request.headers.get('Authorization', '')
-    if auth_header.startswith("Bearer "):
-        try:
-            payload = pyjwt.decode(
-                auth_header.split(" ")[1],
-                current_app.config['SECRET_KEY'],
-                algorithms=["HS256"],
-            )
-            user_id = payload.get('user_id')
-        except Exception:
-            pass
+    user_id = current_user.id
 
     if token:
         from model import DeviceToken
         existing = DeviceToken.query.filter_by(token=token).first()
         if existing:
             existing.last_seen = datetime.utcnow()
-            if user_id:
-                existing.user_id = user_id
+            existing.user_id = user_id
             db.session.commit()
-            return {"status": "success", "message": "Token updated"}, 200
+            return jsonify({"status": "success", "message": "Token updated"}), 200
         else:
             db.session.add(DeviceToken(token=token, user_id=user_id))
             db.session.commit()
-            return {"status": "success", "message": "Token registered"}, 201
+            return jsonify({"status": "success", "message": "Token registered"}), 201
 
-    return {"error": "Token missing"}, 400
+    return jsonify({"error": "Token missing"}), 400
 
 
-def send_test():
-    send_push_to_all(title="Test FCM", body="Backend test push")
-    return {"status": "sent"}, 200
+def send_test(current_user):
+    from model import DeviceToken
+    user_tokens = [t.token for t in DeviceToken.query.filter_by(user_id=current_user.id).all()]
+    if not user_tokens:
+        return jsonify({"status": "no_devices", "message": "No devices registered for this user"}), 200
+    send_push_to_all(title="Test FCM", body="Backend test push", tokens=user_tokens)
+    return jsonify({"status": "sent"}), 200

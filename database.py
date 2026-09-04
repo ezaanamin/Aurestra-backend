@@ -9,27 +9,21 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 import urllib.parse
 
+base_dir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(base_dir, ".env"))
 load_dotenv()
 
 app = Flask(__name__)
-# SECURITY FIX (CRIT-1): was CORS(app) with no origin restriction — any site could call the API.
-# Origins are restricted to the production domain. Override via CORS_ORIGINS env var (comma-separated).
-_cors_origins_env = os.getenv("CORS_ORIGINS", "")
-_allowed_origins = (
-    [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
-    if _cors_origins_env
-    else [
-        "https://aurestra.app",
-        "https://www.aurestra.app",
-        "http://localhost:3000",   # local web dev
-        "http://localhost:8081",   # React Native Metro bundler
-    ]
-)
-CORS(app, origins=_allowed_origins, supports_credentials=True)
 
-# SECURITY FIX (HIGH-1): Rate limiting to prevent brute-force attacks on auth endpoints.
-# Limits are applied per-IP. Storage defaults to in-memory; set RATELIMIT_STORAGE_URI
-# to a Redis URL (e.g. redis://localhost:6379) for multi-process / production deployments.
+# Allow all origins for mobile apps, physical devices, local web, and Cloudflare tunnels
+_cors_origins_env = os.getenv("CORS_ORIGINS", "*")
+if _cors_origins_env == "*":
+    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+else:
+    _allowed_origins = [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
+    CORS(app, origins=_allowed_origins, supports_credentials=True)
+
+# Rate limiting to prevent brute-force attacks on auth endpoints.
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
@@ -37,17 +31,22 @@ limiter = Limiter(
     storage_uri=os.getenv("RATELIMIT_STORAGE_URI", "memory://"),
 )
 
-base_dir = os.path.abspath(os.path.dirname(__file__))
-
 # ─────────────────────────────────────────────
-#  PRIMARY DB: SQLite  (fast, zero-latency, local)
+#  PRIMARY DB: PostgreSQL (if DATABASE_URL set) or SQLite fallback
 # ─────────────────────────────────────────────
 _sqlite_file = os.getenv("SQLITE_PATH", "aurestra.db")
 if not os.path.isabs(_sqlite_file):
     _sqlite_file = os.path.join(base_dir, _sqlite_file)
 
 SQLITE_URI = f"sqlite:///{_sqlite_file}"
-print(f"✅ [Database] Primary: SQLite ({_sqlite_file})")
+
+env_db_url = os.getenv("DATABASE_URL")
+if env_db_url:
+    PRIMARY_DB_URI = env_db_url.replace("postgres://", "postgresql://", 1)
+    print(f"✅ [Database] Primary: PostgreSQL ({PRIMARY_DB_URI.split('@')[-1]})")
+else:
+    PRIMARY_DB_URI = SQLITE_URI
+    print(f"✅ [Database] Primary: SQLite ({_sqlite_file})")
 
 # ─────────────────────────────────────────────
 #  SECONDARY DB: PostgreSQL  (backup target)
@@ -71,12 +70,11 @@ if not DB_USER:
 
 def _build_postgres_uri() -> str | None:
     """Build the PostgreSQL URI for the secondary (backup) connection. Returns None if not configured."""
-    # Honour Render-style DATABASE_URL
     database_url = os.getenv("DATABASE_URL", "")
-    if database_url:
+    if database_url and "PASSWORD@" not in database_url:
         return database_url.replace("postgres://", "postgresql://", 1)
 
-    if not DB_USER:
+    if not DB_USER or not DB_PASSWORD or DB_PASSWORD == "PASSWORD" or DB_PASSWORD == "change_this":
         return None
 
     pw_safe = urllib.parse.quote_plus(DB_PASSWORD) if DB_PASSWORD else ""
@@ -85,7 +83,6 @@ def _build_postgres_uri() -> str | None:
         uri = f"postgresql+psycopg2://{DB_USER}:{pw_safe}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         print(f"✅ [Database] Secondary: PostgreSQL ({DB_HOST}:{DB_PORT}/{DB_NAME})")
     else:
-        # Unix-socket peer auth
         uri = f"postgresql+psycopg2://{DB_USER}@/{DB_NAME}"
         print(f"✅ [Database] Secondary: PostgreSQL (unix socket / peer auth → {DB_NAME})")
     return uri
@@ -97,9 +94,9 @@ if not POSTGRES_URI:
     print("⚠️  [Database] No PostgreSQL config found — backup-to-PG will be skipped.")
 
 # ─────────────────────────────────────────────
-#  Flask / SQLAlchemy  (SQLite is primary)
+#  Flask / SQLAlchemy
 # ─────────────────────────────────────────────
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLITE_URI
+app.config["SQLALCHEMY_DATABASE_URI"] = PRIMARY_DB_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Expose PostgreSQL as a named bind so models can optionally target it

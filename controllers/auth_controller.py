@@ -451,6 +451,7 @@ def update_profile(current_user):
     if 'email'                 in data: current_user.email                = data['email']
     if 'avatar_url'            in data: current_user.avatar_url           = data['avatar_url']
     if 'notifications_enabled' in data: current_user.notifications_enabled = bool(data['notifications_enabled'])
+    if 'ai_feed'               in data: current_user.ai_feed               = bool(data['ai_feed'])
     
     if 'decryption_key' in data:
         key_val = data['decryption_key']

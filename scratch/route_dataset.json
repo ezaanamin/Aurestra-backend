@@ -1,0 +1,4002 @@
+[
+  {
+    "question": "Detect any anomalies in my recent spending.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is my balance sheet total?",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Show my overall spending limit progress.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my current monthly savings rate?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "List all my linked bank account balances.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is the MoM change in my category expenses?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is the MoM change for shopping?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Identify my recurring bills.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Retrieve transactions matching utilities.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Did you find any unusual transactions this week?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show any weird or abnormal charges on my account.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Check my savings goals progression.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "List my closing balance for each of the last 6 months.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show me outlier transactions.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What did I spend on travel in SCB during January?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Where did most of my money go this month?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Retrieve expense and income summary for April.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Calculate my total assets and liabilities.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Show my monthly balance history for the last 3 months.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Calculate my financial runway.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "How much money do I have in my accounts?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Retrieve expense and income summary for July.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Am I saving enough money this month?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What is my projected month-end balance?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "List my highest spending categories.",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Search my payment logs for Careem.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my asset breakdown.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Show my asset vs liability ratio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "How close am I to my savings goal target?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show my investment portfolio logs.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Give me my account balances overview.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What are my main expense drivers this month?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Is my cashflow positive or negative?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my top spending categories for this month.",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Calculate the return rate on my investments.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Check my accounts for suspicious activity or charges.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What are my balances in Meezan and JazzCash for February?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Is my monthly dining out budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my current cashflow trend?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "List my monthly opening and closing balances.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Estimate my monthly recurring costs.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my projected ending balance for May.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What is the MoM change for groceries?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show balance fluctuations over time.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "How much budget do I have left for fuel in my SCB account for March?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List all my detected recurring subscriptions.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my recent cash deposits.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my total spending vs total earnings this month?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Search my payment logs for McDonalds.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my top category in November?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "List recurring items under fuel for my SCB card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Give me my multi-month balance trend.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Did I make any purchases at Careem recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Calculate my overall investment returns.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What are my balances in HBL and Easypaisa for May?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What was my largest transaction this week?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my cashflow history logs.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Get statement report for July for UBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is my cashflow for JazzCash in April?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Calculate my current net worth in NBP as of March.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Retrieve expense and income summary for August.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "List my processed bank statements.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show details of my uploaded bank statements.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my liabilities list.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What is my overall net wealth?",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "When is my estimated zero-balance date?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Show my projected ending balance for October.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Analyze my monthly income and expense cashflow.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "List all debit transactions matching McDonalds.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "List all my active savings goals.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "List recurring items under entertainment for my NBP card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my wallet balances.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "How are my investments performing?",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Check my net worth using my UBL portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Retrieve expense and income summary for October.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Check my budget progress.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Check my net worth using my SCB portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Show daily cashflow movement for last 30 days.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Do I have any active recurring subscriptions?",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Did I make any purchases at Savyour recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for May.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Estimate how many days of runway I have left.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What are my balances in Alfalah and SCB for June?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Give me the monthly income and expense totals.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my projected ending balance for April.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Check my total cash balance.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Compare my spending in April vs August by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for December.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my top 5 spending areas.",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "List all debit transactions matching Spotify.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my top category in March?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show investment profit for June in my HBL portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Search all transactions under 1500 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my total expense vs credit ratio.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "List all debit transactions matching Careem.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Is my monthly rent budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Compare my category spending MoM.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my closing balance history.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What is my ROI on active investments?",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Show my statement analysis results.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show investment profit for October in my Alfalah portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Retrieve expense and income summary for February.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Search all transactions under 100000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on food in UBL during September?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Track my progress for the shopping savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show summaries of statement metadata.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is the remaining balance on my fuel budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Summarize my income vs expenses for this month.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What are my balances in HBL and JazzCash for April?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Did I make any purchases at Daraz recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "When will my Meezan balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Show category-wise changes for this month vs last month.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my inflow vs outflow trends.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "When will my Alfalah balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Find transactions over 50000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Retrieve my current wallet totals.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is the remaining balance on my utilities budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for NBP in November?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Get statement report for June for UBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for July.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my current balance in UBL?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Get statement report for January for UBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my daily spending projections.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Find transactions matching KFC from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Have I made any unusually large purchases recently?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show my savings target completion percentages.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "How close am I to my saving goal of 100000 PKR in NBP?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "How much room do I have left in my budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Retrieve transactions matching travel.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Check statement logs for errors.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "List all my category budgets and limits.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What monthly regular bills do I pay?",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show current funds in my NBP wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Search my payment logs for Savyour.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How close am I to my saving goal of 10000 PKR in Meezan?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Did my category expenses increase or decrease MoM?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on fuel in HBL during June?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Detect any spending anomaly in March.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my JazzCash account for July?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Find my latest transaction for dining out.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Check my top expense categories.",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Search for transactions from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my cashflow for HBL in July?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my budget utilization for shopping in September.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my total debt and asset values?",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "How much net return have I made on investments?",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Did I exceed my monthly budget limit?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List category expenditure from highest to lowest.",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend on fuel in UBL during June?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my investment return rate and net profit.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What is my current bank status?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Analyze my cashflow trend since January.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What are my balances in UBL and Alfalah for January?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Show investment profit for June in my NBP portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Show my projected ending balance for February.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Search my payment logs for Speedy.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show current funds in my Easypaisa wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Is my monthly fuel budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List recurring items under groceries for my Meezan card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Detect any spending anomaly in April.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "List recurring items under rent for my SCB card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Find transactions matching Daraz from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Is my monthly food budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How close am I to my saving goal of 5000 PKR in Alfalah?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Search all transactions under 10000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Is my monthly utilities budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List recurring items under rent for my HBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my projected ending balance for September.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Get statement report for November for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Get statement report for November for Alfalah.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "List all debit transactions matching KFC.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Find transactions matching Speedy from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on shopping in Meezan during December?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for Meezan in June?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for March.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in June vs August by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Summarize my performance from my latest bank statement.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is my current balance in Alfalah?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What did I spend the most money on in SCB during March?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What is my cashflow for HBL in April?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "When will my UBL balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Detect any spending anomaly in May.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is the MoM change for entertainment?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Find transactions matching Spotify from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Compare my spending in August vs March by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "List recurring items under rent for my NBP card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Track my progress for the groceries savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What is the MoM change for fuel?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my recurring expenses list.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What is the remaining balance on my rent budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "When will my HBL balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Show my balance trend for UBL since July.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What did I spend on utilities in UBL during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is the remaining balance on my groceries budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend on shopping in NBP during March?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my top category in January?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What is my cashflow for UBL in September?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Retrieve transactions matching fuel.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "List recurring items under rent for my Easypaisa card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for January.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in November vs May by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "When will my NBP balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What are my balances in NBP and HBL for February?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Show investment profit for May in my Alfalah portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Retrieve expense and income summary for June.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Did I make any purchases at Speedy recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my balance trend for SCB since October.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Find transactions matching Savyour from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show current funds in my HBL wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Compare my spending in July vs June by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Check my net worth using my Easypaisa portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Get statement report for February for Easypaisa.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is my net worth today?",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Detect any spending anomaly in November.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "List all debit transactions matching Netflix.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "List recurring items under food for my HBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "How close am I to my saving goal of 25000 PKR in NBP?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend the most money on in JazzCash during December?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in June?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Track my progress for the entertainment savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for April.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show investment profit for April in my SCB portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Did I make any purchases at Uber recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Analyze my cashflow trend since February.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Is my monthly travel budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my UBL account in June?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show my budget utilization for entertainment in February.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Analyze my cashflow trend since December.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What did I spend the most money on in HBL during November?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend the most money on in JazzCash during March?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "List all debit transactions matching Daraz.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Calculate my current net worth in NBP as of August.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "When will my SCB balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "When will my Easypaisa balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Search for transactions from today.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Calculate my current net worth in UBL as of January.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What is the MoM change for food?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in June vs February by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my cashflow for JazzCash in December?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my projected ending balance for July.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What is my top category in May?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Retrieve transactions matching groceries.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my budget utilization for dining out in May.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Get statement report for July for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my JazzCash account for October?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in September?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Find transactions over 1500 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my UBL account in September?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is the MoM change for rent?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Calculate my current net worth in Alfalah as of October.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Calculate my current net worth in Easypaisa as of September.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my Easypaisa account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Am I over budget this month?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in NBP during March?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Retrieve transactions matching shopping.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Retrieve expense and income summary for January.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Find transactions over 25000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show investment profit for September in my JazzCash portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my Alfalah account for October?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Find transactions matching Savyour from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How close am I to my saving goal of 1500 PKR in Alfalah?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "List recurring items under travel for my UBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in July vs June by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Search my payment logs for Daraz.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Calculate my current net worth in Meezan as of September.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Analyze my cashflow trend since July.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Check my net worth using my JazzCash portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Compare my spending in June vs October by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How close am I to my saving goal of 10000 PKR in JazzCash?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend the most money on in JazzCash during November?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my balance trend for Easypaisa since July.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "List recurring items under utilities for my HBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my projected ending balance for November.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What did I spend on groceries in UBL during April?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend on travel in Alfalah during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for Alfalah in January?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What is my cashflow for UBL in January?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my HBL account in June?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Did I make any purchases at KFC recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Check my net worth using my HBL portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "How much budget do I have left for rent in my Alfalah account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How much budget do I have left for fuel in my Easypaisa account for June?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Calculate my current net worth in Meezan as of July.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Get statement report for August for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Calculate my current net worth in UBL as of December.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What are my balances in Alfalah and Meezan for March?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Search my payment logs for Netflix.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is the MoM change for dining out?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in September vs March by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my current balance in HBL?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Get statement report for December for Easypaisa.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Get statement report for December for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Retrieve expense and income summary for September.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my top category in June?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my projected ending balance for March.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for February.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in January?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Check my net worth using my NBP portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Retrieve expense and income summary for November.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Detect any spending anomaly in January.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Calculate my current net worth in Easypaisa as of December.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What is the MoM change for utilities?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Search all transactions under 5000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Get statement report for July for NBP.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Get statement report for October for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Retrieve expense and income summary for May.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for JazzCash in June?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my budget utilization for dining out in July.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my budget utilization for utilities in December.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Find my latest transaction for food.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is the MoM change for travel?",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in August?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show current funds in my SCB wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Is my monthly entertainment budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Search all transactions under 25000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in March?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is my top category in July?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Search for transactions from yesterday.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my balance trend for SCB since March.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show investment profit for May in my SCB portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Show my budget utilization for utilities in April.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in Easypaisa and Alfalah for July?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Track my progress for the food savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Find transactions matching Spotify from this morning.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend the most money on in UBL during August?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show current funds in my Meezan wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "How close am I to my saving goal of 500 PKR in Alfalah?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What are my balances in Alfalah and Easypaisa for August?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Find my latest transaction for groceries.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Calculate my current net worth in Easypaisa as of February.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Did I make any purchases at McDonalds recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Get statement report for February for HBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Find transactions over 100000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Is my monthly shopping budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Analyze my cashflow trend since May.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What did I spend on utilities in Meezan during April?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show current funds in my Alfalah wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Show investment profit for August in my Easypaisa portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my JazzCash account for August?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is the remaining balance on my entertainment budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List recurring items under groceries for my SCB card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Find transactions matching Careem from this morning.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "List recurring items under food for my Meezan card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "How much budget do I have left for entertainment in my Meezan account for August?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend on food in Meezan during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Check my net worth using my Meezan portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What did I spend on dining out in UBL during January?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What are my balances in NBP and JazzCash for December?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "How much budget do I have left for groceries in my NBP account for October?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in Meezan and HBL for August?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Find my latest transaction for rent.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Track my progress for the travel savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What is my cashflow for HBL in August?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my HBL account for February?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Analyze my cashflow trend since March.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Get statement report for February for Alfalah.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What are my balances in Meezan and Easypaisa for April?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is the remaining balance on my travel budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my balance trend for Easypaisa since April.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What is my top category in October?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show current funds in my JazzCash wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my HBL account for February?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List recurring items under entertainment for my Easypaisa card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my balance trend for Easypaisa since December.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Track my progress for the dining out savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show my budget utilization for shopping in November.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for JazzCash in February?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Retrieve expense and income summary for December.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Find my latest transaction for entertainment.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Search my payment logs for Uber.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend the most money on in Meezan during October?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my HBL account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Is my monthly groceries budget running out?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Analyze my cashflow trend since September.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my budget utilization for rent in June.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my budget utilization for travel in October.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Search my payment logs for Spotify.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Find transactions over 10000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Get statement report for July for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "How much budget do I have left for rent in my NBP account for December?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is the remaining balance on my food budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show investment profit for July in my UBL portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "List recurring items under shopping for my UBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for October.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Analyze my cashflow trend since November.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What are my balances in Meezan and SCB for August?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Find my latest transaction for shopping.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend the most money on in Meezan during January?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show investment profit for October in my JazzCash portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Find my latest transaction for utilities.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend the most money on in Easypaisa during April?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show investment profit for October in my NBP portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Calculate my current net worth in SCB as of January.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Retrieve expense and income summary for March.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my current balance in SCB?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Show my budget utilization for fuel in January.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Find transactions over 500 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my budget utilization for entertainment in July.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List all debit transactions matching Savyour.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What are my balances in Meezan and HBL for October?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Compare my spending in March vs January by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in April?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Compare my spending in October vs November by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my top category in February?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my NBP account in July?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is the remaining balance on my dining out budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Retrieve transactions matching food.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Compare my spending in August vs November by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my budget utilization for rent in April.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Compare my spending in January vs April by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Find transactions matching Spotify from two days ago.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on dining out in Easypaisa during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Easypaisa account in October?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show investment profit for July in my NBP portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Compare my spending in June vs January by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What are my balances in HBL and Easypaisa for April?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Compare my spending in September vs April by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my budget utilization for groceries in March.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Find transactions matching Daraz from yesterday.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend the most money on in JazzCash during August?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What is my cashflow for HBL in December?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show current funds in my UBL wallet.",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Calculate my current net worth in Alfalah as of January.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Track my progress for the rent savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What is my cashflow for Alfalah in December?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for travel in my SCB account for February?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How much budget do I have left for rent in my JazzCash account for August?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How close am I to my saving goal of 25000 PKR in SCB?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Compare my spending in November vs January by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my cashflow for NBP in May?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Did I make any purchases at Netflix recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Analyze my cashflow trend since June.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Get statement report for January for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show investment profit for November in my JazzCash portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What are my balances in UBL and Easypaisa for October?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "How close am I to my saving goal of 25000 PKR in JazzCash?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show my balance trend for JazzCash since September.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Detect any spending anomaly in August.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Find transactions matching Netflix from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What are my balances in UBL and NBP for March?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Detect any spending anomaly in February.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Check my net worth using my Alfalah portfolio.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What is my current balance in Meezan?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Get statement report for September for HBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Get statement report for January for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in March?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my HBL account in December?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Get statement report for March for Easypaisa.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "List recurring items under entertainment for my JazzCash card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What did I spend the most money on in JazzCash during May?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my UBL account for December?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Analyze my cashflow trend since August.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in June?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show my balance trend for SCB since May.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Detect any spending anomaly in June.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "How close am I to my saving goal of 500 PKR in UBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in October?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "List recurring items under dining out for my JazzCash card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Search all transactions under 50000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Get statement report for June for HBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Get statement report for June for Alfalah.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Calculate my current net worth in Easypaisa as of August.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Show my balance trend for JazzCash since August.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Compare my spending in May vs November by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Search for transactions from two days ago.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend the most money on in SCB during August?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend on utilities in JazzCash during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for UBL in March?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What is my cashflow for HBL in June?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Search all transactions under 500 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How close am I to my saving goal of 10000 PKR in Alfalah?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "When will my JazzCash balance run out based on trend?",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Show my balance trend for Easypaisa since October.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Get statement report for November for Easypaisa.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is my top category in August?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Find my latest transaction for fuel.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on food in SCB during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for UBL in June?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What did I spend on entertainment in JazzCash during March?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my balance trend for HBL since May.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my budget utilization for fuel in July.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend on dining out in Alfalah during February?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my current balance in JazzCash?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Find transactions matching Speedy from two days ago.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my balance trend for JazzCash since April.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "How close am I to my saving goal of 25000 PKR in UBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Search my payment logs for KFC.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my Alfalah account for August?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in Alfalah during August?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my balance trend for NBP since July.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "How much budget do I have left for groceries in my Easypaisa account for February?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Get statement report for June for Easypaisa.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my HBL account in January?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Compare my spending in September vs July by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for rent in my UBL account for July?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Compare my spending in August vs September by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my projected ending balance for January.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What are my balances in Alfalah and HBL for March?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Retrieve transactions matching dining out.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Get statement report for April for Alfalah.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Calculate my current net worth in UBL as of October.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "How much budget do I have left for food in my Easypaisa account for September?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for HBL in October?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Get statement report for March for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is my cashflow for UBL in April?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Track my progress for the fuel savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Retrieve transactions matching rent.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my balance trend for UBL since September.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my budget utilization for shopping in August.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in SCB during November?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What is my cashflow for Alfalah in August?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Detect any spending anomaly in October.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Meezan account in May?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Find transactions matching KFC from this morning.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show investment profit for July in my Alfalah portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What did I spend on travel in Easypaisa during September?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in September vs July by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on utilities in Alfalah during April?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my budget utilization for food in April.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in Easypaisa during November?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Find transactions matching Netflix from today.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my Meezan account for July?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for UBL in December?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Find transactions matching Uber from today.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on food in NBP during September?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for August.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my HBL account for October?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show investment profit for February in my UBL portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Compare my spending in January vs May by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Get statement report for January for Meezan.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Compare my spending in January vs August by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Calculate my current net worth in JazzCash as of March.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Compare my spending in January vs April by category in NBP.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Get statement report for April for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in May?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What are my balances in NBP and Alfalah for May?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What did I spend the most money on in Alfalah during March?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Track my progress for the utilities savings goal.",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my NBP account in June?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Compare my spending in December vs February by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Calculate my current net worth in JazzCash as of August.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What is my cashflow for Meezan in August?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Find transactions matching Netflix from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my budget utilization for shopping in April.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my budget utilization for travel in September.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in HBL during April?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "List recurring items under utilities for my Meezan card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my balance trend for NBP since June.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my balance trend for UBL since May.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my budget utilization for groceries in June.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my balance trend for Meezan since January.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "How close am I to my saving goal of 5000 PKR in NBP?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend the most money on in NBP during May?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Find my latest transaction for travel.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Compare my spending in December vs September by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Calculate my current net worth in Easypaisa as of May.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What is my cashflow for SCB in January?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Compare my spending in April vs July by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Get statement report for December for UBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Compare my spending in June vs January by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Meezan account in June?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What are my balances in Alfalah and HBL for August?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Show my balance trend for HBL since November.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show investment profit for September in my NBP portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Alfalah account in December?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "List recurring items under dining out for my Easypaisa card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What did I spend on groceries in HBL during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend the most money on in UBL during October?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What is my cashflow for Alfalah in October?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What did I spend on entertainment in UBL during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend on food in NBP during October?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show investment profit for May in my Easypaisa portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Find transactions over 5000 PKR.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my balance trend for Meezan since May.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What did I spend on dining out in JazzCash during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in February vs December by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for groceries in my NBP account for May?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Get statement report for September for NBP.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my balance trend for Meezan since September.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my budget utilization for fuel in March.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for November.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Meezan account in September?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "How much budget do I have left for travel in my Easypaisa account for March?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Compare my spending in October vs November by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in August vs October by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Get statement report for March for UBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Alfalah account in August?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "List recurring items under rent for my Alfalah card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in June vs May by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my projected ending balance for August.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What did I spend on shopping in HBL during February?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my balance trend for Meezan since June.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Compare my spending in May vs October by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How close am I to my saving goal of 100000 PKR in Meezan?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show investment profit for August in my JazzCash portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What is my cashflow for NBP in July?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "List recurring items under travel for my JazzCash card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What did I spend the most money on in Meezan during March?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Compare my spending in September vs October by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in July?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my budget utilization for dining out in April.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for June.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Find transactions matching Spotify from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my balance trend for UBL since March.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my NBP account in December?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in May?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show investment profit for January in my Alfalah portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What did I spend on fuel in Easypaisa during February?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Get statement report for August for NBP.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my balance trend for HBL since October.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "List recurring items under utilities for my Alfalah card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What did I spend on shopping in UBL during February?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Calculate my current net worth in Meezan as of March.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What is my cashflow for Alfalah in April?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my budget utilization for shopping in October.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Find transactions matching KFC from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my top category in September?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Analyze my cashflow trend since October.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Get statement report for May for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Get statement report for August for Easypaisa.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Provide a summary of inflow and outflow for September.",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in January vs June by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Search for transactions from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How close am I to my saving goal of 50000 PKR in Meezan?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show investment profit for January in my HBL portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "List all debit transactions matching Speedy.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my UBL account in October?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Calculate my current net worth in Alfalah as of March.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "How close am I to my saving goal of 25000 PKR in Easypaisa?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend on fuel in UBL during March?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "How close am I to my saving goal of 10000 PKR in Easypaisa?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in February?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in January?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Compare my spending in June vs March by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How close am I to my saving goal of 50000 PKR in UBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in November?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Easypaisa account in May?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Calculate my current net worth in NBP as of December.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Find transactions matching McDonalds from two days ago.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my cashflow for Meezan in September?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "List recurring items under rent for my UBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "List recurring items under travel for my Easypaisa card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Retrieve transactions matching entertainment.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show investment profit for April in my Meezan portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "How close am I to my saving goal of 1500 PKR in Easypaisa?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend on rent in Alfalah during June?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "List recurring items under entertainment for my HBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Show my balance trend for Alfalah since November.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What did I spend on rent in Meezan during December?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "How close am I to my saving goal of 100000 PKR in HBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend on fuel in Easypaisa during March?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for SCB in April?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How close am I to my saving goal of 50000 PKR in NBP?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show my budget utilization for shopping in June.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend on entertainment in JazzCash during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in March vs September by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in November vs December by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on fuel in Alfalah during February?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend on groceries in Alfalah during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "List recurring items under dining out for my UBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "List recurring items under rent for my JazzCash card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "How close am I to my saving goal of 5000 PKR in Easypaisa?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my HBL account in September?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Calculate my current net worth in Alfalah as of August.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Analyze my cashflow trend since April.",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What are my balances in Easypaisa and NBP for March?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is my cashflow for JazzCash in July?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show investment profit for August in my SCB portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Detect any spending anomaly in July.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "How close am I to my saving goal of 500 PKR in SCB?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show my budget utilization for travel in June.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How much budget do I have left for entertainment in my HBL account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Detect any spending anomaly in December.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "How much budget do I have left for travel in my SCB account for December?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How much budget do I have left for travel in my JazzCash account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my current balance in NBP?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "List recurring items under travel for my HBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in September vs January by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in February vs September by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in September vs April by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my HBL account in October?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is my cashflow for JazzCash in August?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Get statement report for August for UBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Calculate my current net worth in Alfalah as of May.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What are my balances in SCB and UBL for February?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Calculate my current net worth in UBL as of July.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Show my balance trend for HBL since June.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my budget utilization for dining out in March.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show investment profit for June in my Meezan portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Show investment profit for February in my JazzCash portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Show my balance trend for SCB since June.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What did I spend the most money on in HBL during October?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my balance trend for Meezan since October.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show investment profit for November in my Alfalah portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What did I spend the most money on in NBP during January?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend on food in NBP during June?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Get statement report for January for HBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Calculate my current net worth in SCB as of August.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What did I spend the most money on in Alfalah during February?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my projected ending balance for June.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "What are my balances in Meezan and JazzCash for May?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Detect any spending anomaly in September.",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show my budget utilization for entertainment in September.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my balance trend for JazzCash since November.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What is my cashflow for NBP in June?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What are my balances in Meezan and NBP for September?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What are my balances in JazzCash and NBP for December?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Search for transactions from this morning.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my cashflow for HBL in February?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Compare my spending in May vs July by category in NBP.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for groceries in my HBL account for September?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "List recurring items under fuel for my Meezan card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What are my balances in Meezan and Alfalah for July?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in October?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What did I spend on entertainment in JazzCash during December?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in September vs January by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "List recurring items under travel for my NBP card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Get statement report for May for Meezan.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What did I spend on shopping in SCB during May?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "How close am I to my saving goal of 100000 PKR in UBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend the most money on in HBL during July?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What are my balances in SCB and NBP for June?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Did I make any purchases at Spotify recently?",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What is my cashflow for HBL in January?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my balance trend for HBL since July.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Compare my spending in April vs November by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on dining out in NBP during January?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "List recurring items under shopping for my Alfalah card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What did I spend the most money on in Easypaisa during June?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What is my cashflow for Alfalah in February?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my NBP account for November?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in SCB during January?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "How close am I to my saving goal of 100000 PKR in Alfalah?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my Alfalah account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in HBL and SCB for August?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Find transactions matching Daraz from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on travel in SCB during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Get statement report for May for Alfalah.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "How much budget do I have left for rent in my Alfalah account for March?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my balance trend for HBL since December.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What is the remaining balance on my shopping budget?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for HBL in November?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What did I spend on entertainment in Meezan during May?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show investment profit for August in my UBL portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What are my balances in UBL and NBP for February?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Get statement report for April for NBP.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Compare my spending in August vs April by category in NBP.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in July?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Get statement report for May for NBP.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my balance trend for Easypaisa since March.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Compare my spending in November vs May by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Calculate my current net worth in SCB as of October.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Find transactions matching Careem from two days ago.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Show my budget utilization for fuel in June.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show investment profit for September in my Meezan portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What is my current balance in Easypaisa?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What are my balances in HBL and SCB for September?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is my cashflow for SCB in September?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Compare my spending in July vs June by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my top category in April?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend on food in NBP during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend the most money on in Alfalah during November?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my budget utilization for entertainment in May.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in SCB and Alfalah for October?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "List recurring items under shopping for my JazzCash card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "How close am I to my saving goal of 10000 PKR in SCB?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Compare my spending in June vs July by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my balance trend for SCB since August.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What is my cashflow for NBP in April?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for fuel in my UBL account for April?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my balance trend for HBL since September.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my budget utilization for travel in March.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How close am I to my saving goal of 50000 PKR in HBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Get statement report for June for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Easypaisa account in August?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Calculate my current net worth in SCB as of June.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Compare my spending in May vs April by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in April?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Compare my spending in November vs February by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my balance trend for Alfalah since December.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Get statement report for October for Alfalah.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my budget utilization for dining out in December.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in Meezan during December?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my balance trend for SCB since February.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "How close am I to my saving goal of 5000 PKR in Meezan?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Get statement report for October for UBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in April?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "List recurring items under dining out for my Meezan card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What is my cashflow for SCB in June?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What is my cashflow for NBP in December?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Compare my spending in August vs May by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Get statement report for November for Meezan.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What did I spend on food in UBL during April?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Find transactions matching McDonalds from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Find transactions matching Uber from last week.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How much budget do I have left for fuel in my HBL account for July?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show investment profit for March in my NBP portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "How close am I to my saving goal of 50000 PKR in Alfalah?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Show my balance trend for Easypaisa since June.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "How close am I to my saving goal of 100000 PKR in JazzCash?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Compare my spending in January vs June by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on groceries in Easypaisa during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Find transactions matching KFC from two days ago.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How close am I to my saving goal of 10000 PKR in HBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Compare my spending in January vs August by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Find transactions matching Spotify from today.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my SCB account for December?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my budget utilization for travel in February.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in Alfalah and NBP for February?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Calculate my current net worth in HBL as of October.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my NBP account for May?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in HBL and Meezan for December?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in December?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "List all debit transactions matching Uber.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Get statement report for December for HBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my budget utilization for rent in September.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my balance trend for UBL since June.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What did I spend on fuel in Alfalah during July?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "List recurring items under food for my Alfalah card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What did I spend on utilities in NBP during June?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in December vs August by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for entertainment in my Meezan account for October?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for NBP in January?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What did I spend on dining out in HBL during June?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in January vs June by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Calculate my current net worth in UBL as of May.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What did I spend the most money on in Easypaisa during February?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Get statement report for February for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "How close am I to my saving goal of 500 PKR in HBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "List recurring items under utilities for my UBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "What did I spend on utilities in NBP during October?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in March vs December by category in NBP.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my UBL account in May?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in August?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in August?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show investment profit for December in my HBL portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What are my balances in Alfalah and NBP for August?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Get statement report for May for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "Show my budget utilization for rent in November.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How close am I to my saving goal of 50000 PKR in Easypaisa?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "What did I spend on utilities in Alfalah during September?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "How close am I to my saving goal of 25000 PKR in HBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "List recurring items under utilities for my JazzCash card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in September vs March by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for dining out in my SCB account for February?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for JazzCash in September?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What is my cashflow for UBL in February?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my Alfalah account for August?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend on travel in UBL during March?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show investment profit for February in my Easypaisa portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Show my balance trend for NBP since February.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Get statement report for March for NBP.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is my cashflow for Meezan in March?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Compare my spending in June vs March by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How close am I to my saving goal of 500 PKR in JazzCash?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "How close am I to my saving goal of 1500 PKR in Meezan?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Get statement report for April for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What are my balances in Alfalah and Meezan for January?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my JazzCash account in December?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What is my cashflow for Meezan in November?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Alfalah account in July?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What did I spend on travel in JazzCash during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "How close am I to my saving goal of 500 PKR in NBP?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my UBL account in November?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Compare my spending in December vs July by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my budget utilization for shopping in December.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my projected ending balance for December.",
+    "api_route": "/api/agent/analytics/projections"
+  },
+  {
+    "question": "Calculate my current net worth in JazzCash as of December.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Compare my spending in December vs February by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for utilities in my JazzCash account for August?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in Alfalah during April?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend the most money on in JazzCash during September?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "How much budget do I have left for travel in my UBL account for July?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my budget utilization for travel in January.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Easypaisa account in September?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What did I spend on dining out in Alfalah during March?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Show my balance trend for SCB since April.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What did I spend on rent in SCB during May?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in July?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show my budget utilization for groceries in July.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend the most money on in Easypaisa during January?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show investment profit for December in my JazzCash portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "What did I spend on fuel in Easypaisa during October?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend on entertainment in UBL during July?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in November?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show investment profit for January in my Easypaisa portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "Compare my spending in May vs August by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in January vs May by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Calculate my current net worth in Easypaisa as of March.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Find transactions matching McDonalds from today.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "Get statement report for August for Alfalah.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "How close am I to my saving goal of 5000 PKR in SCB?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "How close am I to my saving goal of 10000 PKR in UBL?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Calculate my current net worth in Easypaisa as of April.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Compare my spending in September vs July by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on rent in SCB during August?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "List recurring items under entertainment for my Alfalah card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in February vs September by category in Meezan.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How close am I to my saving goal of 25000 PKR in Alfalah?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "List recurring items under travel for my Meezan card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in August vs June by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend the most money on in HBL during June?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend the most money on in SCB during October?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my balance trend for Meezan since December.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Find transactions matching Careem from today.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on entertainment in Easypaisa during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What are my balances in NBP and SCB for January?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in October?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "List recurring items under shopping for my NBP card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in June vs April by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What are my balances in UBL and SCB for November?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Calculate my current net worth in HBL as of February.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What did I spend the most money on in SCB during July?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend the most money on in Meezan during November?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Calculate my current net worth in NBP as of April.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What did I spend the most money on in Meezan during June?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Compare my spending in September vs October by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on travel in SCB during May?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What are my balances in JazzCash and Alfalah for May?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is my cashflow for Meezan in July?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my balance trend for HBL since April.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "How much budget do I have left for fuel in my JazzCash account for February?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How much budget do I have left for groceries in my SCB account for November?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Compare my spending in June vs September by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in April vs December by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for rent in my SCB account for December?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Get statement report for October for SCB.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What did I spend on entertainment in NBP during October?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What is my cashflow for HBL in March?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for rent in my Easypaisa account for July?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for Meezan in January?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "What is my cashflow for Meezan in May?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my UBL account in February?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my Easypaisa account for April?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in HBL and NBP for August?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What are my balances in Easypaisa and NBP for December?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Compare my spending in May vs December by category in SCB.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in June?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for dining out in my SCB account for August?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Alfalah account in September?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "How much budget do I have left for shopping in my Alfalah account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "How much budget do I have left for food in my NBP account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Compare my spending in June vs October by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend the most money on in Easypaisa during October?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "What did I spend the most money on in NBP during February?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Compare my spending in January vs September by category in Alfalah.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What are my balances in JazzCash and Easypaisa for December?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "What is my cashflow for UBL in October?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Show my balance trend for Meezan since November.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Show my budget utilization for groceries in April.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Find transactions matching Careem from last night.",
+    "api_route": "/api/agent/transactions/search"
+  },
+  {
+    "question": "What did I spend on entertainment in JazzCash during October?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Compare my spending in October vs March by category in Easypaisa.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my balance trend for NBP since August.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "List recurring items under entertainment for my UBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Compare my spending in November vs February by category in HBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "How much budget do I have left for food in my Alfalah account for October?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for NBP in February?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "Calculate my current net worth in UBL as of March.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "Compare my spending in March vs November by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Compare my spending in July vs March by category in UBL.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my budget utilization for fuel in April.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Compare my spending in September vs February by category in NBP.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my balance trend for Easypaisa since February.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "What is my cashflow for NBP in March?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for fuel in my SCB account for July?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What did I spend on dining out in HBL during November?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend on food in JazzCash during January?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend the most money on in UBL during April?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "List recurring items under shopping for my HBL card.",
+    "api_route": "/api/agent/analytics/recurring"
+  },
+  {
+    "question": "Calculate my current net worth in HBL as of May.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What did I spend on shopping in NBP during December?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "How much budget do I have left for travel in my Easypaisa account for November?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in Alfalah and HBL for September?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Show investment profit for September in my Easypaisa portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "How much budget do I have left for dining out in my Meezan account for January?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Meezan account in October?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Show investment profit for December in my Alfalah portfolio.",
+    "api_route": "/api/agent/analytics/investments"
+  },
+  {
+    "question": "How close am I to my saving goal of 500 PKR in Meezan?",
+    "api_route": "/api/agent/analytics/savings"
+  },
+  {
+    "question": "Compare my spending in October vs August by category in JazzCash.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "Show my budget utilization for dining out in November.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What are my balances in UBL and Easypaisa for December?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my SCB account in November?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "What did I spend on fuel in Meezan during October?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "Are there any unusual transaction spikes on my Easypaisa account in February?",
+    "api_route": "/api/agent/analytics/anomalies"
+  },
+  {
+    "question": "Calculate my current net worth in Meezan as of December.",
+    "api_route": "/api/agent/analytics/net-worth"
+  },
+  {
+    "question": "What did I spend on dining out in SCB during May?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend the most money on in UBL during July?",
+    "api_route": "/api/agent/analytics/top-categories"
+  },
+  {
+    "question": "Show my budget utilization for utilities in February.",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "What is my cashflow for SCB in March?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for entertainment in my HBL account for May?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Get statement report for February for JazzCash.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What is my cashflow for Easypaisa in March?",
+    "api_route": "/api/agent/trends/cashflow"
+  },
+  {
+    "question": "How much budget do I have left for rent in my Meezan account for December?",
+    "api_route": "/api/agent/analytics/budget"
+  },
+  {
+    "question": "Show my balance trend for HBL since March.",
+    "api_route": "/api/agent/trends/monthly-balance"
+  },
+  {
+    "question": "Get statement report for July for HBL.",
+    "api_route": "/api/agent/analytics/statements"
+  },
+  {
+    "question": "What are my balances in JazzCash and NBP for March?",
+    "api_route": "/api/agent/overview"
+  },
+  {
+    "question": "Compare my spending in January vs February by category in NBP.",
+    "api_route": "/api/agent/trends/mom"
+  },
+  {
+    "question": "What did I spend on rent in Easypaisa during February?",
+    "api_route": "/api/agent/summary/expense-income"
+  },
+  {
+    "question": "What did I spend on groceries in HBL during March?",
+    "api_route": "/api/agent/summary/expense-income"
+  }
+]

@@ -5,6 +5,7 @@ import os
 import json
 import re
 import hashlib
+import requests
 import secrets
 import random
 import base64
@@ -29,7 +30,7 @@ from app.extensions import db
 from app.middleware.auth import token_required
 from app.models import (
     MonthlyBalance, Transaction, Budget, AccountBalance, SavingsGoal,
-    Category, SMSHistory, FinancialInsight, User, DeviceToken,
+    Category, CategoryBucketMapping, SMSHistory, FinancialInsight, User, DeviceToken,
     StatementAnalysis, CategorizationRule,
 )
 from fetchers import fetch_latest_bank_email, calculate_combined_summary
@@ -52,8 +53,28 @@ categories_bp = Blueprint("categories", __name__)
 # -------------------------
 # CATEGORY ROUTES
 # -------------------------
+def ensure_default_shopping_category():
+    try:
+        shopping_cat = Category.query.filter(Category.name.ilike('shopping')).first()
+        if not shopping_cat:
+            shopping_cat = Category(
+                name="Shopping",
+                icon="cart",
+                color="#F5A623",
+                cat_type="spending",
+                is_default=True
+            )
+            db.session.add(shopping_cat)
+            db.session.commit()
+        elif not shopping_cat.is_default:
+            shopping_cat.is_default = True
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+
 @categories_bp.route('/api/categories', methods=['GET'])
 def get_categories():
+    ensure_default_shopping_category()
     categories = Category.query.all()
     return jsonify([c.to_dict() for c in categories]), 200
 
@@ -76,8 +97,65 @@ def add_category():
         is_default=False
     )
     db.session.add(category)
+    db.session.flush() # Get category.id
+    
+    # Bucket Classification Logic
+    def classify_category(cat_name):
+        seed_mapping = {
+            "rent": "needs", "utilities": "needs", "groceries": "needs", "insurance": "needs", "bills": "needs",
+            "dining out": "wants", "entertainment": "wants", "shopping": "wants", "coffee": "wants", "subscriptions": "wants",
+            "emergency fund": "savings", "investments": "savings", "goals": "savings", "savings": "savings"
+        }
+        lower_name = cat_name.lower().strip()
+        if lower_name in seed_mapping:
+            return seed_mapping[lower_name], "seed_default"
+        for key, val in seed_mapping.items():
+            if key in lower_name:
+                return val, "seed_default"
+
+        # LLM fallback
+        try:
+            prompt = f"Classify this budget category into exactly one of: Needs, Wants, Savings. Category: '{cat_name}'. Respond with ONLY the bucket name, nothing else."
+            res = requests.post("http://localhost:11434/api/generate", json={
+                "model": "llama3.2", 
+                "prompt": prompt,
+                "stream": False
+            }, timeout=10)
+            if res.status_code == 200:
+                result = res.json().get("response", "").strip().lower()
+                if "need" in result: return "needs", "ai_suggested"
+                if "want" in result: return "wants", "ai_suggested"
+                if "saving" in result: return "savings", "ai_suggested"
+        except Exception as e:
+            print(f"LLM classification failed for category {cat_name}: {e}")
+        
+        return "wants", "seed_default" # Fallback if everything fails
+        
+    bucket, source = classify_category(name)
+    
+    # Try to extract user_id from token if present, otherwise default to 1 (single-user dev environment fallback)
+    auth_header = request.headers.get('Authorization', '')
+    user_id = 1
+    if auth_header.startswith('Bearer '):
+        try:
+            token = auth_header.split(' ')[1]
+            payload = jwt.decode(token, current_app.config.get('SECRET_KEY', '0aefb44af279f5bb0ad9ecce393be138'), algorithms=['HS256'])
+            user_id = payload.get('sub', 1)
+        except:
+            pass
+
+    mapping = CategoryBucketMapping(
+        user_id=user_id,
+        category_id=category.id,
+        bucket=bucket,
+        source=source
+    )
+    db.session.add(mapping)
     db.session.commit()
-    return jsonify(category.to_dict()), 201
+    
+    ret = category.to_dict()
+    ret["bucket"] = bucket
+    return jsonify(ret), 201
 
 @categories_bp.route('/api/categories/<int:id>', methods=['DELETE'])
 def delete_category(id):
@@ -85,8 +163,8 @@ def delete_category(id):
     if not category:
         return jsonify({"error": "Category not found"}), 404
     
-    if category.is_default:
-        return jsonify({"error": "Cannot delete default categories"}), 400
+    if category.is_default or category.name.strip().lower() == "shopping":
+        return jsonify({"error": "Cannot delete default/protected category 'Shopping'"}), 400
         
     db.session.delete(category)
     db.session.commit()
@@ -138,6 +216,18 @@ def update_transaction(id):
                 apply_pending_transaction_ledger(
                     txn, balance_slug_override=slug_hint or None
                 )
+
+        new_purpose = data.get("purpose") or data.get("category") or txn.purpose
+        shopping_details = data.get("shopping_details")
+        if shopping_details is not None:
+            shopping_details_val = str(shopping_details).strip()
+        else:
+            shopping_details_val = (txn.shopping_details or "").strip()
+
+        if str(new_purpose).strip().lower() == "shopping":
+            if not shopping_details_val:
+                return jsonify({"error": "shopping_details is required for Shopping transactions."}), 400
+            txn.shopping_details = shopping_details_val
 
         if "category_id" in data:
             txn.category_id = data["category_id"]

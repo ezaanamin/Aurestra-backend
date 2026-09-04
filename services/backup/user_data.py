@@ -3,7 +3,7 @@ from database import db
 from model import (
     Transaction, Category, AccountBalance,
     Budget, MonthlyBalance, FinancialInsight, StatementAnalysis,
-    SMSHistory, UploadedReceipt, DeviceNotification, SavingsGoal,
+    UploadedReceipt, DeviceNotification, SavingsGoal,
     CategorizationRule, User,
 )
 
@@ -50,7 +50,6 @@ def export_user_data(user_id: int, app_version: str, db_version: int) -> dict:
             "monthly_balances":     _safe("monthly_balances",     lambda: _rows_raw(MonthlyBalance.query.filter_by(user_id=user_id).all())),
             "financial_insights":   _safe("financial_insights",   lambda: _rows_raw(FinancialInsight.query.filter_by(user_id=user_id).all())),
             "statement_analysis":   _safe("statement_analysis",   lambda: _rows_raw(StatementAnalysis.query.filter_by(user_id=user_id).all())),
-            "sms_history":          _safe("sms_history",          lambda: _rows_raw(SMSHistory.query.filter_by(user_id=user_id).all())),
             "uploaded_receipts":    _safe("uploaded_receipts",    lambda: _rows_raw(UploadedReceipt.query.filter_by(user_id=user_id).all())),
             "device_notifications": _safe("device_notifications", lambda: _rows_raw(DeviceNotification.query.filter_by(user_id=user_id).all())),
             "savings_goals":        _safe("savings_goals",        lambda: _rows_raw(SavingsGoal.query.filter_by(user_id=user_id).all())),
@@ -73,7 +72,6 @@ def get_latest_dates(data: dict) -> dict:
         "monthly_balances": "fetched_at",
         "financial_insights": "created_at",
         "statement_analysis": "analysis_date",
-        "sms_history": "created_at",
         "uploaded_receipts": "created_at",
         "device_notifications": "created_at",
         "savings_goals": "created_at",
@@ -241,10 +239,8 @@ def restore_user_data(user_id: int, data: dict) -> dict:
         count_ins += 1
     restored["financial_insights"] = count_ins
 
-    # Generic
     restored["monthly_balances"] = _restore_table_generic(MonthlyBalance, user_id, data["tables"].get("monthly_balances", []))
     restored["statement_analysis"] = _restore_table_generic(StatementAnalysis, user_id, data["tables"].get("statement_analysis", []))
-    restored["sms_history"] = _restore_table_generic(SMSHistory, user_id, data["tables"].get("sms_history", []))
     restored["uploaded_receipts"] = _restore_table_generic(UploadedReceipt, user_id, data["tables"].get("uploaded_receipts", []))
     restored["device_notifications"] = _restore_table_generic(DeviceNotification, user_id, data["tables"].get("device_notifications", []))
     restored["savings_goals"] = _restore_table_generic(SavingsGoal, user_id, data["tables"].get("savings_goals", []))

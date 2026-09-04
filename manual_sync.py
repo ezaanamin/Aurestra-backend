@@ -36,7 +36,18 @@ with app.app_context():
 
     # Save Transactions
         if "transactions" in bank_data:
-            from sms_parser import generate_transaction_hash
+            import hashlib
+            def generate_transaction_hash(transaction_data):
+                if hasattr(transaction_data['date'], 'isoformat'):
+                    date_iso = transaction_data['date'].isoformat()
+                else:
+                    date_iso = str(transaction_data['date'])
+                amount_str = f"{float(transaction_data['amount']):.2f}"
+                tx_type = str(transaction_data['type'])
+                source = str(transaction_data.get('source', 'sms'))
+                hash_string = f"{date_iso}|{amount_str}|{tx_type}|{source}"
+                return hashlib.sha256(hash_string.encode()).hexdigest()
+
             count = 0
             
             # Pre-fetch existing hashes for efficiency? (Optional, but manual sync is infrequent)

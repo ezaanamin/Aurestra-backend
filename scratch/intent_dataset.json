@@ -1,0 +1,4002 @@
+[
+  {
+    "question": "Show my recent transactions for groceries in Easypaisa.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my Easypaisa account balance correct for October?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current balance in Easypaisa?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List my savings goals progress for dining out.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for entertainment transactions from today.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my top spending categories for July.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 500 PKR for groceries.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my Meezan account balance as of December.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from April for utilities.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in Meezan from this morning.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my top spending categories for September.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Am I over my fuel budget this month?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in January?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my top spending categories for March.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in June?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current savings rate for my food goal?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Am I over my food budget this month?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current savings rate for my dining out goal?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from May for travel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Are there anomalies or spikes in my utilities spending?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my recent transactions for dining out in Meezan.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List my savings goals progress for travel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my current account overview for Meezan.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my NBP account balance as of March.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Detect any outlier transaction on my JazzCash account.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List my savings goals progress for utilities.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Are there anomalies or spikes in my food spending?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current balance in Alfalah?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much money do I have in my Alfalah wallet?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in September?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my current ROI on investments in NBP.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my asset breakdown for my UBL account?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much money do I have in my Easypaisa wallet?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in August?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Am I over my shopping budget this month?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my asset breakdown for my HBL account?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much money do I have in my JazzCash wallet?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 1500 PKR to Speedy this morning?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my top spending categories for December.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much money do I have in my NBP wallet?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my JazzCash account balance as of November.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in Easypaisa from last night.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from November for utilities.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in November?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my asset breakdown for my Easypaisa account?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 1500 PKR for rent.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 500 PKR to KFC two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 5000 PKR in August.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my UBL account balance as of January.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my recent transactions for entertainment in Meezan.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List my savings goals progress for food.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much money do I have in my SCB wallet?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 50000 PKR to McDonalds today?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from July for travel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for entertainment in July?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my SCB account balance correct for May?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 50000 PKR for rent.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in SCB from two days ago.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Am I over my groceries budget this month?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my SCB account balance correct for February?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my top spending categories for January.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from February for travel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of September?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was the largest expense I recorded on fuel today?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was the largest expense I recorded on entertainment yesterday?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 25000 PKR to Daraz two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 1500 PKR in November.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of November?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List transactions matching Netflix under 1500 PKR.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Check my budget utilization rate for shopping in April.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Check my budget utilization rate for food in April.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current savings rate for my groceries goal?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Are there anomalies or spikes in my shopping spending?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my latest bank statement details for NBP.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my NBP account balance correct for April?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for rent transactions from two days ago.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 25000 PKR to McDonalds yesterday?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for rent in December?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my top spending categories for June.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was the largest expense I recorded on rent last week?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Check my budget utilization rate for fuel in January.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my latest bank statement details for UBL.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List transactions matching Uber under 10000 PKR.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current balance in UBL?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for fuel in February?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for entertainment in May?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for shopping transactions from yesterday.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 1500 PKR for food.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my current account overview for HBL.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my asset breakdown for my Alfalah account?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of February?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 25000 PKR to Uber two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my current account overview for Alfalah.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List transactions matching Savyour under 50000 PKR.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my SCB account balance as of August.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 50000 PKR for entertainment.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my current ROI on investments in Meezan.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Am I over my rent budget this month?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in April?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my recent transactions for shopping in NBP.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in Alfalah from last week.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 50000 PKR for dining out.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for utilities transactions from today.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 1500 PKR in April.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Detect any outlier transaction on my Meezan account.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 500 PKR to Careem two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Check my budget utilization rate for shopping in January.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Detect any outlier transaction on my NBP account.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Detect any outlier transaction on my Easypaisa account.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my recent transactions for entertainment in HBL.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in October?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in May?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was the largest expense I recorded on groceries today?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for entertainment transactions from yesterday.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 5000 PKR to KFC two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Are there anomalies or spikes in my rent spending?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List transactions matching Spotify under 1500 PKR.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for entertainment in January?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of August?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Check my budget utilization rate for utilities in September.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my HBL account balance as of October.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my Alfalah account balance as of October.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my current account overview for NBP.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 50000 PKR in July.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 500 PKR to Netflix this morning?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for food transactions from yesterday.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from April for fuel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of April?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for shopping in February?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was the largest expense I recorded on rent two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my current account overview for JazzCash.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was the largest expense I recorded on shopping today?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in Alfalah from last night.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 5000 PKR in December.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 50000 PKR in April.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my current ROI on investments in UBL.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Detect any outlier transaction on my UBL account.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current balance in JazzCash?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 100000 PKR in November.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in SCB from yesterday.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in July?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Check my budget utilization rate for shopping in December.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for dining out in October?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for shopping transactions from today.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my NBP account balance as of November.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for utilities transactions from last night.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 25000 PKR to KFC two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my latest bank statement details for HBL.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my recent transactions for utilities in HBL.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my JazzCash account balance correct for June?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Am I over my entertainment budget this month?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for utilities transactions from this morning.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List transactions matching Spotify under 100000 PKR.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from February for dining out.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current balance in Meezan?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my Meezan account balance correct for February?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Detect any outlier transaction on my HBL account.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my NBP account balance as of February.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much money do I have in my Meezan wallet?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for shopping in November?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List my savings goals progress for entertainment.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of December?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List my savings goals progress for groceries.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current balance in HBL?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my top spending categories for October.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 1500 PKR in March.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Search for food transactions from this morning.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List transactions matching Netflix under 5000 PKR.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much budget is left for dining out in December?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Are there anomalies or spikes in my dining out spending?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Check my budget utilization rate for food in June.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my JazzCash account balance as of December.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of October?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was the largest expense I recorded on shopping yesterday?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Find debit transactions exceeding 1500 PKR in June.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my SCB account balance correct for January?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my latest bank statement details for Meezan.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show me my Alfalah account balance as of August.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 1500 PKR for travel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my asset breakdown for my SCB account?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "How much total returns have I made on investments as of May?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my UBL account balance correct for July?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in December?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current balance in NBP?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in UBL from this morning.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Am I over my travel budget this month?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Which category did I spend most of my money on in February?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Is my SCB account balance correct for March?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my recent transactions for dining out in Easypaisa.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 5000 PKR for rent.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What is my current savings rate for my utilities goal?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 25000 PKR for food.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my credit transactions in NBP from last week.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Show my recent transactions for travel in Alfalah.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Are there anomalies or spikes in my travel spending?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from June for travel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from December for utilities.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "List all transactions under 50000 PKR for fuel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Did I make any payments of 50000 PKR to Careem two days ago?",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "Retrieve transaction history from June for fuel.",
+    "intent": "LIVE_FINANCIAL_DATA"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like March?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for entertainment over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like February?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on fuel in October compared to March?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for March.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from June.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for Alfalah.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my SCB balances between April and May.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in August?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for April.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my June summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from February.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from January.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since February?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in December?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my performance in JazzCash from last month to this month.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my August summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for April and March.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in May?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for shopping over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in August?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my fuel habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for UBL.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What patterns do you notice in my historical summaries for dining out?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since August?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for December and January.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for food over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my travel habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my shopping habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like April?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like September?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my performance in Meezan from last month to this month.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in January based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in July based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on shopping in March compared to August?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for food.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What patterns do you notice in my historical summaries for entertainment?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on utilities in February compared to December?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Do you see a trend in my fuel spending?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Do you see a trend in my shopping spending?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in October based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my rent habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in June based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between December and March?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my Alfalah balances between February and May.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in March?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What patterns do you notice in my historical summaries for travel?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in April?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in September based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for Meezan.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since December?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in February?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Do you see a trend in my dining out spending?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my entertainment habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from September.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for JazzCash.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in October?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between February and January?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in July?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my Alfalah balances between May and November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since May?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during June.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on utilities in April compared to August?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like July?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on entertainment in October compared to June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for shopping.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my January summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for travel over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my performance in NBP from last month to this month.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for December and June.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since January?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my NBP balances between May and February.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my JazzCash balances between May and October.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in July?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my dining out habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for groceries.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for entertainment.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on fuel in October compared to June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in May?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for November and October.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between August and June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during July.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my September summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my NBP balances between June and September.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during April.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like May?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in October?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in March based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in August based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during September.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for rent.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on food in May compared to November?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my JazzCash balances between December and January.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like January?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like August?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during February.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for January.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between May and July?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on groceries in May compared to October?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in December based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in November?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for NBP.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my NBP balances between November and April.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for travel.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in September?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in January?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my performance in Easypaisa from last month to this month.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my Meezan balances between January and February.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from March.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in February based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for groceries over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my SCB balances between July and April.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my performance in HBL from last month to this month.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for HBL.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from May.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for fuel.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my JazzCash balances between August and April.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for April and June.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for July and November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during October.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for June and September.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between May and September?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since October?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for August and November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for December.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for September.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What patterns do you notice in my historical summaries for groceries?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between April and September?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between January and September?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between September and May?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in February?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for SCB.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for July and February.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in April?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What patterns do you notice in my historical summaries for fuel?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my JazzCash balances between August and January.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my SCB balances between October and November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between April and October?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my performance in Alfalah from last month to this month.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between November and May?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What patterns do you notice in my historical summaries for utilities?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in May based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from August.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in January?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my utilities habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my March summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Do you see a trend in my entertainment spending?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between July and June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on utilities in March compared to July?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my NBP balances between January and August.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What was my biggest spending category in previous months like December?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my SCB balances between September and July.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my Alfalah balances between October and November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on food in July compared to February?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for dining out over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in December?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my February summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between June and November?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for dining out.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on rent in September compared to July?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between December and October?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show my previous reports when I was in deficit during August.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Analyze my historical balance history for Easypaisa.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on food in February compared to April?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for August.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my May summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for February.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Do you see a trend in my rent spending?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Do you see a trend in my travel spending?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the latest generated insight on my groceries habits.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me my long-term transaction patterns for utilities.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What patterns do you notice in my historical summaries for shopping?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from April.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on shopping in September compared to October?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between February and March?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for February and November.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my financial health in November based on past logs.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between April and August?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between December and June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What repeating financial mistakes do I make based on my history in June?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from October.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for utilities over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Compare my HBL balances between November and March.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for February and May.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What were my core financial highlights in November?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Give me the narrative summary of my transactions from December.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Retrieve historical insights tagged with high savings for June.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How did my spending change between June and July?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Show me the comparison report for December and October.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "What observations did you write down in my October summary?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "How consistent is my savings rate historically since March?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Summarize my budget trends for rent over the last three months.",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on travel in May compared to February?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "Did I spend more on groceries in February compared to September?",
+    "intent": "RAG_FINANCIAL_MEMORY"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 5000 PKR on rent?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 25000 PKR every month in NBP, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest a roadmap to clear my current liabilities of 1500 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest a roadmap to clear my current liabilities of 25000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create an investment plan for my current savings of 100000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 25000 PKR on fuel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 1500 months if I save in Meezan?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest a roadmap to clear my current liabilities of 100000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 25000 PKR goal for dining out?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in November.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What happens to my net worth if I increase my savings by 1500 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in August.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How should I structure my emergency fund target of 1500 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Analyze my long-term runway and cash projection based on entertainment.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What is the best way to distribute my extra savings of 5000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 100000 PKR every month in Alfalah, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in HBL.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What happens to my net worth if I increase my savings by 500 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for utilities to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create an investment plan for my current savings of 10000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest a roadmap to clear my current liabilities of 500 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Analyze my long-term runway and cash projection based on rent.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 100000 PKR on travel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 25000 PKR goal for food?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 1500 PKR goal for entertainment?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my HBL savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with UBL.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 1500 PKR on utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford a house deposit of 25000 PKR next year?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How should I structure my emergency fund target of 10000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for fuel to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 10000 PKR every month in NBP, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create an investment plan for my current savings of 5000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 100000 months if I save in NBP?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest a roadmap to clear my current liabilities of 5000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in April.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my SCB savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 25000 PKR every month in JazzCash, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in NBP.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 1500 months if I save in Alfalah?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much do I need to invest monthly to gain a 500 PKR return?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my JazzCash savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create an investment plan for my current savings of 1500 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 500 PKR every month in SCB, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Analyze my long-term runway and cash projection based on travel.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with Meezan.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with HBL.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 1500 months if I save in SCB?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 1500 PKR goal for travel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 100000 PKR goal for shopping?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How should I structure my emergency fund target of 100000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in July.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much do I need to invest monthly to gain a 10000 PKR return?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What is the best way to distribute my extra savings of 500 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my Easypaisa savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with JazzCash.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 5000 PKR goal for groceries?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How should I structure my emergency fund target of 50000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Analyze my long-term runway and cash projection based on dining out.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 5000 PKR goal for rent?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much do I need to invest monthly to gain a 100000 PKR return?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in June.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 1500 months if I save in Easypaisa?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 100000 PKR every month in UBL, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 100000 months if I save in UBL?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much do I need to invest monthly to gain a 25000 PKR return?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 10000 PKR goal for dining out?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for food to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with Alfalah.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 10000 months if I save in Easypaisa?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What happens to my net worth if I increase my savings by 100000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 500 PKR goal for dining out?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my Meezan savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford a house deposit of 5000 PKR next year?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What happens to my net worth if I increase my savings by 25000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my Alfalah savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much do I need to invest monthly to gain a 5000 PKR return?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in Meezan.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What is the best way to distribute my extra savings of 100000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 100000 PKR on shopping?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 100000 PKR every month in HBL, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 5000 PKR goal for entertainment?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 5000 PKR on shopping?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 5000 PKR every month in JazzCash, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 5000 PKR goal for fuel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest a roadmap to clear my current liabilities of 50000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What happens to my net worth if I increase my savings by 50000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How should I structure my emergency fund target of 25000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in May.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 10000 PKR on dining out?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in September.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 25000 PKR every month in Meezan, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in JazzCash.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 25000 months if I save in Alfalah?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 1500 PKR goal for rent?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in SCB.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in Easypaisa.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in January.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What is the best way to distribute my extra savings of 1500 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 500 months if I save in NBP?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford a house deposit of 10000 PKR next year?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 50000 PKR on groceries?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for groceries to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 5000 months if I save in Meezan?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What happens to my net worth if I increase my savings by 5000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create an investment plan for my current savings of 25000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 10000 months if I save in Meezan?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 25000 months if I save in HBL?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create an investment plan for my current savings of 500 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in December.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Analyze my long-term runway and cash projection based on utilities.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with NBP.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 500 PKR goal for entertainment?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest a roadmap to clear my current liabilities of 10000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 500 months if I save in JazzCash?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 100000 PKR every month in SCB, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Analyze my long-term runway and cash projection based on groceries.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with SCB.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Analyze my long-term runway and cash projection based on shopping.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What happens to my net worth if I increase my savings by 10000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 10000 PKR goal for shopping?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 50000 PKR on travel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 100000 months if I save in Alfalah?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much do I need to invest monthly to gain a 50000 PKR return?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 100000 PKR every month in Meezan, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 50000 PKR every month in Easypaisa, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much do I need to invest monthly to gain a 1500 PKR return?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 1500 PKR on fuel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford a house deposit of 500 PKR next year?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 25000 months if I save in UBL?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my NBP savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 50000 PKR every month in JazzCash, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford a house deposit of 100000 PKR next year?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 5000 months if I save in NBP?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create an investment plan for my current savings of 50000 PKR.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 100000 PKR on utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Create a 5-year roadmap for my financial independence with Easypaisa.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How should I structure my emergency fund target of 500 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 100000 months if I save in Meezan?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in Alfalah.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 100000 PKR on food?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford a house deposit of 50000 PKR next year?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What is the best way to distribute my extra savings of 50000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 500 PKR goal for utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 25000 PKR goal for utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 100000 PKR goal for food?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 1500 PKR every month in UBL, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 5000 PKR goal for utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 1500 PKR goal for shopping?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 100000 PKR goal for entertainment?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 5000 PKR on food?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 500 PKR on dining out?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for entertainment to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How should I structure my emergency fund target of 5000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 25000 PKR goal for fuel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for travel to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 25000 PKR every month in Easypaisa, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What is the best way to distribute my extra savings of 25000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 500 PKR every month in JazzCash, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for dining out to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 1500 months if I save in UBL?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 50000 months if I save in UBL?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 5000 months if I save in Alfalah?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 5000 PKR goal for travel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 5000 PKR every month in Meezan, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 10000 PKR on groceries?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Calculate if I can retire early with my current assets in UBL.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for rent to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 25000 months if I save in SCB?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 10000 PKR on travel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 5000 PKR every month in UBL, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest budget modifications for shopping to increase my savings runway.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Suggest an asset allocation plan for my UBL savings.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford a house deposit of 1500 PKR next year?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 10000 PKR goal for travel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 10000 PKR on fuel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 1500 PKR goal for utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 100000 PKR goal for groceries?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 1500 months if I save in NBP?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 10000 PKR on utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 500 PKR every month in Alfalah, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 500 PKR on travel?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 50000 PKR goal for rent?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in October.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 500 PKR goal for shopping?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 1500 PKR goal for food?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "What is the best way to distribute my extra savings of 10000 PKR?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 25000 PKR every month in Alfalah, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 50000 PKR goal for shopping?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 10000 PKR on rent?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 1500 PKR every month in Easypaisa, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 1500 months if I save in JazzCash?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 1500 PKR on dining out?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 100000 PKR every month in Easypaisa, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 50000 PKR every month in SCB, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Simulate a scenario where I lose my primary income source in March.",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "Can I afford to buy a car in 500 months if I save in Easypaisa?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If I save 1500 PKR every month in NBP, what is my net worth in 3 years?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "When will my cash run out if I keep spending 500 PKR on utilities?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "How much should I save monthly to reach my 5000 PKR goal for dining out?",
+    "intent": "FINANCIAL_PLANNING"
+  },
+  {
+    "question": "If my HBL balance is 100000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my UBL balance is 5000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from SCB and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my budget remaining, can I afford a 10000 PKR travel plan?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my budget remaining, can I afford a 1500 PKR travel plan?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my UBL balance is 10000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in SCB against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in Alfalah against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my JazzCash balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my current balances and goals, can I invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from UBL and goals, am I ready to invest 25000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for travel, can I safely save 500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my entertainment transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current rent budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current shopping budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my budget remaining, can I afford a 50000 PKR travel plan?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Easypaisa and goals, am I ready to invest 100000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from HBL and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for groceries match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my travel transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my budget remaining, can I afford a 500 PKR travel plan?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my rent transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Alfalah balance is 1500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my shopping transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current entertainment budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my dining out transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my SCB balance is 25000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Meezan and goals, am I ready to invest 50000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Meezan and goals, am I ready to invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in HBL against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my current balances and goals, can I invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for fuel match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for travel match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current food budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my budget remaining, can I afford a 5000 PKR travel plan?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active JazzCash accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my JazzCash balance is 10000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my NBP balance is 10000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current travel budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my JazzCash balance is 25000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in Easypaisa against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in UBL against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active Alfalah accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from UBL and goals, am I ready to invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my UBL balance is 1500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for dining out, can I safely save 100000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active Easypaisa accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in NBP against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my food transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for travel, can I safely save 100000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from JazzCash and goals, am I ready to invest 50000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active SCB accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for fuel, can I safely save 100000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my HBL balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for utilities match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in JazzCash against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from UBL and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for entertainment match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Easypaisa and goals, am I ready to invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from NBP and goals, am I ready to invest 50000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from JazzCash and goals, am I ready to invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my budget remaining, can I afford a 100000 PKR travel plan?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my budget remaining, can I afford a 25000 PKR travel plan?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from HBL and goals, am I ready to invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active Meezan accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my current balances and goals, can I invest 25000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for travel, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my current balances and goals, can I invest 50000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for groceries, can I safely save 500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Compare my current cash reserves in Meezan against my 6-month budget projection.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Meezan and goals, am I ready to invest 25000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for shopping, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my JazzCash balance is 100000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for shopping, can I safely save 100000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for rent match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for groceries, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my groceries transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my fuel transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my HBL balance is 25000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for travel, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Am I on track to meet my investment ROI goals based on my utilities transactions?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for rent, can I safely save 10000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my JazzCash balance is 50000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active HBL accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current fuel budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for food, can I safely save 100000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Meezan and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current utilities budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for shopping, can I safely save 10000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from SCB and goals, am I ready to invest 50000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for shopping, can I safely save 500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for dining out match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active UBL accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from HBL and goals, am I ready to invest 25000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Easypaisa balance is 10000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for shopping match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for food, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Easypaisa balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from UBL and goals, am I ready to invest 100000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my current balances and goals, can I invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for entertainment, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my HBL balance is 10000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current dining out budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Alfalah balance is 5000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for fuel, can I safely save 10000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from NBP and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for entertainment, can I safely save 500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for food, can I safely save 25000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for utilities, can I safely save 10000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for fuel, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my current balances and goals, can I invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from SCB and goals, am I ready to invest 100000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Based on my current balances and goals, can I invest 100000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for dining out, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Easypaisa balance is 1500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for rent, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Easypaisa and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from SCB and goals, am I ready to invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for shopping, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Meezan and goals, am I ready to invest 100000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from JazzCash and goals, am I ready to invest 25000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Easypaisa and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my SCB balance is 1500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Easypaisa balance is 50000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my SCB balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for dining out, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Meezan balance is 5000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "With my active NBP accounts and projected spend, when can I buy a house?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my UBL balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from NBP and goals, am I ready to invest 25000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Alfalah and goals, am I ready to invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my SCB balance is 100000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for fuel, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my NBP balance is 1500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Meezan balance is 1500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from UBL and goals, am I ready to invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from HBL and goals, am I ready to invest 100000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Meezan balance is 50000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my HBL balance is 1500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for fuel, can I safely save 500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my NBP balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for utilities, can I safely save 25000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for food, can I safely save 500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Check if my recent transactions for food match my savings goal roadmap.",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for food, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for food, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from JazzCash and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for rent, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Will my current groceries budget allow me to double my savings goal target?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for fuel, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my UBL balance is 100000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Meezan and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Easypaisa balance is 100000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from SCB and goals, am I ready to invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for dining out, can I safely save 500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from JazzCash and goals, am I ready to invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my NBP balance is 50000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from NBP and goals, am I ready to invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Alfalah balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from JazzCash and goals, am I ready to invest 100000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Meezan balance is 500 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for groceries, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for utilities, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for entertainment, can I safely save 100000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my NBP balance is 100000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my SCB balance is 5000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my JazzCash balance is 5000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for shopping, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Alfalah balance is 25000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for dining out, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for dining out, can I safely save 25000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for dining out, can I safely save 10000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for groceries, can I safely save 5000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from JazzCash and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for food, can I safely save 10000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from HBL and goals, am I ready to invest 500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Alfalah balance is 100000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for travel, can I safely save 25000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from HBL and goals, am I ready to invest 50000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for entertainment, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my HBL balance is 50000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for travel, can I safely save 1500 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from UBL and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Alfalah and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my UBL balance is 25000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my SCB balance is 50000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my NBP balance is 25000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for rent, can I safely save 25000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my UBL balance is 50000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Meezan and goals, am I ready to invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for fuel, can I safely save 25000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for rent, can I safely save 50000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "If my Meezan balance is 10000 PKR, can I allocate 50% to my retirement goal?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from SCB and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from NBP and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Considering my recurring expenses for shopping, can I safely save 25000 PKR monthly?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from HBL and goals, am I ready to invest 5000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from Alfalah and goals, am I ready to invest 1500 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from UBL and goals, am I ready to invest 50000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "Looking at my last statement from NBP and goals, am I ready to invest 10000 PKR?",
+    "intent": "HYBRID"
+  },
+  {
+    "question": "How does a UBL savings account compare to a fixed deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a dividend yield on a Easypaisa stock?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an emergency fund and how many months of dining out spending should it cover?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is capital gains tax on UBL investment profits?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is liquidity in finance for groceries management?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the rule of 72 for Easypaisa investments?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do index funds track the market compared to Easypaisa mutual funds?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I create a personal budget spreadsheet for food?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What does a financial planner do for entertainment budget optimization?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I allocate budget for food in general?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain diversification in UBL portfolios.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain value investing vs growth investing for shopping.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a treasury bill vs a SCB bond?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I allocate budget for groceries in general?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of compound interest for UBL accounts.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do index funds track the market compared to UBL mutual funds?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is dollar-cost averaging in a Meezan savings program?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the time value of money when budgeting for entertainment?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the difference between simple and compound interest for Meezan deposits.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of net asset value (NAV) for SCB funds.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do dividend-paying stocks work in a UBL account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a certificate of deposit in SCB?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What are the common risks in fuel spending?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain diversification in Meezan portfolios.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between bull and bear markets in SCB trading?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between a mutual fund and an ETF on Easypaisa?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is capital gains tax on HBL investment profits?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What are the common risks in groceries spending?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the time value of money when budgeting for shopping?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the time value of money when budgeting for fuel?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a bear market bounce in December?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is liquidity in finance for rent management?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a treasury bill vs a HBL bond?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a treasury bill vs a Alfalah bond?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is tax tax-loss harvesting in a JazzCash portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an index fund and how is it different from a UBL deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is capital gains tax on SCB investment profits?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How can I avoid credit card debt on my Meezan account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is compound interest on a UBL account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a high yield savings account in HBL?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a bear market bounce in May?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit score affect interest rates in Easypaisa?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain value investing vs growth investing for travel.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain liquid assets vs illiquid assets in UBL.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between a mutual fund and an ETF on JazzCash?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does a Alfalah savings account compare to a fixed deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is tax tax-loss harvesting in a Meezan portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain value investing vs growth investing for food.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a certificate of deposit in JazzCash?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is liquidity in finance for travel management?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an emergency fund and how many months of rent spending should it cover?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is inflation and how does it affect fuel savings?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an emergency fund and how many months of utilities spending should it cover?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between bull and bear markets in NBP trading?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is dollar-cost averaging in a SCB savings program?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the difference between simple and compound interest for JazzCash deposits.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the 50/30/20 budget rule for entertainment.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the time value of money when budgeting for rent?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What does a financial planner do for groceries budget optimization?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between a mutual fund and an ETF on UBL?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit card interest accumulate on a JazzCash card?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a good savings rate for rent as a young professional?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is liquidity in finance for shopping management?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain liquid assets vs illiquid assets in JazzCash.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of net asset value (NAV) for JazzCash funds.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is dollar-cost averaging in a UBL savings program?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an emergency fund and how many months of fuel spending should it cover?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a bear market bounce in January?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the difference between simple and compound interest for UBL deposits.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of net asset value (NAV) for Alfalah funds.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is liquidity in finance for utilities management?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I allocate budget for utilities in general?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between bull and bear markets in Alfalah trading?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain value investing vs growth investing for groceries.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of compound interest for Alfalah accounts.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I allocate budget for fuel in general?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does a NBP savings account compare to a fixed deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Why is food budget planning important?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is compound interest on a JazzCash account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is tax tax-loss harvesting in a SCB portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is asset allocation for a Alfalah portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a certificate of deposit in Easypaisa?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How can I avoid credit card debt on my Alfalah account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit card interest accumulate on a HBL card?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between bull and bear markets in Meezan trading?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is tax tax-loss harvesting in a NBP portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I create a personal budget spreadsheet for fuel?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain risk vs reward in HBL portfolio construction.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a stock market index compared to a NBP index?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I create a personal budget spreadsheet for shopping?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I allocate budget for entertainment in general?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is capital gains tax on Alfalah investment profits?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of opportunity cost in utilities budgeting.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What are the common risks in dining out spending?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the rule of 72 for Meezan investments?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit card interest accumulate on a Meezan card?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an index fund and how is it different from a Alfalah deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a good savings rate for travel as a young professional?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do dividend-paying stocks work in a SCB account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the role of inflation in investment planning for July?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of net asset value (NAV) for HBL funds.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of compound interest for Meezan accounts.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of net asset value (NAV) for UBL funds.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How can I avoid credit card debt on my Easypaisa account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of opportunity cost in entertainment budgeting.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain risk vs reward in NBP portfolio construction.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What are the common risks in utilities spending?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain value investing vs growth investing for rent.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit card interest accumulate on a Easypaisa card?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of opportunity cost in food budgeting.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a treasury bill vs a JazzCash bond?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a good savings rate for groceries as a young professional?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do index funds track the market compared to SCB mutual funds?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is dollar-cost averaging in a NBP savings program?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Why is shopping budget planning important?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the rule of 72 for HBL investments?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain liquid assets vs illiquid assets in Meezan.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between bull and bear markets in JazzCash trading?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the 50/30/20 budget rule for fuel.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit card interest accumulate on a SCB card?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the difference between simple and compound interest for Easypaisa deposits.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a good savings rate for food as a young professional?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is tax tax-loss harvesting in a Easypaisa portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What does a financial planner do for fuel budget optimization?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Why is travel budget planning important?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I allocate budget for travel in general?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I create a personal budget spreadsheet for entertainment?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a certificate of deposit in NBP?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain risk vs reward in UBL portfolio construction.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between a mutual fund and an ETF on SCB?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the difference between simple and compound interest for SCB deposits.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is liquidity in finance for fuel management?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the rule of 72 for UBL investments?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a high yield savings account in NBP?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is tax tax-loss harvesting in a HBL portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an index fund and how is it different from a SCB deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What are the common risks in entertainment spending?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an index fund and how is it different from a JazzCash deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit card interest accumulate on a UBL card?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain liquid assets vs illiquid assets in Easypaisa.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How can I avoid credit card debt on my JazzCash account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Why is fuel budget planning important?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is inflation and how does it affect dining out savings?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of opportunity cost in dining out budgeting.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a dividend yield on a UBL stock?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a stock market index compared to a JazzCash index?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a stock market index compared to a UBL index?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is tax tax-loss harvesting in a UBL portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I create a personal budget spreadsheet for groceries?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an emergency fund and how many months of groceries spending should it cover?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How can I avoid credit card debt on my HBL account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between a mutual fund and an ETF on Meezan?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain liquid assets vs illiquid assets in SCB.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the time value of money when budgeting for dining out?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the 50/30/20 budget rule for shopping.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is inflation and how does it affect entertainment savings?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain diversification in Alfalah portfolios.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What does a financial planner do for travel budget optimization?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of net asset value (NAV) for NBP funds.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a high yield savings account in Easypaisa?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is capital gains tax on Meezan investment profits?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is dollar-cost averaging in a Easypaisa savings program?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a bear market bounce in June?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the time value of money when budgeting for travel?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is inflation and how does it affect rent savings?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the role of inflation in investment planning for February?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a stock market index compared to a Easypaisa index?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of opportunity cost in travel budgeting.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain value investing vs growth investing for fuel.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an emergency fund and how many months of travel spending should it cover?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of compound interest for SCB accounts.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is inflation and how does it affect shopping savings?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is inflation and how does it affect groceries savings?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a dividend yield on a HBL stock?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does a JazzCash savings account compare to a fixed deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a dividend yield on a Meezan stock?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How can I avoid credit card debt on my NBP account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do dividend-paying stocks work in a Alfalah account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is asset allocation for a JazzCash portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of compound interest for HBL accounts.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit card interest accumulate on a NBP card?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is compound interest on a NBP account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a dividend yield on a Alfalah stock?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "Explain the concept of opportunity cost in fuel budgeting.",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does credit score affect interest rates in UBL?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a good savings rate for shopping as a young professional?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is liquidity in finance for food management?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between bull and bear markets in Easypaisa trading?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a bear market bounce in September?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is asset allocation for a HBL portfolio?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a stock market index compared to a HBL index?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the time value of money when budgeting for utilities?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How does a Meezan savings account compare to a fixed deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is compound interest on a HBL account?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is a stock market index compared to a Alfalah index?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the difference between a mutual fund and an ETF on HBL?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is the rule of 72 for Alfalah investments?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do index funds track the market compared to Alfalah mutual funds?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "What is an index fund and how is it different from a Meezan deposit?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  },
+  {
+    "question": "How do I create a personal budget spreadsheet for travel?",
+    "intent": "GENERAL_FINANCIAL_KNOWLEDGE"
+  }
+]
