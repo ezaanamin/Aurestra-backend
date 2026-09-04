@@ -99,11 +99,18 @@ if not POSTGRES_URI:
 app.config["SQLALCHEMY_DATABASE_URI"] = PRIMARY_DB_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Expose PostgreSQL as a named bind so models can optionally target it
+_pg_engine = None
 if POSTGRES_URI:
-    app.config["SQLALCHEMY_BINDS"] = {"postgres": POSTGRES_URI}
-
-db = SQLAlchemy(app)
+    try:
+        _test_engine = create_engine(POSTGRES_URI, pool_pre_ping=True)
+        with _test_engine.connect() as _conn:
+            pass
+        _pg_engine = _test_engine
+        app.config["SQLALCHEMY_BINDS"] = {"postgres": POSTGRES_URI}
+        print("✅ [Database] PostgreSQL engine created and verified (backup target).")
+    except Exception as _e:
+        POSTGRES_URI = None
+        print(f"⚠️  [Database] Could not connect to PostgreSQL ({_e}). Secondary bind skipped.")
 
 # ─────────────────────────────────────────────
 #  Raw engine helpers (used by backup_manager)
@@ -125,13 +132,7 @@ def get_sqlite_session():
     return _SQLiteSession
 
 
-_pg_engine = None
-if POSTGRES_URI:
-    try:
-        _pg_engine = create_engine(POSTGRES_URI, pool_pre_ping=True)
-        print("✅ [Database] PostgreSQL engine created (backup target).")
-    except Exception as _e:
-        print(f"⚠️  [Database] Could not create PostgreSQL engine: {_e}")
+db = SQLAlchemy(app)
 
 
 def get_postgres_engine():
