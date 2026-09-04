@@ -156,8 +156,17 @@ def apply_own_account_transfer_mirror_balance(
 
 def is_own_account_transfer_row(txn: Any) -> bool:
     p = (getattr(txn, "purpose", None) or "").strip()
-    return p in (SELF_TRANSFER_PURPOSE, LEGACY_SELF_TRANSFER_PURPOSE)
+    return p in SELF_TRANSFER_PURPOSES
 
+
+SELF_TRANSFER_PURPOSES = (
+    "Self-transfer",
+    "Self transfer",
+    "self transfer",
+    "Self Transfer",
+    "Own account transfer",
+    "own account transfer",
+)
 
 def exclude_own_account_transfer_sql():
     """
@@ -168,10 +177,7 @@ def exclude_own_account_transfer_sql():
 
     return or_(
         Transaction.purpose.is_(None),
-        and_(
-            Transaction.purpose != SELF_TRANSFER_PURPOSE,
-            Transaction.purpose != LEGACY_SELF_TRANSFER_PURPOSE,
-        ),
+        Transaction.purpose.notin_(SELF_TRANSFER_PURPOSES),
     )
 
 
