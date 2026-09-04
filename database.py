@@ -77,14 +77,14 @@ def _build_postgres_uri() -> str | None:
     if not DB_USER or not DB_PASSWORD or DB_PASSWORD == "PASSWORD" or DB_PASSWORD == "change_this":
         return None
 
-    pw_safe = urllib.parse.quote_plus(DB_PASSWORD) if DB_PASSWORD else ""
+    pw_safe = urllib.parse.quote_plus(DB_PASSWORD)
 
     if DB_HOST:
         uri = f"postgresql+psycopg2://{DB_USER}:{pw_safe}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         print(f"✅ [Database] Secondary: PostgreSQL ({DB_HOST}:{DB_PORT}/{DB_NAME})")
     else:
-        uri = f"postgresql+psycopg2://{DB_USER}@/{DB_NAME}"
-        print(f"✅ [Database] Secondary: PostgreSQL (unix socket / peer auth → {DB_NAME})")
+        uri = f"postgresql+psycopg2://{DB_USER}:{pw_safe}@localhost:{DB_PORT}/{DB_NAME}"
+        print(f"✅ [Database] Secondary: PostgreSQL (localhost → {DB_NAME})")
     return uri
 
 
