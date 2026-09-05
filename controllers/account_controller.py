@@ -31,18 +31,14 @@ def update_account(current_user, account_id):
     acc = AccountBalance.query.filter_by(id=account_id, user_id=current_user.id).first()
     if not acc:
         return jsonify({"error": "Account not found"}), 404
-    if acc.source == "cash":
-        return jsonify({"error": "Cash only supports balance updates from the app."}), 400
     try:
         data = request.get_json() or {}
-        acc  = account_service.update_account(current_user.id, acc, data)
         if acc.source == "cash":
             # Cash cannot be renamed away from "Cash" or have its kind changed,
             # but balance, accent_color, and keywords can be updated directly from the app.
             data["display_name"] = "Cash"
             data["account_kind"] = "cash"
         acc = account_service.update_account(current_user.id, acc, data)
-        return jsonify({"account": acc.to_dict()}), 200
         return jsonify({
             "message": "Account updated",
             "account": acc.to_dict(),

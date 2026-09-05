@@ -44,9 +44,6 @@ class TestFinanceBalanceLogic(unittest.TestCase):
         self.user_id = self.user.id
 
         # Clean existing test data for this user
-        Transaction.query.filter_by(user_id=self.user.id).delete()
-        AccountBalance.query.filter_by(user_id=self.user.id).delete()
-        MonthlyBalance.query.filter_by(user_id=self.user.id).delete()
         Transaction.query.filter_by(user_id=self.user_id).delete()
         AccountBalance.query.filter_by(user_id=self.user_id).delete()
         MonthlyBalance.query.filter_by(user_id=self.user_id).delete()
@@ -57,8 +54,6 @@ class TestFinanceBalanceLogic(unittest.TestCase):
         self.app.config["SECRET_KEY"] = secret
         self.token = jwt.encode(
             {
-                "user_id": self.user.id,
-                "email": self.user.email,
                 "user_id": self.user_id,
                 "email": self.user_email,
                 "exp": datetime.utcnow() + timedelta(days=1),
@@ -83,9 +78,6 @@ class TestFinanceBalanceLogic(unittest.TestCase):
     def tearDown(self):
         # Clean up test user's data
         try:
-            Transaction.query.filter_by(user_id=self.user.id).delete()
-            AccountBalance.query.filter_by(user_id=self.user.id).delete()
-            MonthlyBalance.query.filter_by(user_id=self.user.id).delete()
             Transaction.query.filter_by(user_id=self.user_id).delete()
             AccountBalance.query.filter_by(user_id=self.user_id).delete()
             MonthlyBalance.query.filter_by(user_id=self.user_id).delete()
@@ -96,7 +88,6 @@ class TestFinanceBalanceLogic(unittest.TestCase):
 
     def _create_account(self, source, display_name, initial_balance=0.0, account_kind="bank"):
         acc = AccountBalance(
-            user_id=self.user.id,
             user_id=self.user_id,
             source=source,
             display_name=display_name,
