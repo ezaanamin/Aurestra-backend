@@ -1,25 +1,43 @@
+# Core Web Framework & Extensions
+Flask==3.0.3
+Flask-Cors==3.0.10
+Flask-Limiter>=3.5.0
+Flask-APScheduler
+
+# Database & ORM
 SQLAlchemy==2.0.36
 Flask-SQLAlchemy==3.0.3
-Flask==3.0.3
-PyPDF2==3.0.1
-python-dotenv==1.0.1
-pymupdf
-pytesseract
-python-dateutil==2.9.0.post0
-Flask-Cors==3.0.10
-gunicorn
-firebase-admin
-cryptography
-PyJWT
-requests
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-google-auth
 psycopg2-binary
-Flask-APScheduler
+
+# Security, Auth & Encryption
+PyJWT
+bcrypt
+cryptography
+
+# Environment & Utilities
+python-dotenv==1.0.1
+python-dateutil==2.9.0.post0
+requests
+
+# External Services & Cloud APIs
+google-auth
+google-auth-oauthlib
+google-api-python-client
+firebase-admin
+
+# Data Processing & Formats
 pandas
-beautifulsoup4
-lxml
+numpy
 tabulate
-Flask-Limiter>=3.5.0
+pydantic
+
+# Document & Image Processing (PDF & OCR)
+PyPDF2==3.0.1
+pymupdf
+Pillow
+pytesseract
+
+# AI & Machine Learning
+sentence-transformers
+torch
+transformers

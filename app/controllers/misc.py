@@ -677,13 +677,6 @@ def calculate_summary_endpoint():
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
         
-        total_expense = db.session.query(
-            func.sum(case(
-                (Transaction.type == 'debit', Transaction.amount),
-                (Transaction.type == 'credit', -Transaction.amount),
-                else_=0
-            ))
-        ).filter(
         total_expense = db.session.query(func.sum(Transaction.amount)).filter(
             extract('year', Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
