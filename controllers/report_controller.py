@@ -278,6 +278,7 @@ def calculate_summary(current_user):
         from financial_agent import FinancialAgent
         from sqlalchemy import func, extract, case
         from transfer_matching import exclude_own_account_transfer_sql
+        from utils.money import to_money, abs_money, subtract_money
 
         data      = request.get_json() or {}
         month_str = data.get("month", datetime.now().strftime("%Y-%m"))
@@ -290,21 +291,24 @@ def calculate_summary(current_user):
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
             Transaction.type == 'credit',
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
 
-        total_expense = db.session.query(
-            func.sum(case(
-                (Transaction.type == 'debit',  Transaction.amount),
-                (Transaction.type == 'credit', -Transaction.amount),
-                else_=0,
-            ))
-        ).filter(
+        total_expense = db.session.query(func.sum(Transaction.amount)).filter(
             Transaction.user_id == user_id,
             extract('year',  Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
+            Transaction.type == 'debit',
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
+
+        total_income = to_money(total_income)
+        total_expense = abs_money(total_expense)
+        net_cash_flow = subtract_money(total_income, total_expense)
 
         summary = MonthlyBalance.query.filter_by(user_id=user_id, month=month_str).first()
         if not summary:
@@ -313,8 +317,8 @@ def calculate_summary(current_user):
             db.session.add(summary)
 
         summary.expense         = total_expense
-        summary.savings         = total_income - total_expense
-        summary.closing_balance = (summary.opening_balance or 0) + total_income - total_expense
+        summary.savings         = net_cash_flow
+        summary.closing_balance = (summary.opening_balance or 0) + net_cash_flow
         if not summary.source:
             summary.source = "combined"
         db.session.commit()

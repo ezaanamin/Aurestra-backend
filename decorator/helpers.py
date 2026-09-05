@@ -2,41 +2,69 @@
 
 from database import app, db
 from model import Category
-from transfer_matching import is_own_account_transfer_row
+from transfer_matching import is_own_account_transfer_row, exclude_own_account_transfer_sql
+
+
+from utils.money import to_money, abs_money
+
+
+def sum_month_income(user_id: int, year: int, month: int) -> float:
+    """Sum of positive income (credit) transaction amounts for a calendar month."""
+    from model import Transaction
+    from sqlalchemy import extract, func
+
+    total = db.session.query(func.sum(Transaction.amount)).filter(
+        Transaction.user_id == user_id,
+        extract('year', Transaction.date) == year,
+        extract('month', Transaction.date) == month,
+        Transaction.type == 'credit',
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
+        Transaction.categorization_status != 'pending',
+        exclude_own_account_transfer_sql(),
+    ).scalar() or 0.0
+    return to_money(total)
+
+
+def sum_month_expenses(user_id: int, year: int, month: int) -> float:
+    """Sum of positive expense (debit) transaction amounts for a calendar month."""
+    from model import Transaction
+    from sqlalchemy import extract, func
+
+    total = db.session.query(func.sum(Transaction.amount)).filter(
+        Transaction.user_id == user_id,
+        extract('year', Transaction.date) == year,
+        extract('month', Transaction.date) == month,
+        Transaction.type == 'debit',
+        Transaction.is_deleted.isnot(True),
+        Transaction.is_spam.isnot(True),
+        Transaction.categorization_status != 'pending',
+        exclude_own_account_transfer_sql(),
+    ).scalar() or 0.0
+    return abs_money(total)
 
 
 def calculate_month_expenses(year: int, month: int, user_id: int = None) -> float:
     """
-    Running-balance expense calculation (date-ordered), optionally scoped to a user.
-
-    Rules:
-      - Debit  → adds to running expense total.
-      - Credit → reduces running expense only if spending already exists (clamped at 0).
+    Sum of positive expense (debit) transaction amounts for a calendar month.
+    Expenses represent positive money spent (credits do not reduce expenses).
     """
     from model import Transaction
-    from sqlalchemy import extract
+    from sqlalchemy import extract, func
 
-    q = Transaction.query.filter(
+    q = db.session.query(func.sum(Transaction.amount)).filter(
         extract('year',  Transaction.date) == year,
         extract('month', Transaction.date) == month,
+        Transaction.type == 'debit',
         Transaction.is_deleted.isnot(True),
         Transaction.is_spam.isnot(True),
+        exclude_own_account_transfer_sql(),
     )
     if user_id is not None:
         q = q.filter(Transaction.user_id == user_id)
 
-    transactions = q.order_by(Transaction.date.asc()).all()
-
-    running = 0.0
-    for txn in transactions:
-        if is_own_account_transfer_row(txn):
-            continue
-        if txn.type == 'debit':
-            running += txn.amount
-        elif txn.type == 'credit':
-            running = max(0.0, running - txn.amount)
-
-    return running
+    total = q.scalar() or 0.0
+    return abs_money(total)
 
 
 

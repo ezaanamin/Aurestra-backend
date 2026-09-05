@@ -36,6 +36,12 @@ def update_account(current_user, account_id):
     try:
         data = request.get_json() or {}
         acc  = account_service.update_account(current_user.id, acc, data)
+        if acc.source == "cash":
+            # Cash cannot be renamed away from "Cash" or have its kind changed,
+            # but balance, accent_color, and keywords can be updated directly from the app.
+            data["display_name"] = "Cash"
+            data["account_kind"] = "cash"
+        acc = account_service.update_account(current_user.id, acc, data)
         return jsonify({"account": acc.to_dict()}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -60,6 +66,15 @@ def set_balance(current_user):
     try:
         data       = request.get_json() or {}
         amount     = float(data.get('amount', 0))
+        if 'amount' not in data:
+            return jsonify({"error": "amount is required"}), 400
+        try:
+            amount = float(data.get('amount', 0))
+        except (ValueError, TypeError):
+            return jsonify({"error": "Malformed monetary value for amount"}), 400
+        if amount < 0:
+            return jsonify({"error": "Balance amount cannot be negative"}), 400
+
         account_id = data.get("account_id")
         source     = data.get("source", "bank") if account_id is None else None
 
@@ -69,16 +84,11 @@ def set_balance(current_user):
             source=source,
             amount=amount,
         )
-        all_accounts = (
-            AccountBalance.query
-            .filter_by(user_id=current_user.id)
-            .order_by(AccountBalance.sort_order, AccountBalance.id)
-            .all()
-        )
+        all_accounts = account_service.get_all_accounts(current_user.id)
         return jsonify({
             "message":  "Balance updated manually",
             "account":  balance.to_dict(),
-            "accounts": [acc.to_dict() for acc in all_accounts],
+            "accounts": all_accounts,
         }), 200
     except LookupError as e:
         return jsonify({"error": str(e)}), 404

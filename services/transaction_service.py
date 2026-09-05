@@ -6,8 +6,15 @@ from dateutil.relativedelta import relativedelta
 from database import db
 from model import Transaction, Category, AccountBalance, Budget, UploadedReceipt
 from transfer_matching import exclude_own_account_transfer_sql, is_own_account_transfer_row
-from ledger_sync import apply_pending_transaction_ledger, ensure_account_balance_row, log_wallet_attribution
-from decorator.helpers import calculate_month_expenses
+from ledger_sync import (
+    apply_pending_transaction_ledger,
+    ensure_account_balance_row,
+    log_wallet_attribution,
+    reverse_transaction_ledger,
+    INSUFFICIENT_BALANCE_MSG,
+)
+from decorator.helpers import calculate_month_expenses, sum_month_expenses, sum_month_income
+from utils.money import to_money, add_money, subtract_money, abs_money
 
 import os
 from werkzeug.utils import secure_filename
@@ -260,8 +267,7 @@ def get_top_categories(user_id: int, period: str = 'month'):
 def get_analytics_trend(user_id: int, period: str = 'month'):
     data_points = []
     expense_expr = func.sum(case(
-        (Transaction.type == 'debit',  Transaction.amount),
-        (Transaction.type == 'credit', -Transaction.amount),
+        (Transaction.type == 'debit', Transaction.amount),
         else_=0,
     ))
     base_filters = [
@@ -360,25 +366,58 @@ def get_monthly_category_totals(user_id: int, month_str: str):
 
 def create_manual_transaction(user_id: int, data: dict) -> tuple:
     """Returns (Transaction, accounts_list)."""
-    amount = float(data.get("amount", 0))
+    try:
+        amount = to_money(data.get("amount", 0))
+    except (TypeError, ValueError):
+        raise ValueError("Malformed monetary value")
     if amount <= 0:
-        raise ValueError("Amount must be positive")
+        raise ValueError("Amount must be greater than 0")
 
-    t_type = (data.get("type") or "debit").strip().lower()
-    if t_type not in ("debit", "credit"):
+    raw_type = (data.get("type") or "debit").strip().lower()
+    if raw_type in ("expense", "debit"):
+        t_type = "debit"
+    elif raw_type in ("income", "credit"):
+        t_type = "credit"
+    else:
         raise ValueError("type must be debit or credit")
 
+    acc_id = data.get("financial_account_id") or data.get("account_id")
     slug = (
         (data.get("account_balance_source") or data.get("wallet_slug") or data.get("balance_account_slug") or "")
         .strip().lower()
     )
-    if not slug:
+
+    account = None
+    if acc_id is not None and str(acc_id).strip():
+        try:
+            account = AccountBalance.query.filter_by(
+                id=int(acc_id), user_id=user_id
+            ).filter(AccountBalance.is_deleted.isnot(True)).with_for_update().first()
+        except (ValueError, TypeError):
+            raise ValueError("Invalid account ID")
+        if not account:
+            raise ValueError("Selected account not found")
+    elif slug:
+        account = AccountBalance.query.filter(
+            AccountBalance.user_id == user_id,
+            AccountBalance.is_deleted.isnot(True),
+            (func.lower(AccountBalance.source) == slug) | (func.lower(AccountBalance.display_name) == slug)
+        ).with_for_update().first()
+        if not account:
+            raise ValueError(f"Account '{slug}' not found")
+    else:
         raise ValueError("account_balance_source is required (wallet slug, e.g. bank, easypaisa, cash)")
 
-    if t_type == "debit":
-        account = ensure_account_balance_row(slug, user_id=user_id)
-        if float(account.current_balance or 0.0) < amount:
-            raise ValueError(f"Insufficient funds in wallet '{account.display_name or slug}'. Balance is {float(account.current_balance or 0.0)}.")
+    curr_balance = to_money(account.current_balance or 0)
+    if t_type == "debit" and curr_balance < amount:
+        raise ValueError(INSUFFICIENT_BALANCE_MSG)
+
+    # Atomically apply balance effect to the selected account only
+    if t_type == "credit":
+        account.current_balance = to_money(add_money(curr_balance, amount))
+    else:
+        account.current_balance = to_money(subtract_money(curr_balance, amount))
+    account.last_updated = datetime.now()
 
     date_str = data.get("date")
     tx_date = datetime.utcnow()
@@ -406,17 +445,20 @@ def create_manual_transaction(user_id: int, data: dict) -> tuple:
 
     new_tx = Transaction(
         user_id=user_id,
-        source="manual", date=tx_date, amount=amount, type=t_type,
+        source="manual",
+        date=tx_date,
+        amount=amount,
+        type=t_type,
         purpose=purpose_val,
         category_id=cat_id,
         bank_reduction_reason=bank_reason,
-        sender=data.get("sender") or "Manual Entry",
+        sender=data.get("sender") or ("Self" if t_type == "debit" else (data.get("notes") or "Manual Entry")),
         receiver=data.get("receiver") or data.get("recipient") or ("Me" if t_type == "credit" else "Merchant"),
         transaction_id=data.get("transaction_id"),
         notes=data.get("notes", ""),
         categorization_status="confirmed",
-        account_balance_source=slug,
-        balance_applied=False,
+        account_balance_source=account.source,
+        balance_applied=True,
         receipt_id=data.get("receipt_id"),
     )
     db.session.add(new_tx)
@@ -436,28 +478,28 @@ def create_manual_transaction(user_id: int, data: dict) -> tuple:
     apply_pending_transaction_ledger(new_tx, respect_manual_lock=False)
     db.session.commit()
 
-    accounts = [
-        acc.to_dict()
-        for acc in AccountBalance.query
-        .filter_by(user_id=user_id)
-        .order_by(AccountBalance.sort_order, AccountBalance.id).all()
-    ]
-    return new_tx, accounts
+    from services.account_service import get_all_accounts
+    return new_tx, get_all_accounts(user_id)
 
 
 def soft_delete_transaction(user_id: int, txn_id: int):
     tx = Transaction.query.filter_by(id=txn_id, user_id=user_id).first()
     if not tx:
         raise LookupError("Transaction not found")
+    reverse_transaction_ledger(tx, respect_manual_lock=False)
     tx.is_deleted = True
     tx.categorization_status = 'deleted'
     db.session.commit()
+
+    from services.account_service import get_all_accounts
+    return get_all_accounts(user_id)
 
 
 def mark_spam(user_id: int, txn_id: int):
     tx = Transaction.query.filter_by(id=txn_id, user_id=user_id).first()
     if not tx:
         raise LookupError("Transaction not found")
+    reverse_transaction_ledger(tx, respect_manual_lock=False)
     tx.is_spam = True
     tx.categorization_status = 'spam'
     db.session.commit()
@@ -468,24 +510,68 @@ def update_transaction_category(user_id: int, txn_id: int, data: dict):
     if not txn:
         raise LookupError("Transaction not found")
 
-    prev_status = txn.categorization_status
-    slug_hint = (
-        (data.get("account_balance_source") or data.get("balance_account_slug") or "")
-        .strip().lower()
-    )
-
-    will_finalize = ("category_id" in data) or ("purpose" in data)
-    if prev_status == "pending" and will_finalize and not getattr(txn, "balance_applied", False):
-        apply_pending_transaction_ledger(txn, balance_slug_override=slug_hint or None)
-
-    if "amount" in data and data["amount"] is not None:
+    acc_id = data.get("financial_account_id") or data.get("account_id")
+    slug_hint = ""
+    if acc_id is not None and str(acc_id).strip():
         try:
-            txn.amount = float(data["amount"])
+            acc_obj = AccountBalance.query.filter_by(id=int(acc_id), user_id=user_id).filter(AccountBalance.is_deleted.isnot(True)).first()
+            if acc_obj:
+                slug_hint = acc_obj.source
         except (ValueError, TypeError):
             pass
 
+    if not slug_hint:
+        slug_hint = (
+            (data.get("account_balance_source") or data.get("balance_account_slug") or "")
+            .strip().lower()
+        )
+
+    prev_status = txn.categorization_status
+    will_finalize = ("category_id" in data) or ("purpose" in data)
+    was_applied = bool(getattr(txn, "balance_applied", False))
+
+    new_amount = to_money(data["amount"]) if ("amount" in data and data["amount"] is not None) else to_money(txn.amount)
+    if "amount" in data and data["amount"] is not None and new_amount <= 0:
+        raise ValueError("Amount must be greater than 0")
+
+    raw_type = (data.get("type") or txn.type or "debit").strip().lower()
+    if raw_type in ("expense", "debit"):
+        new_type = "debit"
+    elif raw_type in ("income", "credit"):
+        new_type = "credit"
+    else:
+        raise ValueError("type must be debit or credit")
+
+    new_slug = slug_hint or (txn.account_balance_source or "").strip().lower() or "bank"
+    target_acc = ensure_account_balance_row(new_slug, user_id=user_id)
+
+    will_be_active = (
+        not getattr(txn, "is_deleted", False)
+        and not getattr(txn, "is_spam", False)
+        and (txn.categorization_status != "pending" or will_finalize)
+    )
+
+    if will_be_active and new_type == "debit" and target_acc:
+        available = to_money(target_acc.current_balance or 0)
+        if was_applied and (txn.account_balance_source or "").strip().lower() == target_acc.source:
+            if txn.type == "debit":
+                available = to_money(add_money(available, txn.amount))
+            elif txn.type == "credit":
+                available = to_money(subtract_money(available, txn.amount))
+        if available < new_amount:
+            raise ValueError(INSUFFICIENT_BALANCE_MSG)
+
+    if was_applied:
+        reverse_transaction_ledger(txn, respect_manual_lock=False)
+
+    if "amount" in data and data["amount"] is not None:
+        txn.amount = new_amount
+
     if "type" in data and data["type"] in ["debit", "credit"]:
         txn.type = data["type"]
+
+    if slug_hint:
+        txn.account_balance_source = slug_hint
 
     if "date" in data and data["date"]:
         try:
@@ -530,9 +616,17 @@ def update_transaction_category(user_id: int, txn_id: int, data: dict):
         elif not txn.bank_reduction_reason:
             raise ValueError("Bank Reduction reason is required")
     else:
-        # Changing away from Bank Reduction clears the reason
         if "purpose" in data or "category_id" in data:
             txn.bank_reduction_reason = None
+
+    should_apply_ledger = (
+        not getattr(txn, "is_deleted", False)
+        and not getattr(txn, "is_spam", False)
+        and txn.categorization_status != "pending"
+    )
+
+    if should_apply_ledger and (was_applied or (prev_status == "pending" and will_finalize)):
+        apply_pending_transaction_ledger(txn, balance_slug_override=slug_hint or None, respect_manual_lock=False)
 
     db.session.commit()
     return txn
@@ -561,6 +655,7 @@ def bulk_delete(user_id: int, transaction_ids: list) -> int:
     for tx_id in transaction_ids:
         tx = Transaction.query.filter_by(id=tx_id, user_id=user_id).first()
         if tx:
+            reverse_transaction_ledger(tx, respect_manual_lock=False)
             tx.is_deleted = True
             updated += 1
     db.session.commit()
@@ -572,6 +667,7 @@ def bulk_spam(user_id: int, transaction_ids: list) -> int:
     for tx_id in transaction_ids:
         tx = Transaction.query.filter_by(id=tx_id, user_id=user_id).first()
         if tx:
+            reverse_transaction_ledger(tx, respect_manual_lock=False)
             tx.is_spam = True
             updated += 1
     db.session.commit()
@@ -583,7 +679,7 @@ def get_total_expenses_for_current_month(user_id: int):
     year, month = dt.year, dt.month
     month_str = dt.strftime("%Y-%m")
 
-    total_expenses = calculate_month_expenses(year, month, user_id=user_id)
+    total_expenses = sum_month_expenses(user_id, year, month)
 
     total_debits = db.session.query(func.sum(Transaction.amount)).filter(
         Transaction.user_id    == user_id,

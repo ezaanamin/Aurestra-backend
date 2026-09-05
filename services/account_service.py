@@ -9,6 +9,9 @@ from database import db
 from model import AccountBalance
 
 
+from utils.money import to_money
+
+
 def ensure_default_cash_wallet(user_id: int):
     """Ensure the reserved physical-cash wallet exists for this user. Idempotent."""
     if AccountBalance.query.filter_by(user_id=user_id, source="cash").first():
@@ -127,19 +130,25 @@ def set_manual_balance(user_id: int, account_id: int = None, source: str = None,
     else:
         balance = AccountBalance.query.filter_by(user_id=user_id, source=source).first()
 
+    amt_val = to_money(amount)
+    if amt_val < 0:
+        raise ValueError("Balance cannot be negative")
+
     if not balance:
+        if not source:
+            raise LookupError("Account not found")
         dn      = (source or "bank").replace("_", " ").title()
         max_ord = db.session.query(func.max(AccountBalance.sort_order)).filter_by(user_id=user_id).scalar() or 0
         balance = AccountBalance(
             user_id=user_id, source=source or "bank", display_name=dn, holder_name="",
             account_kind="bank", match_keywords=json.dumps([source or "bank"]),
             accent_color="#6366F1", sort_order=int(max_ord) + 1,
-            current_balance=amount,
+            current_balance=amt_val,
             is_deleted=False,
         )
         db.session.add(balance)
 
-    balance.current_balance = amount
+    balance.current_balance = amt_val
     balance.is_manual       = True
     balance.last_updated    = datetime.now()
     db.session.commit()
@@ -178,6 +187,16 @@ def update_account(user_id: int, acc: AccountBalance, data: dict) -> AccountBala
         acc.accent_color = (data["accent_color"] or acc.accent_color).strip()
     if "sort_order" in data:
         acc.sort_order = int(data["sort_order"] or 0)
+
+    if "balance" in data or "current_balance" in data:
+        raw = data.get("balance", data.get("current_balance"))
+        acc.current_balance = to_money(raw)
+        val = to_money(raw)
+        if val < 0:
+            raise ValueError("Balance cannot be negative")
+        acc.current_balance = val
+        acc.is_manual = True
+
     acc.last_updated = datetime.now()
     db.session.commit()
     return acc

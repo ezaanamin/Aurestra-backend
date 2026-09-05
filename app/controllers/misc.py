@@ -684,12 +684,19 @@ def calculate_summary_endpoint():
                 else_=0
             ))
         ).filter(
+        total_expense = db.session.query(func.sum(Transaction.amount)).filter(
             extract('year', Transaction.date) == dt.year,
             extract('month', Transaction.date) == dt.month,
+            Transaction.type == 'debit',
+            Transaction.is_deleted.isnot(True),
+            Transaction.is_spam.isnot(True),
             exclude_own_account_transfer_sql(),
         ).scalar() or 0.0
         
         total_savings = total_income - total_expense
+        total_income = round(float(total_income), 2)
+        total_expense = round(abs(float(total_expense)), 2)
+        total_savings = round(total_income - total_expense, 2)
         
         # Update MonthlyBalance in DB for persistence
         summary = MonthlyBalance.query.filter_by(month=month_str).first()
@@ -706,6 +713,7 @@ def calculate_summary_endpoint():
         summary.expense = total_expense
         summary.savings = total_savings
         summary.closing_balance = summary.opening_balance + total_income - total_expense
+        summary.closing_balance = (summary.opening_balance or 0) + total_savings
         # Ensure source is set if updating existing
         if not summary.source:
              summary.source = "combined"

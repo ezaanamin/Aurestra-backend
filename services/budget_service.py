@@ -6,6 +6,8 @@ from sqlalchemy import func, extract, case
 from database import db
 from model import Budget, MonthlyBalance, Transaction, AccountBalance
 from transfer_matching import exclude_own_account_transfer_sql
+from decorator.helpers import sum_month_expenses, sum_month_income
+from utils.money import to_money, add_money, subtract_money, abs_money
 
 
 def get_current_budget(user_id: int, month_str: str = None):
@@ -216,36 +218,12 @@ def get_budget_history(user_id: int, months_to_fetch: int = 4):
         budget_rec = budget_map.get(month_str)
         balance_rec = balance_map.get(month_str)
 
-        fresh_expense = db.session.query(
-            func.sum(case(
-                (Transaction.type == 'debit',  Transaction.amount),
-                (Transaction.type == 'credit', -Transaction.amount),
-                else_=0,
-            ))
-        ).filter(
-            Transaction.user_id == user_id,
-            extract('year',  Transaction.date) == dt.year,
-            extract('month', Transaction.date) == dt.month,
-            Transaction.is_deleted.isnot(True),
-            Transaction.is_spam.isnot(True),
-            Transaction.categorization_status != 'pending',
-            exclude_own_account_transfer_sql(),
-        ).scalar() or 0.0
+        fresh_expense = sum_month_expenses(user_id, dt.year, dt.month)
+        fresh_income = sum_month_income(user_id, dt.year, dt.month)
 
-        fresh_income = db.session.query(func.sum(Transaction.amount)).filter(
-            Transaction.user_id == user_id,
-            extract('year',  Transaction.date) == dt.year,
-            extract('month', Transaction.date) == dt.month,
-            Transaction.type   == 'credit',
-            Transaction.is_deleted.isnot(True),
-            Transaction.is_spam.isnot(True),
-            Transaction.categorization_status != 'pending',
-            exclude_own_account_transfer_sql(),
-        ).scalar() or 0.0
-
-        stored_expense = getattr(balance_rec, 'expense', 0.0) or 0.0
-        final_expense  = fresh_expense if fresh_expense > 0 else stored_expense
-        final_savings  = fresh_income - final_expense
+        stored_expense = abs(float(getattr(balance_rec, 'expense', 0.0) or 0.0))
+        final_expense = fresh_expense if fresh_expense > 0 else stored_expense
+        final_savings = fresh_income - final_expense
 
         history.append({
             "month": month_str,
@@ -268,40 +246,21 @@ def get_monthly_summary(user_id: int):
     current_month = datetime.now().strftime("%Y-%m")
     dt            = datetime.now()
 
-    dynamic_expense = db.session.query(
-        func.sum(case(
-            (Transaction.type == 'debit',  Transaction.amount),
-            (Transaction.type == 'credit', -Transaction.amount),
-            else_=0,
-        ))
-    ).filter(
-        Transaction.user_id == user_id,
-        extract('year',  Transaction.date) == dt.year,
-        extract('month', Transaction.date) == dt.month,
-        Transaction.is_deleted.isnot(True),
-        Transaction.is_spam.isnot(True),
-        Transaction.categorization_status != 'pending',
-        exclude_own_account_transfer_sql(),
-    ).scalar() or 0.0
-
-    dynamic_income = db.session.query(func.sum(Transaction.amount)).filter(
-        Transaction.user_id == user_id,
-        extract('year',  Transaction.date) == dt.year,
-        extract('month', Transaction.date) == dt.month,
-        Transaction.type   == 'credit',
-        Transaction.is_deleted.isnot(True),
-        Transaction.is_spam.isnot(True),
-        Transaction.categorization_status != 'pending',
-        exclude_own_account_transfer_sql(),
-    ).scalar() or 0.0
+    dynamic_expense = sum_month_expenses(user_id, dt.year, dt.month)
+    dynamic_income = sum_month_income(user_id, dt.year, dt.month)
+    dynamic_expense = abs_money(sum_month_expenses(user_id, dt.year, dt.month))
+    dynamic_income = to_money(sum_month_income(user_id, dt.year, dt.month))
 
     budget_entry  = Budget.query.filter_by(user_id=user_id, month=current_month).first()
     final_income  = budget_entry.total_budget if (budget_entry and budget_entry.total_budget > 0) else dynamic_income
     final_savings = final_income - dynamic_expense
+    final_income  = dynamic_income
+    final_savings = subtract_money(final_income, dynamic_expense)
 
     total_current_balance = sum(
         acc.current_balance
         for acc in AccountBalance.query.filter_by(user_id=user_id).all()
+        for acc in AccountBalance.query.filter_by(user_id=user_id).filter(AccountBalance.is_deleted.isnot(True)).all()
     )
 
     summary = MonthlyBalance.query.filter_by(user_id=user_id, month=current_month).first()
@@ -345,6 +304,7 @@ def get_monthly_summary(user_id: int):
         "total_expense":   dynamic_expense,
         "total_income":    final_income,
         "total_savings":   final_savings,
+        "net_cash_flow":   final_savings,
         "fetched_at":      dt.strftime("%d %b %Y %H:%M:%S"),
         "net_worth_change": nw_change,
     }

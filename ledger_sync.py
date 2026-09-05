@@ -12,6 +12,7 @@ from sqlalchemy import func
 from account_matching import match_account_for_notification
 from database import db
 from model import AccountBalance, Transaction
+from utils.money import add_money, subtract_money, to_money
 from transfer_matching import (
     counterparty_matches_other_wallet,
     is_own_account_transfer_row,
@@ -33,19 +34,65 @@ def find_account_balance_row_for_slug(slug: str, user_id: int | None = None) -> 
     Easypaisa: multiple `source` values (easypaisa / easypasia / easy_paisa) may exist after typos
     or duplicate rows. If more than one row exists, prefer the one with the highest balance so
     ingest does not keep posting to an empty canonical row while the real balance sits on a typo.
+    Strictly scoped to user_id when provided.
     """
     s = (slug or "sms").strip().lower()
+    if user_id is not None:
+        if s not in _EASYPAY_SLUGS:
+            row = AccountBalance.query.filter(
+                AccountBalance.user_id == user_id,
+                AccountBalance.is_deleted.isnot(True),
+                func.lower(AccountBalance.source) == s
+            ).first()
+            if not row:
+                row = AccountBalance.query.filter(
+                    AccountBalance.user_id == user_id,
+                    AccountBalance.is_deleted.isnot(True),
+                    func.lower(AccountBalance.display_name) == s
+                ).first()
+            return row
+
+        rows = AccountBalance.query.filter(
+            AccountBalance.user_id == user_id,
+            AccountBalance.is_deleted.isnot(True),
+            AccountBalance.source.in_(tuple(_EASYPAY_SLUGS))
+        ).all()
+        if not rows:
+            return None
+        if len(rows) == 1:
+            return rows[0]
+
+        def _easypay_tie_order(src: str) -> int:
+            return {"easypasia": 0, "easy_paisa": 1, "easypaisa": 2}.get((src or "").strip().lower(), 99)
+
+        def _sort_key(r: AccountBalance) -> tuple[float, int, int]:
+            bal = float(r.current_balance or 0.0)
+            oid = int(r.id or 0)
+            return (-bal, _easypay_tie_order(getattr(r, "source", "") or ""), oid)
+
+        return sorted(rows, key=_sort_key)[0]
+
+    # Global fallback if user_id is None
     if s not in _EASYPAY_SLUGS:
         row = AccountBalance.query.filter(func.lower(AccountBalance.source) == s).first()
         if not row and user_id is not None:
             row = AccountBalance.query.filter(AccountBalance.user_id == user_id, func.lower(AccountBalance.source) == s).first()
         return row
+        return AccountBalance.query.filter(
+            AccountBalance.is_deleted.isnot(True),
+            func.lower(AccountBalance.source) == s
+        ).first()
 
     rows = AccountBalance.query.filter(AccountBalance.source.in_(tuple(_EASYPAY_SLUGS))).all()
+    rows = AccountBalance.query.filter(
+        AccountBalance.is_deleted.isnot(True),
+        AccountBalance.source.in_(tuple(_EASYPAY_SLUGS))
+    ).all()
     if not rows:
         return None
     if len(rows) == 1:
         return rows[0]
+    return sorted(rows, key=lambda r: -float(r.current_balance or 0.0))[0]
 
     def _easypay_tie_order(src: str) -> int:
         # When balances tie, prefer older typo spellings so we do not flip arbitrarily.
@@ -335,13 +382,13 @@ def ensure_account_balance_row(source: str, user_id: int | None = None) -> Accou
             user_id = 1
 
     found = find_account_balance_row_for_slug(source, user_id)
-    if not found:
+    if not found and user_id is not None:
         found = AccountBalance.query.filter(
+            AccountBalance.user_id == user_id,
+            AccountBalance.is_deleted.isnot(True),
             (func.lower(AccountBalance.source) == source) | 
             (func.lower(AccountBalance.display_name) == source)
         ).first()
-    if not found:
-        found = AccountBalance.query.filter_by(user_id=user_id).first() or AccountBalance.query.first()
 
     if found:
         if user_id is not None and getattr(found, 'user_id', None) is None:
@@ -440,24 +487,116 @@ def infer_balance_slug_for_transaction(txn: Transaction) -> str:
     return "sms"
 
 
+INSUFFICIENT_BALANCE_MSG = "Insufficient balance for this expense."
+
+
+def _lock_account_balance_row(balance_id: int, user_id: int | None) -> AccountBalance | None:
+    """Row-lock an account balance for atomic debit/credit updates."""
+    q = AccountBalance.query.filter_by(id=balance_id)
+    if user_id is not None:
+        q = q.filter_by(user_id=user_id)
+    try:
+        return q.with_for_update().first()
+    except Exception:
+        return q.first()
+
+
 def _apply_balance_delta(
     balance: AccountBalance,
     slug: str,
     delta: float,
     *,
     respect_manual_lock: bool = True,
+    enforce_non_negative: bool = True,
 ) -> None:
-    """Apply signed delta to one wallet. When respect_manual_lock is True, skip manual-locked rows."""
+    """Apply signed delta to one wallet. Rejects debits that would overdraw the account."""
     if respect_manual_lock and getattr(balance, "is_manual", False):
         logger.info("Categorize ledger: skip delta on manual-locked account %s", slug)
         return
-    new_bal = float(balance.current_balance or 0) + delta
-    if new_bal < 0:
-        new_bal = 0.0
+
+    locked = _lock_account_balance_row(balance.id, getattr(balance, "user_id", None)) or balance
+    current = to_money(locked.current_balance or 0)
+    delta_r = to_money(delta)
+    new_bal = add_money(current, delta_r)
+
+    if enforce_non_negative and new_bal < 0:
+        raise ValueError(INSUFFICIENT_BALANCE_MSG)
+
+    locked.current_balance = new_bal
+    locked.last_updated = datetime.now()
     balance.current_balance = new_bal
-    balance.last_updated = datetime.now()
     if not respect_manual_lock:
+        locked.is_manual = False
         balance.is_manual = False
+
+
+def _self_transfer_counterparty(txn: Transaction, primary: str, accounts: list) -> AccountBalance | None:
+    kind = (txn.type or "").strip().lower()
+    cp = getattr(txn, "receiver", None) if kind == "debit" else getattr(txn, "sender", None)
+    if not is_own_account_transfer_row(txn):
+        return None
+    other_acc = counterparty_matches_other_wallet(cp, accounts, exclude_source=primary)
+    if not other_acc:
+        return None
+    oslug = (getattr(other_acc, "source", None) or "").strip().lower()
+    if not oslug or oslug == primary:
+        return None
+    p_bal = ensure_account_balance_row(primary, txn.user_id)
+    if opposite_internal_transfer_leg_exists(txn, p_bal, other_acc, accounts):
+        return None
+    return other_acc
+
+
+def reverse_transaction_ledger(
+    txn: Transaction,
+    *,
+    respect_manual_lock: bool = True,
+) -> bool:
+    """Undo a previously applied ledger entry (edit/delete). Idempotent when not applied."""
+    if not getattr(txn, "balance_applied", False):
+        return False
+    if getattr(txn, "is_deleted", False) or getattr(txn, "is_spam", False):
+        txn.balance_applied = False
+        return False
+
+    amt = to_money(txn.amount or 0)
+    if amt <= 0:
+        txn.balance_applied = False
+        return False
+
+    kind = (txn.type or "").strip().lower()
+    if kind not in ("credit", "debit"):
+        txn.balance_applied = False
+        return False
+
+    primary = (getattr(txn, "account_balance_source", None) or "").strip().lower()
+    if not primary:
+        primary = infer_balance_slug_for_transaction(txn)
+
+    accounts = AccountBalance.query.filter_by(user_id=txn.user_id).order_by(
+        AccountBalance.sort_order, AccountBalance.id
+    ).all()
+    other_acc = _self_transfer_counterparty(txn, primary, accounts)
+
+    if other_acc:
+        oslug = (getattr(other_acc, "source", None) or "").strip().lower()
+        p_bal = ensure_account_balance_row(primary, txn.user_id)
+        o_bal = ensure_account_balance_row(oslug, txn.user_id)
+        if kind == "debit":
+            _apply_balance_delta(p_bal, primary, amt, respect_manual_lock=respect_manual_lock, enforce_non_negative=False)
+            _apply_balance_delta(o_bal, oslug, -amt, respect_manual_lock=respect_manual_lock, enforce_non_negative=False)
+        else:
+            _apply_balance_delta(p_bal, primary, -amt, respect_manual_lock=respect_manual_lock, enforce_non_negative=False)
+            _apply_balance_delta(o_bal, oslug, amt, respect_manual_lock=respect_manual_lock, enforce_non_negative=False)
+    else:
+        balance = ensure_account_balance_row(primary, txn.user_id)
+        if kind == "credit":
+            _apply_balance_delta(balance, primary, -amt, respect_manual_lock=respect_manual_lock, enforce_non_negative=False)
+        else:
+            _apply_balance_delta(balance, primary, amt, respect_manual_lock=respect_manual_lock, enforce_non_negative=False)
+
+    txn.balance_applied = False
+    return True
 
 
 def _primary_slug_for_ledger(
@@ -495,7 +634,7 @@ def apply_pending_transaction_ledger(
         txn.balance_applied = True
         return False
 
-    amt = float(txn.amount or 0)
+    amt = to_money(txn.amount or 0)
     if amt <= 0:
         txn.balance_applied = True
         return False
@@ -509,26 +648,8 @@ def apply_pending_transaction_ledger(
     primary = _primary_slug_for_ledger(txn, balance_slug_override)
     accounts = AccountBalance.query.filter_by(user_id=txn.user_id).order_by(AccountBalance.sort_order, AccountBalance.id).all()
 
-    cp = None
-    if kind == "debit":
-        cp = getattr(txn, "receiver", None)
-    else:
-        cp = getattr(txn, "sender", None)
-
-    other_acc = None
-    if is_own_account_transfer_row(txn):
-        other_acc = counterparty_matches_other_wallet(cp, accounts, exclude_source=primary)
-
-    if other_acc:
-        oslug = (getattr(other_acc, "source", None) or "").strip().lower()
-        if oslug and oslug != primary:
-            p_bal = ensure_account_balance_row(primary, txn.user_id)
-            if opposite_internal_transfer_leg_exists(txn, p_bal, other_acc, accounts):
-                logger.info(
-                    "Self-transfer: opposite SMS leg already in DB — applying single-wallet ledger on %s only",
-                    primary,
-                )
-                other_acc = None
+    cp = getattr(txn, "receiver", None) if kind == "debit" else getattr(txn, "sender", None)
+    other_acc = _self_transfer_counterparty(txn, primary, accounts)
 
     plan_other = (getattr(other_acc, "source", None) or "").strip().lower() if other_acc else ""
     log_wallet_attribution(
