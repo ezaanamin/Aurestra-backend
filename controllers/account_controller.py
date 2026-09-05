@@ -43,6 +43,11 @@ def update_account(current_user, account_id):
             data["account_kind"] = "cash"
         acc = account_service.update_account(current_user.id, acc, data)
         return jsonify({"account": acc.to_dict()}), 200
+        return jsonify({
+            "message": "Account updated",
+            "account": acc.to_dict(),
+            "accounts": account_service.get_all_accounts(current_user.id),
+        }), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

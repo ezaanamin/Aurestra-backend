@@ -123,14 +123,19 @@ def update_transaction(current_user, id):
         return jsonify({"message": "Transaction updated", "transaction": tx.to_dict()}), 200
     except LookupError as e:
         return jsonify({"error": str(e)}), 404
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 def delete_transaction(current_user, txn_id):
     try:
-        svc.soft_delete_transaction(current_user.id, txn_id)
-        return jsonify({"success": True, "message": "Transaction deleted"}), 200
+        accounts = svc.soft_delete_transaction(current_user.id, txn_id)
+        payload = {"success": True, "message": "Transaction deleted"}
+        if accounts:
+            payload["accounts"] = accounts
+        return jsonify(payload), 200
     except LookupError as e:
         return jsonify({"error": str(e)}), 404
     except Exception as e:

@@ -41,10 +41,15 @@ class TestFinanceBalanceLogic(unittest.TestCase):
             db.session.add(self.user)
             db.session.commit()
 
+        self.user_id = self.user.id
+
         # Clean existing test data for this user
         Transaction.query.filter_by(user_id=self.user.id).delete()
         AccountBalance.query.filter_by(user_id=self.user.id).delete()
         MonthlyBalance.query.filter_by(user_id=self.user.id).delete()
+        Transaction.query.filter_by(user_id=self.user_id).delete()
+        AccountBalance.query.filter_by(user_id=self.user_id).delete()
+        MonthlyBalance.query.filter_by(user_id=self.user_id).delete()
         db.session.commit()
 
         # Ensure SECRET_KEY on app.config
@@ -54,6 +59,8 @@ class TestFinanceBalanceLogic(unittest.TestCase):
             {
                 "user_id": self.user.id,
                 "email": self.user.email,
+                "user_id": self.user_id,
+                "email": self.user_email,
                 "exp": datetime.utcnow() + timedelta(days=1),
             },
             secret,
@@ -79,6 +86,9 @@ class TestFinanceBalanceLogic(unittest.TestCase):
             Transaction.query.filter_by(user_id=self.user.id).delete()
             AccountBalance.query.filter_by(user_id=self.user.id).delete()
             MonthlyBalance.query.filter_by(user_id=self.user.id).delete()
+            Transaction.query.filter_by(user_id=self.user_id).delete()
+            AccountBalance.query.filter_by(user_id=self.user_id).delete()
+            MonthlyBalance.query.filter_by(user_id=self.user_id).delete()
             db.session.commit()
         except Exception:
             db.session.rollback()
@@ -87,6 +97,7 @@ class TestFinanceBalanceLogic(unittest.TestCase):
     def _create_account(self, source, display_name, initial_balance=0.0, account_kind="bank"):
         acc = AccountBalance(
             user_id=self.user.id,
+            user_id=self.user_id,
             source=source,
             display_name=display_name,
             account_kind=account_kind,
@@ -355,6 +366,24 @@ class TestFinanceBalanceLogic(unittest.TestCase):
         self.assertEqual(res_put.status_code, 200)
         refreshed_acc = AccountBalance.query.get(acc.id)
         self.assertEqual(round(refreshed_acc.current_balance, 2), 14000.00)
+
+        # Also test Cash account: verify PUT /api/accounts/<cash_id> succeeds and updates balance
+        cash_acc = AccountBalance.query.filter_by(user_id=self.user_id, source="cash").first()
+        if not cash_acc:
+            cash_acc = self._create_account("cash", "Cash", 5000.00, account_kind="cash")
+        put_cash = {"id": cash_acc.id, "display_name": "Cash", "account_kind": "cash", "balance": 8200.00, "accent_color": "#00C9A7"}
+        res_cash_put = self.client.put(f"/api/accounts/{cash_acc.id}", headers=self.headers, json=put_cash)
+        self.assertEqual(res_cash_put.status_code, 200)
+        db.session.expire_all()
+        refreshed_cash = AccountBalance.query.get(cash_acc.id)
+        self.assertEqual(round(refreshed_cash.current_balance, 2), 8200.00)
+
+        # Test Cash account balance update via /api/accounts/set_balance
+        res_cash_set = self.client.post("/api/accounts/set_balance", headers=self.headers, json={"account_id": cash_acc.id, "amount": 9500.00})
+        self.assertEqual(res_cash_set.status_code, 200)
+        db.session.expire_all()
+        refreshed_cash = AccountBalance.query.get(cash_acc.id)
+        self.assertEqual(round(refreshed_cash.current_balance, 2), 9500.00)
 
     # -------------------------------------------------------------------------
     # TEST 8: Create expense, verify balance decreases. Edit expense to a lower amount,

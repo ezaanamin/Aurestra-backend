@@ -139,7 +139,7 @@ class Transaction(db.Model):
 
     # Wallet slug for balance (e.g. bank, easypaisa); ledger applied when user categorizes if balance_applied is False
     account_balance_source = db.Column(db.String(64), nullable=True)
-    balance_applied = db.Column(db.Boolean, nullable=False, default=True)
+    balance_applied = db.Column(db.Boolean, nullable=False, default=False)
 
     # NEW - linking to an uploaded receipt
     receipt_id = db.Column(db.Integer, db.ForeignKey('uploaded_receipts.id'), nullable=True)
