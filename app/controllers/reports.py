@@ -44,7 +44,7 @@ from notification_parser import ingest_notification_for_user, list_notifications
 from transfer_matching import exclude_own_account_transfer_sql, is_own_account_transfer_row
 from ledger_sync import apply_pending_transaction_ledger, ensure_account_balance_row, log_wallet_attribution
 
-AUTH_API_URL = os.getenv('AUTH_API_URL', 'https://9938-119-73-101-66.ngrok-free.app').rstrip('/')
+AUTH_API_URL = os.getenv('AUTH_API_URL', 'https://auth.elyestra.org').rstrip('/')
 AUTH_API_OWNER_EMAIL = os.getenv('AUTH_API_OWNER_EMAIL', 'ezaan.amin@gmail.com')
 
 reports_bp = Blueprint("reports", __name__)

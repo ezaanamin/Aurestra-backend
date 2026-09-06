@@ -91,10 +91,21 @@ class BackupOrchestrator:
                 try:
                     from database import DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
                     if DB_USER and DB_HOST:
+                        pg_dump_bin = os.getenv("PG_DUMP_PATH") or shutil.which("pg_dump")
+                        if not pg_dump_bin:
+                            import glob
+                            for c in glob.glob("/usr/lib/postgresql/*/bin/pg_dump") + ["/usr/bin/pg_dump", "/usr/local/bin/pg_dump"]:
+                                if os.path.isfile(c) and os.access(c, os.X_OK):
+                                    pg_dump_bin = c
+                                    break
+                        if not pg_dump_bin:
+                            raise FileNotFoundError("pg_dump utility not found. Install postgresql-client (e.g. apt-get install postgresql-client) or set PG_DUMP_PATH.")
+
                         pg_dump_name = f"postgres_{timestamp}.dump"
                         pg_dump_path = os.path.join(temp_dir, pg_dump_name)
                         cmd = [
-                            "pg_dump",
+                            
+                            pg_dump_bin,
                             "-h", DB_HOST,
                             "-p", str(DB_PORT),
                             "-U", DB_USER,
@@ -106,7 +117,10 @@ class BackupOrchestrator:
                         env["PGPASSWORD"] = DB_PASSWORD or ""
                         subprocess.run(cmd, check=True, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 except Exception as pg_err:
-                    print(f"⚠️ [Backup] PostgreSQL dump skipped: {pg_err}")
+                    if hasattr(pg_err, "stderr") and pg_err.stderr:
+                        print(f"⚠️ [Backup] PostgreSQL dump skipped: {pg_err}\nStderr: {pg_err.stderr.decode()}")
+                    else:
+                        print(f"⚠️ [Backup] PostgreSQL dump skipped: {pg_err}")
 
                 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
                     zf.write(consistent_db_path, arcname="aurestra.db")

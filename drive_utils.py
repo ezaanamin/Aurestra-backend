@@ -101,7 +101,7 @@ except Exception as e:
 
 def _auth_api_url():
     """Return Auth-api base URL from env, consistent with app.py."""
-    return os.getenv('AUTH_API_URL', 'https://9938-119-73-101-66.ngrok-free.app').rstrip('/')
+    return os.getenv('AUTH_API_URL', 'https://auth.elyestra.org').rstrip('/')
 
 def _auth_api_owner_email():
     return os.getenv('AUTH_API_OWNER_EMAIL', 'ezaan.amin@gmail.com')

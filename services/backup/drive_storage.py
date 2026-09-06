@@ -14,6 +14,8 @@ class BackupDriveStorage:
     def _get_admin_service(self):
         from model import User
         admin_email = os.getenv("BANK_EMAIL_ACCOUNT")
+        # 1. Try configured admin/bank emails
+        admin_email = os.getenv("BANK_EMAIL_ACCOUNT") or os.getenv("AUTH_API_OWNER_EMAIL") or os.getenv("SMTP_EMAIL") or "ezaan.amin@gmail.com"
         if admin_email:
             from types import SimpleNamespace
             admin_user = SimpleNamespace(email=admin_email, google_refresh_token=None)
@@ -22,6 +24,12 @@ class BackupDriveStorage:
                 return service
 
         # Fallback to a user with a google_refresh_token
+        # 2. Try default central auth service without user object
+        service = self.get_drive_service(None)
+        if service:
+            return service
+
+        # 3. Fallback to a user with a local google_refresh_token
         admin_user = User.query.filter(User.google_refresh_token.isnot(None)).first()
         if admin_user:
             return self.get_drive_service(admin_user)
