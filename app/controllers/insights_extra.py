@@ -185,10 +185,14 @@ def create_transaction(current_user):
         purpose = data.get("category") or data.get("purpose") or "Uncategorized"
         notes = data.get("notes", "")
         shopping_details = (data.get("shopping_details") or "").strip()
+        subscription_details = (data.get("subscription_details") or "").strip()
         date_str = data.get("date")
 
         if str(purpose).strip().lower() == "shopping" and not shopping_details:
             return jsonify({"error": "shopping_details is required for Shopping transactions."}), 400
+
+        if str(purpose).strip().lower() == "subscription" and not subscription_details:
+            return jsonify({"error": "subscription_details is required for Subscription transactions."}), 400
 
         slug = (
             (data.get("account_balance_source") or data.get("wallet_slug") or data.get("balance_account_slug") or "")
@@ -226,6 +230,7 @@ def create_transaction(current_user):
             receiver="Me" if t_type == "credit" else "Merchant",
             notes=notes,
             shopping_details=shopping_details if str(purpose).strip().lower() == "shopping" else None,
+            subscription_details=subscription_details if str(purpose).strip().lower() == "subscription" else None,
             categorization_status="confirmed",
             account_balance_source=slug,
             balance_applied=False,

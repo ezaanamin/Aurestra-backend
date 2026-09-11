@@ -527,7 +527,7 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
         aggregated[group_key]["amount"] += float(t.amount or 0.0)
 
         # Handle subcategory / reason breakdown (e.g. for Bank Reduction or Shopping)
-        reason_val = t.bank_reduction_reason or getattr(t, 'shopping_details', None)
+        reason_val = t.bank_reduction_reason or getattr(t, 'shopping_details', None) or getattr(t, 'subscription_details', None)
         if reason_val and str(reason_val).strip():
             r_name = str(reason_val).strip()
             aggregated[group_key]["reasons"][r_name] = aggregated[group_key]["reasons"].get(r_name, 0.0) + float(t.amount or 0.0)

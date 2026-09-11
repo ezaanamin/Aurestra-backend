@@ -225,6 +225,17 @@ def update_transaction(id):
                 return jsonify({"error": "shopping_details is required for Shopping transactions."}), 400
             txn.shopping_details = shopping_details_val
 
+        subscription_details = data.get("subscription_details")
+        if subscription_details is not None:
+            subscription_details_val = str(subscription_details).strip()
+        else:
+            subscription_details_val = (txn.subscription_details or "").strip()
+
+        if str(new_purpose).strip().lower() == "subscription":
+            if not subscription_details_val:
+                return jsonify({"error": "subscription_details is required for Subscription transactions."}), 400
+            txn.subscription_details = subscription_details_val
+
         if "category_id" in data:
             txn.category_id = data["category_id"]
             category = Category.query.get(data["category_id"])

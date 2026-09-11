@@ -276,6 +276,10 @@ with app.app_context():
             tx_cols = [r[1] for r in conn.execute(text("PRAGMA table_info(transactions);")).fetchall()]
             if 'bank_reduction_reason' not in tx_cols:
                 conn.execute(text("ALTER TABLE transactions ADD COLUMN bank_reduction_reason VARCHAR(255);"))
+            if 'shopping_details' not in tx_cols:
+                conn.execute(text("ALTER TABLE transactions ADD COLUMN shopping_details VARCHAR(255);"))
+            if 'subscription_details' not in tx_cols:
+                conn.execute(text("ALTER TABLE transactions ADD COLUMN subscription_details VARCHAR(255);"))
             acc_cols = [r[1] for r in conn.execute(text("PRAGMA table_info(account_balances);")).fetchall()]
             if 'is_deleted' not in acc_cols:
                 conn.execute(text("ALTER TABLE account_balances ADD COLUMN is_deleted BOOLEAN DEFAULT 0;"))

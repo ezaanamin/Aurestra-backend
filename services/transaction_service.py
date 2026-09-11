@@ -437,6 +437,22 @@ def create_manual_transaction(user_id: int, data: dict) -> tuple:
     else:
         bank_reason = None
 
+    shopping_details = data.get("shopping_details")
+    if purpose_val and purpose_val.strip().lower() == "shopping":
+        if not shopping_details or not str(shopping_details).strip():
+            raise ValueError("shopping_details is required for Shopping transactions")
+        shopping_details = str(shopping_details).strip()
+    else:
+        shopping_details = None
+
+    subscription_details = data.get("subscription_details")
+    if purpose_val and purpose_val.strip().lower() == "subscription":
+        if not subscription_details or not str(subscription_details).strip():
+            raise ValueError("subscription_details is required for Subscription transactions")
+        subscription_details = str(subscription_details).strip()
+    else:
+        subscription_details = None
+
     cat_id = data.get("category_id")
     if not cat_id and purpose_val:
         cat_obj = Category.query.filter_by(name=purpose_val).first()
@@ -456,6 +472,8 @@ def create_manual_transaction(user_id: int, data: dict) -> tuple:
         receiver=data.get("receiver") or data.get("recipient") or ("Me" if t_type == "credit" else "Merchant"),
         transaction_id=data.get("transaction_id"),
         notes=data.get("notes", ""),
+        shopping_details=shopping_details,
+        subscription_details=subscription_details,
         categorization_status="confirmed",
         account_balance_source=account.source,
         balance_applied=True,
@@ -618,6 +636,30 @@ def update_transaction_category(user_id: int, txn_id: int, data: dict):
     else:
         if "purpose" in data or "category_id" in data:
             txn.bank_reduction_reason = None
+
+    if current_purpose.strip().lower() == "shopping":
+        if "shopping_details" in data:
+            details = data["shopping_details"]
+            if not details or not str(details).strip():
+                raise ValueError("shopping_details is required for Shopping transactions")
+            txn.shopping_details = str(details).strip()
+        elif not txn.shopping_details:
+            raise ValueError("shopping_details is required for Shopping transactions")
+    else:
+        if "purpose" in data or "category_id" in data:
+            txn.shopping_details = None
+
+    if current_purpose.strip().lower() == "subscription":
+        if "subscription_details" in data:
+            details = data["subscription_details"]
+            if not details or not str(details).strip():
+                raise ValueError("subscription_details is required for Subscription transactions")
+            txn.subscription_details = str(details).strip()
+        elif not txn.subscription_details:
+            raise ValueError("subscription_details is required for Subscription transactions")
+    else:
+        if "purpose" in data or "category_id" in data:
+            txn.subscription_details = None
 
     should_apply_ledger = (
         not getattr(txn, "is_deleted", False)
