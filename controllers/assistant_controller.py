@@ -4,7 +4,6 @@ from dateutil.relativedelta import relativedelta
 from flask import request, jsonify
 from sqlalchemy import func
 
-from model import Transaction, Budget, AccountBalance
 from model import Transaction, Budget, AccountBalance, Category
 from transfer_matching import exclude_own_account_transfer_sql, is_own_account_transfer_row
 from decorator.helpers import sum_month_expenses
@@ -90,7 +89,6 @@ def get_finance_snapshot(current_user):
     for t in curr_debits:
         if is_own_account_transfer_row(t) or t.purpose in _EXCLUDED_PURPOSES:
             continue
-        c_name = t.purpose or "Uncategorized"
         c_name = resolve_cat(t)
         cat_totals[c_name] = cat_totals.get(c_name, 0.0) + float(t.amount or 0.0)
 
@@ -108,7 +106,6 @@ def get_finance_snapshot(current_user):
     for t in prev_txs:
         if is_own_account_transfer_row(t) or t.purpose in _EXCLUDED_PURPOSES:
             continue
-        c_name = t.purpose or "Uncategorized"
         c_name = resolve_cat(t)
         prev_cat_totals[c_name] = prev_cat_totals.get(c_name, 0.0) + float(t.amount or 0.0)
 
@@ -237,7 +234,6 @@ def get_spending(current_user):
     )
 
     if category_param:
-        base_query = base_query.filter(func.lower(func.trim(Transaction.purpose)) == category_param.lower())
         from sqlalchemy import or_
         filter_conds = [func.lower(func.trim(Transaction.purpose)) == category_param.lower()]
         if target_cat_ids:
@@ -258,7 +254,6 @@ def get_spending(current_user):
         exclude_own_account_transfer_sql(),
     )
     if category_param:
-        prev_query = prev_query.filter(func.lower(func.trim(Transaction.purpose)) == category_param.lower())
         from sqlalchemy import or_
         filter_conds = [func.lower(func.trim(Transaction.purpose)) == category_param.lower()]
         if target_cat_ids:
@@ -268,7 +263,6 @@ def get_spending(current_user):
     prev_txns = [t for t in prev_query.all() if not is_own_account_transfer_row(t) and t.purpose not in _EXCLUDED_PURPOSES]
     prev_total_by_cat = {}
     for t in prev_txns:
-        c = t.purpose or "Uncategorized"
         c = resolve_cat(t)
         prev_total_by_cat[c] = prev_total_by_cat.get(c, 0.0) + float(t.amount or 0.0)
 
@@ -280,12 +274,10 @@ def get_spending(current_user):
     for t in filtered_txns:
         amt = float(t.amount or 0.0)
         total_amount += amt
-        c = t.purpose or "Uncategorized"
         c = resolve_cat(t)
         cat_groups[c] = cat_groups.get(c, 0.0) + amt
 
         # Merchant extraction (receiver or notes)
-        m_name = (t.receiver if (t.receiver and t.receiver != "Merchant") else (t.notes or t.receiver or "Unknown")).strip()
         m_name = resolve_merchant(t)
         if m_name not in merchant_groups:
             merchant_groups[m_name] = {"category": c, "amount": 0.0, "count": 0}
@@ -317,12 +309,9 @@ def get_spending(current_user):
     transactions_res = []
     if category_param:
         for t in filtered_txns[:20]:
-            m_name = (t.receiver if (t.receiver and t.receiver != "Merchant") else (t.notes or t.receiver or "Unknown")).strip()
             transactions_res.append({
                 "date": t.date.strftime("%Y-%m-%d") if t.date else "",
                 "amount": round(float(t.amount or 0.0), 2),
-                "category": t.purpose or "Uncategorized",
-                "merchant": m_name,
                 "category": resolve_cat(t),
                 "merchant": resolve_merchant(t),
                 "wallet": wallet_map.get(t.account_balance_source, t.account_balance_source or "Unknown")
