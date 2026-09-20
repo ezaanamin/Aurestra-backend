@@ -41,6 +41,19 @@ def assistant_token_required(f):
         if not current_user:
             return jsonify({"error": "Unauthorized"}), 401
 
+        # Derive symmetric encryption key from stored user decryption key
+        dec_key = request.headers.get("X-Decryption-Key")
+        if not dec_key and current_user.decryption_key:
+            dec_key = current_user.decryption_key
+
+        if dec_key and current_user.decryption_key_salt:
+            try:
+                from utils.crypto_helpers import derive_encryption_key
+                from flask import g
+                g.encryption_key = derive_encryption_key(dec_key, current_user.decryption_key_salt)
+            except Exception:
+                pass
+
         return f(current_user, *args, **kwargs)
     return decorated
 

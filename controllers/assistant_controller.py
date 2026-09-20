@@ -5,6 +5,7 @@ from flask import request, jsonify
 from sqlalchemy import func
 
 from model import Transaction, Budget, AccountBalance
+from model import Transaction, Budget, AccountBalance, Category
 from transfer_matching import exclude_own_account_transfer_sql, is_own_account_transfer_row
 from decorator.helpers import sum_month_expenses
 
@@ -70,12 +71,27 @@ def get_finance_snapshot(current_user):
     last_spent = sum_month_expenses(current_user.id, prev_dt.year, prev_dt.month)
     spend_change_pct = round(((curr_spent - last_spent) / last_spent) * 100, 1) if last_spent > 0 else None
 
+    # Category lookup map for fallback if purpose is encrypted or empty
+    categories = Category.query.filter(
+        (Category.user_id == current_user.id) | (Category.is_default == True)
+    ).all()
+    cat_id_to_name = {c.id: c.name for c in categories}
+
+    def resolve_cat(t):
+        c = t.purpose
+        if (not c or c == "[Encrypted]") and t.category_id in cat_id_to_name:
+            c = cat_id_to_name[t.category_id]
+        if not c or c == "[Encrypted]":
+            c = "Uncategorized"
+        return c
+
     curr_debits = [t for t in month_txs if t.type == 'debit']
     cat_totals = {}
     for t in curr_debits:
         if is_own_account_transfer_row(t) or t.purpose in _EXCLUDED_PURPOSES:
             continue
         c_name = t.purpose or "Uncategorized"
+        c_name = resolve_cat(t)
         cat_totals[c_name] = cat_totals.get(c_name, 0.0) + float(t.amount or 0.0)
 
     prev_start = datetime(prev_dt.year, prev_dt.month, 1)
@@ -93,6 +109,7 @@ def get_finance_snapshot(current_user):
         if is_own_account_transfer_row(t) or t.purpose in _EXCLUDED_PURPOSES:
             continue
         c_name = t.purpose or "Uncategorized"
+        c_name = resolve_cat(t)
         prev_cat_totals[c_name] = prev_cat_totals.get(c_name, 0.0) + float(t.amount or 0.0)
 
     sorted_cats = sorted(cat_totals.items(), key=lambda x: x[1], reverse=True)[:5]
@@ -182,6 +199,32 @@ def get_spending(current_user):
     end_date = start_date + relativedelta(months=1)
     prev_start = start_date - relativedelta(months=1)
 
+    # Category lookup map
+    categories = Category.query.filter(
+        (Category.user_id == current_user.id) | (Category.is_default == True)
+    ).all()
+    cat_id_to_name = {c.id: c.name for c in categories}
+    target_cat_ids = [c.id for c in categories if c.name.lower() == category_param.lower()]
+
+    def resolve_cat(t):
+        c = t.purpose
+        if (not c or c == "[Encrypted]") and t.category_id in cat_id_to_name:
+            c = cat_id_to_name[t.category_id]
+        if not c or c == "[Encrypted]":
+            c = "Uncategorized"
+        return c
+
+    def resolve_merchant(t):
+        r = t.receiver
+        if r and r != "Merchant" and r != "[Encrypted]":
+            return r.strip()
+        n = t.notes
+        if n and n != "[Encrypted]":
+            return n.strip()
+        if r and r != "[Encrypted]":
+            return r.strip()
+        return "Unknown"
+
     # Parameterized query on transactions
     base_query = Transaction.query.filter(
         Transaction.user_id == current_user.id,
@@ -195,6 +238,11 @@ def get_spending(current_user):
 
     if category_param:
         base_query = base_query.filter(func.lower(func.trim(Transaction.purpose)) == category_param.lower())
+        from sqlalchemy import or_
+        filter_conds = [func.lower(func.trim(Transaction.purpose)) == category_param.lower()]
+        if target_cat_ids:
+            filter_conds.append(Transaction.category_id.in_(target_cat_ids))
+        base_query = base_query.filter(or_(*filter_conds))
 
     txns = base_query.order_by(Transaction.date.desc()).all()
     filtered_txns = [t for t in txns if not is_own_account_transfer_row(t) and t.purpose not in _EXCLUDED_PURPOSES]
@@ -211,10 +259,17 @@ def get_spending(current_user):
     )
     if category_param:
         prev_query = prev_query.filter(func.lower(func.trim(Transaction.purpose)) == category_param.lower())
+        from sqlalchemy import or_
+        filter_conds = [func.lower(func.trim(Transaction.purpose)) == category_param.lower()]
+        if target_cat_ids:
+            filter_conds.append(Transaction.category_id.in_(target_cat_ids))
+        prev_query = prev_query.filter(or_(*filter_conds))
+
     prev_txns = [t for t in prev_query.all() if not is_own_account_transfer_row(t) and t.purpose not in _EXCLUDED_PURPOSES]
     prev_total_by_cat = {}
     for t in prev_txns:
         c = t.purpose or "Uncategorized"
+        c = resolve_cat(t)
         prev_total_by_cat[c] = prev_total_by_cat.get(c, 0.0) + float(t.amount or 0.0)
 
     # Aggregate categories
@@ -226,10 +281,12 @@ def get_spending(current_user):
         amt = float(t.amount or 0.0)
         total_amount += amt
         c = t.purpose or "Uncategorized"
+        c = resolve_cat(t)
         cat_groups[c] = cat_groups.get(c, 0.0) + amt
 
         # Merchant extraction (receiver or notes)
         m_name = (t.receiver if (t.receiver and t.receiver != "Merchant") else (t.notes or t.receiver or "Unknown")).strip()
+        m_name = resolve_merchant(t)
         if m_name not in merchant_groups:
             merchant_groups[m_name] = {"category": c, "amount": 0.0, "count": 0}
         merchant_groups[m_name]["amount"] += amt
@@ -266,6 +323,8 @@ def get_spending(current_user):
                 "amount": round(float(t.amount or 0.0), 2),
                 "category": t.purpose or "Uncategorized",
                 "merchant": m_name,
+                "category": resolve_cat(t),
+                "merchant": resolve_merchant(t),
                 "wallet": wallet_map.get(t.account_balance_source, t.account_balance_source or "Unknown")
             })
 
