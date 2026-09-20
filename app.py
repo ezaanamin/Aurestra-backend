@@ -53,6 +53,7 @@ from routes.backup_routes import backup_bp
 from routes.chat_routes import chat_bp
 from routes.subscription_routes import subscription_bp
 from routes.export_routes import export_bp
+from routes.assistant_routes import assistant_bp
 
 blueprints = [
     auth_bp,
@@ -72,6 +73,7 @@ blueprints = [
     chat_bp,
     subscription_bp,
     export_bp,
+    assistant_bp,
 ]
 
 for bp in blueprints:
