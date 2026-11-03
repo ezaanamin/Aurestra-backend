@@ -21,8 +21,28 @@ import secrets
 import string
 
 def ensure_user_has_decryption_key(user: User):
-    # Do not auto-generate decryption keys. Users must manually set them up via the frontend.
-    pass
+    """Ensure user always has a valid decryption key and hash so they are never prompted."""
+    if not user:
+        return
+    if not user.decryption_key:
+        salt = user.decryption_key_salt or generate_crypto_salt()
+        chars = string.ascii_letters + string.digits + "!@#$%^&*"
+        generated_key = "".join(secrets.choice(chars) for _ in range(16))
+        user.decryption_key = generated_key
+        user.decryption_key_salt = salt
+        user.decryption_key_hash = hash_decryption_key(generated_key)
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+    elif not user.decryption_key_hash:
+        salt = user.decryption_key_salt or generate_crypto_salt()
+        user.decryption_key_salt = salt
+        user.decryption_key_hash = hash_decryption_key(user.decryption_key)
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
 
 # ─────────────────────────────────────────────────────────────
@@ -355,10 +375,13 @@ def verify_google_id_token(id_token_str: str):
             )
         except Exception as inner_e:
             import jwt
-            decoded = jwt.decode(id_token_str, options={"verify_signature": False})
-            if decoded.get('email') and decoded.get('sub'):
-                return decoded
-            raise inner_e
+            try:
+                decoded = jwt.decode(id_token_str, options={"verify_signature": False})
+                if decoded.get('email') and decoded.get('sub'):
+                    return decoded
+            except Exception:
+                pass
+            raise ValueError(f"Invalid Google ID token: {str(inner_e)}")
 
 
 def check_centralized_auth(email: str) -> bool:

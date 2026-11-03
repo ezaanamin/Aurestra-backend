@@ -364,8 +364,10 @@ def google_login():
     except ValueError as e:
         return jsonify({'message': f'Invalid token: {str(e)}'}), 401
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"Google Login Error: {e}")
-        return jsonify({'message': 'Internal server error'}), 500
+        return jsonify({'message': f'Login error: {str(e)}'}), 500
 
 
 def auth_status(current_user):
