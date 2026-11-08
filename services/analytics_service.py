@@ -4,8 +4,59 @@ from datetime import datetime, date, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func, extract, desc, case
 from database import db
-from model import Transaction, AccountBalance, NetWorthHistory, Category, CategoryBucketMapping
+from model import Transaction, AccountBalance, NetWorthHistory, Category, CategoryBucketMapping, CategoryPrivacySetting
 from transfer_matching import exclude_own_account_transfer_sql, is_own_account_transfer_row
+
+CATEGORY_COLOR_PALETTE = {
+    "shopping": "#A78BFA",            # Lavender
+    "food & snacks": "#FF6B6B",        # Coral
+    "food": "#FF6B6B",
+    "transport": "#22D3EE",            # Cyan
+    "uber": "#22D3EE",
+    "ride / transport": "#22D3EE",
+    "education": "#3B82F6",            # Blue
+    "entertainment": "#EC4899",        # Pink
+    "game": "#EC4899",
+    "games": "#EC4899",
+    "bills & utilities": "#F59E0B",    # Amber
+    "bills": "#F59E0B",
+    "utilities": "#F59E0B",
+    "therapy": "#8B5CF6",              # Violet
+    "healthcare": "#8B5CF6",
+    "groceries": "#10B981",            # Emerald
+    "personal care": "#FB7185",        # Rose
+    "investment": "#6366F1",           # Indigo
+    "subscriptions": "#38BDF8",        # Sky
+    "subscription": "#38BDF8",
+    "audible subscription": "#38BDF8",
+    "google one subscription": "#38BDF8",
+    "comic book": "#EC4899",
+    "tea": "#F59E0B",
+    "movies": "#EC4899",
+    "gym & fitness": "#FF6B6B",
+    "bank reduction": "#F59E0B",
+    "retracted": "#64748B",            # Muted Slate
+}
+
+DISTINCT_PALETTE = [
+    "#A78BFA", "#FF6B6B", "#22D3EE", "#3B82F6", "#EC4899",
+    "#F59E0B", "#8B5CF6", "#10B981", "#FB7185", "#6366F1",
+    "#38BDF8", "#34D399", "#F472B6", "#E879F9", "#FBBF24"
+]
+
+def get_canonical_category_color(name: str, cat_id: int = None) -> str:
+    if not name:
+        return "#64748B"
+    clean_name = str(name).strip().lower()
+    if clean_name in CATEGORY_COLOR_PALETTE:
+        return CATEGORY_COLOR_PALETTE[clean_name]
+    for k, v in CATEGORY_COLOR_PALETTE.items():
+        if k in clean_name or clean_name in k:
+            return v
+    # Deterministic hash
+    idx = (abs(hash(clean_name)) + (cat_id or 0)) % len(DISTINCT_PALETTE)
+    return DISTINCT_PALETTE[idx]
+
 
 
 def get_current_total_balance(user_id: int) -> float:
@@ -219,24 +270,16 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
     # 4. Total Current Balance
     total_balance = get_current_total_balance(user_id)
 
-    # 5. Real Historical Balance Snapshots Graph Series
-    # We build the balance progression backwards from today's canonical total balance:
-    # balance(t - 1) = balance(t) - net_flow(t)
+    # 5. Real Historical Balance & Flow Snapshots Graph Series
     graph_series = []
 
     if period == 'week':
-        # 7 daily points (e.g. 6 days ago up to today)
-        # Fetch daily net flows for last 7 days
-        daily_flows = (
+        # 7 daily points (6 days ago up to today)
+        daily_txs = (
             db.session.query(
                 func.date(Transaction.date).label("tx_date"),
-                func.sum(
-                    case(
-                        (Transaction.type == 'credit', Transaction.amount),
-                        (Transaction.type == 'debit', -Transaction.amount),
-                        else_=0
-                    )
-                ).label("net_flow")
+                func.sum(case((Transaction.type == 'credit', Transaction.amount), else_=0)).label("day_income"),
+                func.sum(case((Transaction.type == 'debit', Transaction.amount), else_=0)).label("day_expense"),
             )
             .filter(
                 Transaction.user_id == user_id,
@@ -250,15 +293,18 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
             .all()
         )
 
+        inc_map = {}
+        exp_map = {}
         flow_map = {}
-        for r in daily_flows:
+        for r in daily_txs:
             if r.tx_date:
                 key = r.tx_date if isinstance(r.tx_date, str) else r.tx_date.strftime("%Y-%m-%d")
-                flow_map[key] = float(r.net_flow or 0.0)
+                day_inc = float(r.day_income or 0.0)
+                day_exp = float(r.day_expense or 0.0)
+                inc_map[key] = day_inc
+                exp_map[key] = day_exp
+                flow_map[key] = day_inc - day_exp
 
-        # Build daily points forward from curr_start
-        # First find balance at curr_start
-        # Sum all net flows from curr_start to today
         total_flow_in_period = sum(flow_map.values())
         start_balance = max(0.0, total_balance - total_flow_in_period)
 
@@ -266,29 +312,29 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
         for i in range(7):
             d = curr_start + timedelta(days=i)
             d_str = d.strftime("%Y-%m-%d")
-            running = round(max(0.0, running + flow_map.get(d_str, 0.0)), 2)
-            # Make sure latest point matches canonical total_balance exactly
+            day_inc = round(inc_map.get(d_str, 0.0), 2)
+            day_exp = round(exp_map.get(d_str, 0.0), 2)
+            day_flow = round(day_inc - day_exp, 2)
+            running = round(max(0.0, running + day_flow), 2)
             if i == 6:
                 running = total_balance
 
             graph_series.append({
                 "date": d.isoformat(),
-                "label": d.strftime("%a"), # Mon, Tue, Wed...
+                "label": d.strftime("%a"),
+                "balance": float(running),
+                "income": float(day_inc),
+                "expenses": float(day_exp),
+                "net_cash_flow": float(day_flow),
                 "value": float(running)
             })
 
     elif period == 'month':
-        # Daily points for the month, but with max 7-8 clean date labels to prevent overlap
-        daily_flows = (
+        daily_txs = (
             db.session.query(
                 func.date(Transaction.date).label("tx_date"),
-                func.sum(
-                    case(
-                        (Transaction.type == 'credit', Transaction.amount),
-                        (Transaction.type == 'debit', -Transaction.amount),
-                        else_=0
-                    )
-                ).label("net_flow")
+                func.sum(case((Transaction.type == 'credit', Transaction.amount), else_=0)).label("day_income"),
+                func.sum(case((Transaction.type == 'debit', Transaction.amount), else_=0)).label("day_expense"),
             )
             .filter(
                 Transaction.user_id == user_id,
@@ -302,53 +348,58 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
             .all()
         )
 
+        inc_map = {}
+        exp_map = {}
         flow_map = {}
-        for r in daily_flows:
+        for r in daily_txs:
             if r.tx_date:
                 key = r.tx_date if isinstance(r.tx_date, str) else r.tx_date.strftime("%Y-%m-%d")
-                flow_map[key] = float(r.net_flow or 0.0)
+                day_inc = float(r.day_income or 0.0)
+                day_exp = float(r.day_expense or 0.0)
+                inc_map[key] = day_inc
+                exp_map[key] = day_exp
+                flow_map[key] = day_inc - day_exp
 
         total_flow_in_period = sum(flow_map.values())
         start_balance = max(0.0, total_balance - total_flow_in_period)
 
         num_days = (curr_end - curr_start).days + 1
-        # Calculate daily balances for every day
         all_daily = []
         running = start_balance
         for i in range(num_days):
             d = curr_start + timedelta(days=i)
             d_str = d.strftime("%Y-%m-%d")
-            running = round(max(0.0, running + flow_map.get(d_str, 0.0)), 2)
+            day_inc = round(inc_map.get(d_str, 0.0), 2)
+            day_exp = round(exp_map.get(d_str, 0.0), 2)
+            day_flow = round(day_inc - day_exp, 2)
+            running = round(max(0.0, running + day_flow), 2)
             if i == num_days - 1:
                 running = total_balance
-            all_daily.append((d, running))
+            all_daily.append((d, running, day_inc, day_exp, day_flow))
 
-        # Sample 6-8 evenly spaced points so x-axis is clean
         step = max(1, (num_days - 1) // 6)
         sampled_indices = list(range(0, num_days, step))
         if (num_days - 1) not in sampled_indices:
             sampled_indices.append(num_days - 1)
 
         for idx in sampled_indices:
-            d, val = all_daily[idx]
+            d, val, day_inc, day_exp, day_flow = all_daily[idx]
             graph_series.append({
                 "date": d.isoformat(),
-                "label": d.strftime("%b %d"), # e.g. Sep 1, Sep 5...
+                "label": d.strftime("%b %d"),
+                "balance": float(val),
+                "income": float(day_inc),
+                "expenses": float(day_exp),
+                "net_cash_flow": float(day_flow),
                 "value": float(val)
             })
 
     elif period == 'year':
-        # 12 monthly data points for current year
-        monthly_flows = (
+        monthly_txs = (
             db.session.query(
                 extract('month', Transaction.date).label("m"),
-                func.sum(
-                    case(
-                        (Transaction.type == 'credit', Transaction.amount),
-                        (Transaction.type == 'debit', -Transaction.amount),
-                        else_=0
-                    )
-                ).label("net_flow")
+                func.sum(case((Transaction.type == 'credit', Transaction.amount), else_=0)).label("m_income"),
+                func.sum(case((Transaction.type == 'debit', Transaction.amount), else_=0)).label("m_expense"),
             )
             .filter(
                 Transaction.user_id == user_id,
@@ -361,9 +412,10 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
             .all()
         )
 
-        month_flow_map = {int(r.m): float(r.net_flow or 0.0) for r in monthly_flows if r.m}
+        month_inc_map = {int(r.m): float(r.m_income or 0.0) for r in monthly_txs if r.m}
+        month_exp_map = {int(r.m): float(r.m_expense or 0.0) for r in monthly_txs if r.m}
+        month_flow_map = {m: month_inc_map.get(m, 0.0) - month_exp_map.get(m, 0.0) for m in range(1, today.month + 1)}
 
-        # Calculate sum from Jan to current month
         active_months = list(range(1, today.month + 1))
         total_flow_yr = sum(month_flow_map.get(m, 0.0) for m in active_months)
         start_balance = max(0.0, total_balance - total_flow_yr)
@@ -371,18 +423,24 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
         running = start_balance
         for m in active_months:
             m_date = date(today.year, m, 1)
-            running = round(max(0.0, running + month_flow_map.get(m, 0.0)), 2)
+            m_inc = round(month_inc_map.get(m, 0.0), 2)
+            m_exp = round(month_exp_map.get(m, 0.0), 2)
+            m_flow = round(m_inc - m_exp, 2)
+            running = round(max(0.0, running + m_flow), 2)
             if m == today.month:
                 running = total_balance
 
             graph_series.append({
                 "date": m_date.isoformat(),
-                "label": m_date.strftime("%b"), # Jan, Feb, Mar...
+                "label": m_date.strftime("%b"),
+                "balance": float(running),
+                "income": float(m_inc),
+                "expenses": float(m_exp),
+                "net_cash_flow": float(m_flow),
                 "value": float(running)
             })
 
     else: # 'all'
-        # Dynamically aggregate based on date range of transactions & snapshots
         earliest_tx = db.session.query(func.min(Transaction.date)).filter(
             Transaction.user_id == user_id,
             Transaction.is_deleted.isnot(True),
@@ -394,22 +452,12 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
         else:
             start_d = today - timedelta(days=30)
 
-        # Monthly aggregation across months
-        num_months = (today.year - start_d.year) * 12 + (today.month - start_d.month) + 1
-        num_months = max(1, num_months)
-
-        # Query net flow per year-month
-        monthly_flows = (
+        monthly_txs = (
             db.session.query(
                 extract('year', Transaction.date).label("yr"),
                 extract('month', Transaction.date).label("m"),
-                func.sum(
-                    case(
-                        (Transaction.type == 'credit', Transaction.amount),
-                        (Transaction.type == 'debit', -Transaction.amount),
-                        else_=0
-                    )
-                ).label("net_flow")
+                func.sum(case((Transaction.type == 'credit', Transaction.amount), else_=0)).label("m_income"),
+                func.sum(case((Transaction.type == 'debit', Transaction.amount), else_=0)).label("m_expense"),
             )
             .filter(
                 Transaction.user_id == user_id,
@@ -421,12 +469,18 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
             .all()
         )
 
+        ym_inc_map = {}
+        ym_exp_map = {}
         ym_flow_map = {}
-        for r in monthly_flows:
+        for r in monthly_txs:
             if r.yr and r.m:
-                ym_flow_map[(int(r.yr), int(r.m))] = float(r.net_flow or 0.0)
+                key = (int(r.yr), int(r.m))
+                inc_val = float(r.m_income or 0.0)
+                exp_val = float(r.m_expense or 0.0)
+                ym_inc_map[key] = inc_val
+                ym_exp_map[key] = exp_val
+                ym_flow_map[key] = inc_val - exp_val
 
-        # Build list of (yr, m) tuples
         ym_list = []
         curr_yr, curr_m = start_d.year, start_d.month
         while (curr_yr < today.year) or (curr_yr == today.year and curr_m <= today.month):
@@ -443,36 +497,44 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
         running = start_balance
         for idx, (yr, m) in enumerate(ym_list):
             m_date = date(yr, m, 1)
-            running = round(max(0.0, running + ym_flow_map.get((yr, m), 0.0)), 2)
+            inc_val = round(ym_inc_map.get((yr, m), 0.0), 2)
+            exp_val = round(ym_exp_map.get((yr, m), 0.0), 2)
+            flow_val = round(inc_val - exp_val, 2)
+            running = round(max(0.0, running + flow_val), 2)
             if idx == len(ym_list) - 1:
                 running = total_balance
-            all_monthly_pts.append((m_date, running))
+            all_monthly_pts.append((m_date, running, inc_val, exp_val, flow_val))
 
-        # Sample cleanly if more than 6-7 months to prevent label clutter
         step = max(1, (len(all_monthly_pts) - 1) // 5) if len(all_monthly_pts) > 1 else 1
         sampled_indices = list(range(0, len(all_monthly_pts), step))
         if (len(all_monthly_pts) - 1) not in sampled_indices:
             sampled_indices.append(len(all_monthly_pts) - 1)
 
         for idx in sampled_indices:
-            d, val = all_monthly_pts[idx]
-            # Format: Sep '25 | Nov '25...
+            d, val, inc_val, exp_val, flow_val = all_monthly_pts[idx]
             graph_series.append({
                 "date": d.isoformat(),
                 "label": d.strftime("%b '%y"),
+                "balance": float(val),
+                "income": float(inc_val),
+                "expenses": float(exp_val),
+                "net_cash_flow": float(flow_val),
                 "value": float(val)
             })
 
-    # Ensure graph has at least 2 points for SVG rendering
     if len(graph_series) == 1:
         prev_d = today - timedelta(days=1)
         graph_series.insert(0, {
             "date": prev_d.isoformat(),
             "label": prev_d.strftime("%a"),
+            "balance": graph_series[0]["balance"],
+            "income": 0.0,
+            "expenses": 0.0,
+            "net_cash_flow": 0.0,
             "value": graph_series[0]["value"]
         })
 
-    # 6. Canonical Aggregation for Spending Breakdown by Category / Subcategory
+    # 6. Canonical Aggregation for Spending Breakdown with Privacy Protection
     _SELF_TRANSFER_NAMES = {'self transfer', 'self-transfer'}
     base_tx_query = Transaction.query.filter(
         Transaction.user_id == user_id,
@@ -488,18 +550,23 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
 
     txns = base_tx_query.all()
 
-    # Load categories map to resolve category names cleanly
+    # Load categories map & user privacy settings
     all_categories = {c.id: c for c in Category.query.all()}
     name_to_cat = {c.name.strip().lower(): c for c in all_categories.values()}
 
-    aggregated = {}  # key -> {"category_id", "name", "amount", "icon", "color", "reasons": {reason_name: amt}}
+    user_privacy_rows = CategoryPrivacySetting.query.filter_by(user_id=user_id, is_retracted=True).all()
+    retracted_category_ids = {r.category_id for r in user_privacy_rows}
+    for cat in all_categories.values():
+        if getattr(cat, 'is_retracted', False) and (cat.user_id == user_id or cat.user_id is None):
+            retracted_category_ids.add(cat.id)
+
+    aggregated = {}
 
     for t in txns:
         p_str = (t.purpose or "").strip()
         if not p_str or p_str.lower() in _SELF_TRANSFER_NAMES or p_str.lower() == 'uncategorized':
             continue
 
-        # Resolve category
         cat = None
         if t.category_id and t.category_id in all_categories:
             cat = all_categories[t.category_id]
@@ -509,45 +576,51 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
         cat_id = cat.id if cat else None
         cat_name = cat.name if cat else p_str
         cat_icon = cat.icon if cat else "cash"
-        cat_color = getattr(cat, "color", "#7B5CF5") if cat else "#7B5CF5"
 
-        # Unique key for canonical aggregation: category_id if present, else normalized name
-        group_key = f"cat_{cat_id}" if cat_id else f"name_{cat_name.lower()}"
+        is_retracted = (cat_id in retracted_category_ids) or (cat and getattr(cat, "is_retracted", False))
+
+        if is_retracted:
+            group_key = "cat_retracted"
+            display_name = "Retracted"
+            display_icon = "shield-lock"
+            display_color = "#64748B"
+        else:
+            group_key = f"cat_{cat_id}" if cat_id else f"name_{cat_name.lower()}"
+            display_name = cat_name
+            display_icon = cat_icon
+            display_color = get_canonical_category_color(cat_name, cat_id)
 
         if group_key not in aggregated:
             aggregated[group_key] = {
-                "category_id": cat_id,
-                "name": cat_name,
-                "icon": cat_icon,
-                "color": cat_color,
+                "category_id": None if is_retracted else cat_id,
+                "name": display_name,
+                "icon": display_icon,
+                "color": display_color,
                 "amount": 0.0,
+                "is_retracted": is_retracted,
                 "reasons": {}
             }
 
         aggregated[group_key]["amount"] += float(t.amount or 0.0)
 
-        # Handle subcategory / reason breakdown (e.g. for Bank Reduction or Shopping)
-        reason_val = t.bank_reduction_reason or getattr(t, 'shopping_details', None) or getattr(t, 'subscription_details', None)
-        if reason_val and str(reason_val).strip():
-            r_name = str(reason_val).strip()
-            aggregated[group_key]["reasons"][r_name] = aggregated[group_key]["reasons"].get(r_name, 0.0) + float(t.amount or 0.0)
+        # Do NOT expose subcategory details for retracted categories to prevent privacy leaks
+        if not is_retracted:
+            reason_val = t.bank_reduction_reason or getattr(t, 'shopping_details', None) or getattr(t, 'subscription_details', None)
+            if reason_val and str(reason_val).strip():
+                r_name = str(reason_val).strip()
+                aggregated[group_key]["reasons"][r_name] = aggregated[group_key]["reasons"].get(r_name, 0.0) + float(t.amount or 0.0)
 
     # Sort aggregated items by total amount descending
     sorted_items = sorted(aggregated.values(), key=lambda x: x["amount"], reverse=True)
-
-    # Calculate percentages relative to total_spent for all debits in period
     denom = total_spent if total_spent > 0 else (sum(x["amount"] for x in sorted_items) or 1.0)
 
-    palette = ['#7B5CF5', '#00C9A7', '#F5A623', '#FF6B8A', '#60A5FA', '#4DE8C2', '#EC4899', '#10B981']
     breakdown = []
-
-    for idx, item in enumerate(sorted_items):
+    for item in sorted_items:
         amt = round(item["amount"], 2)
         pct = round((amt / denom) * 100, 1)
 
-        # Build reasons/subcategories array sorted descending by amount
         reasons_list = []
-        if item["reasons"]:
+        if item["reasons"] and not item.get("is_retracted"):
             total_reason_amt = sum(item["reasons"].values()) or 1.0
             for r_name, r_amt in sorted(item["reasons"].items(), key=lambda x: x[1], reverse=True):
                 reasons_list.append({
@@ -562,7 +635,8 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
             "icon": item["icon"],
             "amount": amt,
             "percentage": pct,
-            "color": item["color"] if item["color"] else palette[idx % len(palette)],
+            "color": item["color"],
+            "is_retracted": bool(item.get("is_retracted")),
             "reasons": reasons_list
         })
 
@@ -578,3 +652,4 @@ def get_analytics_dashboard_data(user_id: int, period: str = 'month') -> dict:
         "series": graph_series,
         "breakdown": breakdown
     }
+

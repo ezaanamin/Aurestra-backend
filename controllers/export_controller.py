@@ -163,13 +163,26 @@ def export_transactions(current_user):
     else:
         filename = f"Aurestra_Transactions_{acc_clean}_{date_str}"
 
+    from model import CategoryPrivacySetting, Category
+    user_privacy_rows = CategoryPrivacySetting.query.filter_by(user_id=current_user.id, is_retracted=True).all()
+    retracted_ids = {r.category_id for r in user_privacy_rows}
+    all_cats = Category.query.all()
+    for c in all_cats:
+        if getattr(c, 'is_retracted', False) and (c.user_id == current_user.id or c.user_id is None):
+            retracted_ids.add(c.id)
+    retracted_names = {c.name.strip().lower() for c in all_cats if c.id in retracted_ids}
+    retracted_info = (retracted_ids, retracted_names)
+
     if export_format == 'pdf':
-        return _generate_pdf_response(current_user, transactions, filename, account_source, account_map)
+        return _generate_pdf_response(current_user, transactions, filename, account_source, account_map, retracted_info)
     else:
-        return _generate_csv_response(transactions, filename, account_map)
+        return _generate_csv_response(transactions, filename, account_map, retracted_info)
 
 
-def _generate_csv_response(transactions, filename, account_map=None):
+def _generate_csv_response(transactions, filename, account_map=None, retracted_info=None):
+    retracted_ids = retracted_info[0] if retracted_info else set()
+    retracted_names = retracted_info[1] if retracted_info else set()
+
     output = io.StringIO()
     writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
 
@@ -187,22 +200,27 @@ def _generate_csv_response(transactions, filename, account_map=None):
     ])
 
     for t in transactions:
-        # Determine clean counterparty
+        is_retracted = (t.category_id in retracted_ids) or ((t.purpose or '').strip().lower() in retracted_names)
+
         is_credit = (t.type or '').lower() == 'credit'
         counterparty = t.sender if is_credit else t.receiver
         if not counterparty or counterparty.lower() in ('me', 'merchant', 'bank'):
             counterparty = t.purpose or 'General'
 
+        display_category = 'Retracted' if is_retracted else (t.purpose or 'Uncategorized')
+        display_counterparty = 'Retracted' if is_retracted else counterparty
+        display_notes = '' if is_retracted else (t.notes or '').replace('\r\n', ' ').replace('\n', ' ')
+
         writer.writerow([
             _format_date(t.date),
-            counterparty,
-            t.purpose or 'Uncategorized',
+            display_counterparty,
+            display_category,
             _normalize_account_source(t.account_balance_source, account_map),
             _normalize_type(t.type),
             f"{float(t.amount or 0):.2f}",
             'PKR',
             _normalize_source(t.source),
-            (t.notes or '').replace('\r\n', ' ').replace('\n', ' ')
+            display_notes
         ])
 
     csv_data = output.getvalue()
@@ -214,7 +232,10 @@ def _generate_csv_response(transactions, filename, account_map=None):
     return response
 
 
-def _generate_pdf_response(user, transactions, filename, account_source, account_map=None):
+def _generate_pdf_response(user, transactions, filename, account_source, account_map=None, retracted_info=None):
+    retracted_ids = retracted_info[0] if retracted_info else set()
+    retracted_names = retracted_info[1] if retracted_info else set()
+
     total_count = len(transactions)
     total_income = sum(float(t.amount or 0) for t in transactions if (t.type or '').lower() == 'credit')
     total_expense = sum(float(t.amount or 0) for t in transactions if (t.type or '').lower() == 'debit')
@@ -227,10 +248,15 @@ def _generate_pdf_response(user, transactions, filename, account_source, account
     # Build rows HTML
     rows_html = ""
     for idx, t in enumerate(transactions):
+        is_retracted = (t.category_id in retracted_ids) or ((t.purpose or '').strip().lower() in retracted_names)
+
         is_credit = (t.type or '').lower() == 'credit'
         counterparty = t.sender if is_credit else t.receiver
         if not counterparty or counterparty.lower() in ('me', 'merchant', 'bank'):
             counterparty = t.purpose or 'General'
+
+        display_category = 'Retracted' if is_retracted else (t.purpose or 'General')
+        display_counterparty = 'Retracted' if is_retracted else counterparty
 
         amt_prefix = "+" if is_credit else "-"
         amt_color = "#10B981" if is_credit else "#EF4444"
@@ -241,8 +267,8 @@ def _generate_pdf_response(user, transactions, filename, account_source, account
         rows_html += f"""
         <tr style="{bg_style}">
             <td style="padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 11px;">{dt_formatted}</td>
-            <td style="padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 11px; font-weight: 600; max-width: 140px; overflow: hidden;">{counterparty}</td>
-            <td style="padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 11px; color: #94A3B8;">{t.purpose or 'General'}</td>
+            <td style="padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 11px; font-weight: 600; max-width: 140px; overflow: hidden;">{display_counterparty}</td>
+            <td style="padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 11px; color: #94A3B8;">{display_category}</td>
             <td style="padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 11px; color: #94A3B8;">{_normalize_account_source(t.account_balance_source, account_map)}</td>
             <td style="padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 11px; text-align: right; font-weight: 700; color: {amt_color};">
                 {amt_prefix}PKR {_format_amount(t.amount)}

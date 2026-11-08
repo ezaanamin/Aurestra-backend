@@ -259,7 +259,6 @@ def get_monthly_summary(user_id: int):
 
     total_current_balance = sum(
         acc.current_balance
-        for acc in AccountBalance.query.filter_by(user_id=user_id).all()
         for acc in AccountBalance.query.filter_by(user_id=user_id).filter(AccountBalance.is_deleted.isnot(True)).all()
     )
 

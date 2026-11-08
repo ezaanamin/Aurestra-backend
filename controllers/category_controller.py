@@ -14,13 +14,27 @@ def allowed_file(filename):
 
 def list_categories(current_user):
     from sqlalchemy import or_, and_
+    from model import CategoryPrivacySetting
     categories = Category.query.filter(
         or_(
             Category.user_id == current_user.id, 
             and_(Category.is_default == True, Category.user_id == None)
         )
     ).filter(Category.is_deleted.isnot(True)).all()
-    return jsonify([c.to_dict() for c in categories]), 200
+
+    privacy_settings = {
+        p.category_id: p.is_retracted
+        for p in CategoryPrivacySetting.query.filter_by(user_id=current_user.id).all()
+    }
+
+    result = []
+    for c in categories:
+        d = c.to_dict()
+        if c.id in privacy_settings:
+            d["is_retracted"] = bool(privacy_settings[c.id])
+        result.append(d)
+
+    return jsonify(result), 200
 
 
 def add_category(current_user):
@@ -239,3 +253,75 @@ def delete_rule(current_user, id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+def _verify_user_key(current_user, key):
+    if not key or not str(key).strip():
+        return False
+    key_str = str(key).strip()
+    try:
+        from utils.crypto_helpers import verify_decryption_key
+        if current_user.decryption_key_hash and verify_decryption_key(key_str, current_user.decryption_key_hash):
+            return True
+    except Exception:
+        pass
+    try:
+        if current_user.password_hash:
+            from utils.auth import verify_password
+            if verify_password(key_str, current_user.password_hash):
+                return True
+    except Exception:
+        pass
+    return False
+
+
+def verify_privacy_key(current_user):
+    data = request.json or {}
+    key = data.get("decryption_key") or request.headers.get("X-Decryption-Key")
+    if not key:
+        return jsonify({"error": "Decryption key is required"}), 400
+    if not _verify_user_key(current_user, key):
+        return jsonify({"error": "Invalid decryption key"}), 403
+    return jsonify({"success": True, "message": "Decryption key verified"}), 200
+
+
+def get_category_privacy(current_user):
+    return list_categories(current_user)
+
+
+def set_category_privacy(current_user):
+    data = request.json or {}
+    key = data.get("decryption_key") or request.headers.get("X-Decryption-Key")
+    if not key:
+        return jsonify({"error": "Decryption key is required to modify category privacy"}), 400
+    if not _verify_user_key(current_user, key):
+        return jsonify({"error": "Invalid decryption key"}), 403
+
+    from model import CategoryPrivacySetting
+    category_id = data.get("category_id")
+    category_ids = data.get("category_ids")
+    if category_id is not None:
+        target_ids = [int(category_id)]
+    elif category_ids is not None and isinstance(category_ids, list):
+        target_ids = [int(cid) for cid in category_ids]
+    else:
+        return jsonify({"error": "category_id or category_ids required"}), 400
+
+    is_retracted = bool(data.get("is_retracted", True))
+
+    for cid in target_ids:
+        cat = Category.query.get(cid)
+        if not cat:
+            continue
+        setting = CategoryPrivacySetting.query.filter_by(user_id=current_user.id, category_id=cid).first()
+        if not setting:
+            setting = CategoryPrivacySetting(user_id=current_user.id, category_id=cid, is_retracted=is_retracted)
+            db.session.add(setting)
+        else:
+            setting.is_retracted = is_retracted
+        if cat.user_id == current_user.id:
+            cat.is_retracted = is_retracted
+
+    db.session.commit()
+    return list_categories(current_user)
+

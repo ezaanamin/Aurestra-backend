@@ -14,6 +14,10 @@ category_bp.route('/api/categories/<int:id>',                 methods=['PUT'])(t
 category_bp.route('/api/categories/<int:id>',                 methods=['DELETE'])(token_required(ctrl.delete_category))
 category_bp.route('/api/categories/<int:id>/bucket',          methods=['POST'])(token_required(ctrl.set_category_bucket))
 category_bp.route('/api/categories/suggest',                  methods=['GET'])(token_required(ctrl.suggest_category))
+category_bp.route('/api/categories/privacy',                  methods=['GET'])(token_required(ctrl.get_category_privacy))
+category_bp.route('/api/categories/privacy',                  methods=['POST'])(token_required(ctrl.set_category_privacy))
+category_bp.route('/api/categories/privacy/verify-key',       methods=['POST'])(token_required(ctrl.verify_privacy_key))
 category_bp.route('/api/categorization-rules',                methods=['GET'])(token_required(ctrl.list_rules))
 category_bp.route('/api/categorization-rules',                methods=['POST'])(token_required(ctrl.create_rule))
 category_bp.route('/api/categorization-rules/<int:id>',       methods=['DELETE'])(token_required(ctrl.delete_rule))
+
